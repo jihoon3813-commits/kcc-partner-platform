@@ -235,11 +235,11 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 1. Hero Section (Image 2) */}
+      {/* 2. Hero Section (Image 2) */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0a]">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80"
+            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7718dba031946.png"
             className="opacity-40 object-cover scale-105 animate-slow-zoom"
             alt="Hero Background"
             fill
@@ -252,13 +252,14 @@ export default function LandingPage() {
           <div className="inline-block border border-white/30 bg-white/10 backdrop-blur-md px-8 py-3 rounded-full mb-12 animate-fade-in-up">
             <span className="text-blue-300 font-black tracking-widest uppercase">Premium Membership</span>
           </div>
-          <h1 className="text-5xl lg:text-9xl font-black mb-8 tracking-tighter leading-none break-keep">
-            <span className="block text-gray-400 text-3xl md:text-5xl mb-4 font-light tracking-normal opacity-80">목돈 깨지 마세요!</span>
-            KCC홈씨씨<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"><br className="md:hidden" />윈도우ONE</span><br className="hidden md:block" />
-            <span className="text-white text-7xl md:text-9xl"><br className="md:hidden" />구독서비스</span>
+          <h1 className="text-5xl lg:text-8xl font-black mb-8 tracking-tighter leading-none break-keep">
+            <span className="block text-blue-400 text-3xl md:text-5xl mb-4 font-bold tracking-tight">목돈 부담 ZERO!</span>
+            KCC 홈씨씨 윈도우<br />
+            <span className="text-white">구독 서비스</span>
           </h1>
-          <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8"><br className="md:hidden" />13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
+          <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed break-keep">
+            최장 60개월 분납으로 부담은 낮추고 품격은 높이세요.<br className="hidden md:block" />
+            업계 최장 13년 품질보증이 당신의 일상을 든든하게 지켜드립니다.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
             <button
