@@ -197,7 +197,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             {/* 1. Hero Section */}
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0a]">
                 <div className="absolute inset-0 z-0">
-                    <Image src="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80" className="opacity-40 object-cover scale-105 animate-slow-zoom" alt="Hero Background" fill unoptimized priority />
+                    <Image src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/f5fba29b1ca8c.png" className="opacity-40 object-cover scale-105 animate-slow-zoom" alt="Hero Background" fill unoptimized priority />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/50"></div>
                 </div>
                 <div className="container mx-auto px-8 md:px-20 relative z-10 text-center text-white mt-20">

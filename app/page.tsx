@@ -193,9 +193,9 @@ export default function LandingPage() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex gap-6 text-sm font-bold text-gray-500">
-            <Link href="/products/onev" className="hover:text-[#122649] transition-colors">상품페이지</Link>
-            <Link href="/admin" className="hover:text-[#122649] transition-colors">본사 Admin</Link>
-            <Link href="/partner" className="hover:text-[#122649] transition-colors">파트너 Admin</Link>
+            <Link href="/products/onev" className="hover:text-[#122649] transition-colors" target="_blank" rel="noopener noreferrer">상품페이지</Link>
+            <Link href="/admin" className="hover:text-[#122649] transition-colors" target="_blank" rel="noopener noreferrer">본사 Admin</Link>
+            <Link href="/partner" className="hover:text-[#122649] transition-colors" target="_blank" rel="noopener noreferrer">파트너 Admin</Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -235,11 +235,11 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 2. Hero Section (Image 2) */}
+      {/* 1. Hero Section (Image 2) */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0a]">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7718dba031946.png"
+            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/f5fba29b1ca8c.png"
             className="opacity-40 object-cover scale-105 animate-slow-zoom"
             alt="Hero Background"
             fill
@@ -252,14 +252,14 @@ export default function LandingPage() {
           <div className="inline-block border border-white/30 bg-white/10 backdrop-blur-md px-8 py-3 rounded-full mb-12 animate-fade-in-up">
             <span className="text-blue-300 font-black tracking-widest uppercase">Premium Membership</span>
           </div>
-          <h1 className="text-5xl lg:text-8xl font-black mb-8 tracking-tighter leading-none break-keep">
-            <span className="block text-blue-400 text-3xl md:text-5xl mb-4 font-bold tracking-tight">목돈 부담 ZERO!</span>
-            KCC 홈씨씨 윈도우<br />
-            <span className="text-white">구독 서비스</span>
+          <h1 className="text-5xl lg:text-9xl font-black mb-8 tracking-tighter leading-none break-keep">
+            <span className="block text-gray-400 text-3xl md:text-5xl mb-4 font-light tracking-normal opacity-80">목돈 깨지 마세요!</span>
+            KCC홈씨씨<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">윈도우ONE</span><br />
+            <span className="text-white text-7xl md:text-9xl">구독서비스</span>
           </h1>
-          <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed break-keep">
-            최장 60개월 분납으로 부담은 낮추고 품격은 높이세요.<br className="hidden md:block" />
-            업계 최장 13년 품질보증이 당신의 일상을 든든하게 지켜드립니다.
+          <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8"><br className="md:hidden" />13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
             <button
@@ -367,6 +367,45 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-transparent"></div>
         </div>
       </section>
+
+      {/* New Marketing Partner Section */}
+      <section className="py-24 bg-[#1a1a1a] text-white text-center border-t border-gray-800">
+        <div className="container mx-auto px-5 lg:px-24">
+          <h2 className="text-3xl lg:text-5xl font-black mb-8 leading-tight">
+            KCC홈씨씨의<br></br><span className="text-blue-500">마케팅 파트너</span>가 되시면,<br />
+            파트너의 회원들에게도 <span className="text-[#D4AF37]"><br></br>구독+ 추가혜택</span>을<br className="md:hidden" /> 제공할 수 있습니다.
+          </h2>
+          <button
+            onClick={() => setShowApplyModal(true)}
+            className="px-12 py-5 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl"
+          >
+            파트너 신청하기
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#0f0f0f] text-gray-500 py-12 border-t border-gray-900 text-sm">
+        <div className="container mx-auto px-5 lg:px-24">
+          <h3 className="text-white font-bold mb-4">판매사 정보</h3>
+          <div className="space-y-2">
+            <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 flex-wrap">
+              <span>주식회사 티유디지털(KCC글라스 판매점)</span>
+              <span className="hidden md:block text-gray-700">|</span>
+              <span>대표 : 김정열</span>
+              <span className="hidden md:block text-gray-700">|</span>
+              <span>주소 : 서울시 금천구 가산디지털1로 83, 802호</span>
+              <span className="hidden md:block text-gray-700">|</span>
+              <span>사업자등록번호 : 220-87-15092</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 flex-wrap">
+              <span>고객센터 : 1588-0883</span>
+              <span className="hidden md:block text-gray-700">|</span>
+              <span>개인정보 관리자 : 김은경 (kek3171@nate.com)</span>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Partner Apply Modal */}
       {showApplyModal && (
