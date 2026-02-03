@@ -264,13 +264,15 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <Link
               href="/products/onev"
-              className="px-12 py-6 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/20 transition-all shadow-xl w-full md:w-auto"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-12 py-6 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/20 transition-all shadow-xl w-full md:w-[300px] flex items-center justify-center"
             >
               상품보러가기
             </Link>
             <button
               onClick={() => setShowApplyModal(true)}
-              className="px-12 py-6 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-auto"
+              className="px-12 py-6 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-[300px]"
             >
               파트너 신청하기
             </button>
@@ -384,13 +386,15 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row justify-center items-center gap-4">
             <Link
               href="/products/onev"
-              className="px-12 py-5 bg-transparent border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/10 transition-all shadow-xl w-full md:w-auto inline-block"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-12 py-5 bg-transparent border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/10 transition-all shadow-xl w-full md:w-[300px] flex items-center justify-center"
             >
               상품보러가기
             </Link>
             <button
               onClick={() => setShowApplyModal(true)}
-              className="px-12 py-5 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-auto"
+              className="px-12 py-5 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-[300px]"
             >
               파트너 신청하기
             </button>
