@@ -38,7 +38,19 @@ export default function PartnerLayout({
                 const res = await fetch(`/api/data?action=read_partner_config&partnerId=${basicInfo.id}`);
                 const json = await res.json();
                 if (json.success && json.partner) {
-                    setPartnerInfo(json.partner);
+                    // GAS에서 반환된 한글 키를 영문 키로 매핑
+                    const p = json.partner;
+                    setPartnerInfo({
+                        id: p['아이디'],
+                        name: p['업체명'],
+                        ceoName: p['대표자명'],
+                        contact: p['연락처'],
+                        address: p['주소'],
+                        businessNumber: p['사업자번호'],
+                        accountNumber: p['계좌번호'],
+                        email: p['이메일'],
+                        status: p['상태']
+                    });
                 } else {
                     setPartnerInfo(basicInfo);
                 }
