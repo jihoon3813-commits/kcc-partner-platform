@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     description: "최장 60개월 분납으로 부담은 낮추고 품격은 높이세요. 업계 최장 13년 품질보증이 당신의 일상을 든든하게 지켜드립니다.",
     images: ["https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7718dba031946.png"],
   },
+  icons: {
+    icon: "https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7a0d833f1ef3b.png",
+  },
 };
 
 export default function RootLayout({

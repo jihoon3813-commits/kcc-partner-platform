@@ -411,23 +411,23 @@ export default function LandingPage() {
       {showApplyModal && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => !isSubmitting && setShowApplyModal(false)}></div>
-          <div className="bg-white rounded-[40px] w-full max-w-4xl relative z-10 overflow-hidden shadow-3xl animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
-            <div className="bg-[#122649] p-8 text-white relative shrink-0">
+          <div className="bg-white rounded-[20px] md:rounded-[40px] w-[95%] md:w-full max-w-md md:max-w-4xl relative z-10 overflow-hidden shadow-3xl animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+            <div className="bg-[#122649] p-5 md:p-8 text-white relative shrink-0">
               <button
                 onClick={() => setShowApplyModal(false)}
-                className="absolute top-6 right-6 hover:rotate-90 transition-transform"
+                className="absolute top-4 right-4 md:top-6 md:right-6 hover:rotate-90 transition-transform"
                 disabled={isSubmitting}
               >
-                <X size={32} />
+                <X size={24} className="md:w-8 md:h-8" />
               </button>
-              <h2 className="text-3xl font-black tracking-tight">KCC 홈씨씨 파트너 등록 신청</h2>
-              <p className="text-blue-200 mt-2 font-bold">성공적인 비즈니스를 위한 파트너십을 시작하세요.</p>
+              <h2 className="text-xl md:text-3xl font-black tracking-tight">KCC 홈씨씨 파트너 등록 신청</h2>
+              <p className="text-blue-200 mt-1 md:mt-2 text-sm md:text-base font-bold">성공적인 비즈니스를 위한 파트너십을 시작하세요.</p>
             </div>
-            <div className="p-8 overflow-y-auto no-scrollbar">
-              <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="p-5 md:p-8 overflow-y-auto no-scrollbar">
+              <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
                 {/* 1. 상위 파트너 검색 */}
-                <div className="bg-gray-50 p-6 rounded-3xl">
-                  <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-4">상위 파트너 검색</label>
+                <div className="bg-gray-50 p-4 md:p-6 rounded-2xl md:rounded-3xl">
+                  <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-3 md:mb-4">상위 파트너 검색</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <input
@@ -435,21 +435,21 @@ export default function LandingPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="상위 파트너 검색"
-                        className="w-full py-4 pr-4 pl-16 bg-white border border-gray-200 rounded-2xl font-medium outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                        className="w-full py-3 md:py-4 pr-4 pl-12 md:pl-16 bg-white border border-gray-200 rounded-xl md:rounded-2xl font-medium outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                       />
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
                     </div>
                     <button
                       type="button"
                       onClick={() => searchPartners(searchQuery)}
                       disabled={isSearching}
-                      className="px-8 bg-[#122649] text-white font-bold rounded-2xl hover:opacity-90 transition-all flex items-center justify-center"
+                      className="px-5 md:px-8 bg-[#122649] text-white font-bold rounded-xl md:rounded-2xl hover:opacity-90 transition-all flex items-center justify-center text-sm md:text-base whitespace-nowrap"
                     >
-                      {isSearching ? <Loader2 className="animate-spin" /> : '조회'}
+                      {isSearching ? <Loader2 className="animate-spin w-4 h-4 md:w-5 md:h-5" /> : '조회'}
                     </button>
                   </div>
                   {showSearchResults && (
-                    <div className="mt-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-2">
+                    <div className="mt-4 bg-white border border-gray-200 rounded-xl md:rounded-2xl overflow-hidden shadow-lg animate-in fade-in slide-in-from-top-2">
                       {searchResults.length > 0 ? (
                         searchResults.map((p) => (
                           <div
@@ -459,20 +459,20 @@ export default function LandingPage() {
                               setShowSearchResults(false);
                               setSearchQuery(p['업체명']);
                             }}
-                            className="p-4 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors border-b last:border-b-0"
+                            className="p-3 md:p-4 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors border-b last:border-b-0 text-sm md:text-base"
                           >
                             <span className="font-bold">{p['업체명']}</span>
                             <span className="text-xs text-gray-400 px-2 py-1 bg-gray-100 rounded-full">{p['아이디']}</span>
                           </div>
                         ))
                       ) : (
-                        <div className="p-4 text-center text-gray-400 font-bold">검색 결과가 없습니다.</div>
+                        <div className="p-3 md:p-4 text-center text-gray-400 font-bold text-sm md:text-base">검색 결과가 없습니다.</div>
                       )}
                     </div>
                   )}
                   {formData.parentPartnerName && (
-                    <div className="mt-3 flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 w-fit">
-                      <UserCheck size={18} />
+                    <div className="mt-3 flex items-center gap-2 text-blue-600 font-bold bg-blue-50 px-3 md:px-4 py-2 rounded-lg md:rounded-xl border border-blue-100 w-fit text-sm md:text-base">
+                      <UserCheck size={16} className="md:w-[18px] md:h-[18px]" />
                       선택된 상위 파트너: {formData.parentPartnerName}
                       <button
                         type="button"
@@ -488,85 +488,85 @@ export default function LandingPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {/* 필수 항목 */}
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">업체명 <span className="text-red-500">*</span></label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">업체명 <span className="text-red-500">*</span></label>
                     <input
                       type="text" required
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                       placeholder="업체명 입력"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">대표자명 <span className="text-red-500">*</span></label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">대표자명 <span className="text-red-500">*</span></label>
                     <input
                       type="text" required
                       value={formData.ceoName}
                       onChange={(e) => setFormData({ ...formData, ceoName: e.target.value })}
                       placeholder="대표자명 입력"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">연락처 <span className="text-red-500">*</span></label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">연락처 <span className="text-red-500">*</span></label>
                     <input
                       type="tel" required
                       inputMode="numeric"
                       value={formData.contact}
                       onChange={handleContactHyphen}
                       placeholder="010-0000-0000"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">아이디 <span className="text-red-500">*</span></label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">아이디 <span className="text-red-500">*</span></label>
                     <input
                       type="text" required
                       value={formData.id}
                       onChange={(e) => setFormData({ ...formData, id: e.target.value })}
                       placeholder="사용할 아이디 입력"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">비밀번호 <span className="text-red-500">*</span></label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">비밀번호 <span className="text-red-500">*</span></label>
                     <input
                       type="password" required
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       placeholder="비밀번호 입력"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">비밀번호 확인 <span className="text-red-500">*</span></label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">비밀번호 확인 <span className="text-red-500">*</span></label>
                     <input
                       type="password" required
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       placeholder="비밀번호 다시 입력"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                 </div>
 
                 {/* 주소 (필수) */}
                 <div>
-                  <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">주소 <span className="text-red-500">*</span></label>
+                  <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">주소 <span className="text-red-500">*</span></label>
                   <div className="flex gap-2 mb-2">
                     <input
                       type="text" readOnly required
                       value={formData.address}
                       placeholder="도로명 주소 검색"
-                      className="flex-1 p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none cursor-not-allowed placeholder:font-normal placeholder:text-gray-400"
+                      className="flex-1 p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none cursor-not-allowed placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                     <button
                       type="button"
                       onClick={() => setShowAddressModal(true)}
-                      className="px-6 bg-gray-200 text-gray-700 font-bold rounded-2xl hover:bg-gray-300 transition-all"
+                      className="px-4 md:px-6 bg-gray-200 text-gray-700 font-bold rounded-xl md:rounded-2xl hover:bg-gray-300 transition-all text-sm md:text-base whitespace-nowrap"
                     >
                       검색
                     </button>
@@ -576,41 +576,41 @@ export default function LandingPage() {
                     value={formData.detailAddress}
                     onChange={(e) => setFormData({ ...formData, detailAddress: e.target.value })}
                     placeholder="상세 주소 입력"
-                    className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                    className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {/* 선택 항목 */}
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">사업자번호 (선택)</label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">사업자번호 (선택)</label>
                     <input
                       type="tel"
                       inputMode="numeric"
                       value={formData.businessNumber}
                       onChange={handleBusinessNumberHyphen}
                       placeholder="000-00-00000"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">계좌번호 (선택)</label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">계좌번호 (선택)</label>
                     <input
                       type="text"
                       value={formData.accountNumber}
                       onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
                       placeholder="은행명 계좌번호"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">이메일 (선택)</label>
+                    <label className="block text-xs md:text-sm font-bold md:font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">이메일 (선택)</label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="example@email.com"
-                      className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400"
+                      className="w-full p-3 md:p-4 bg-gray-50 border border-transparent rounded-xl md:rounded-2xl font-medium md:font-bold outline-none focus:bg-white focus:border-blue-500/20 transition-all placeholder:font-normal placeholder:text-gray-400 text-sm md:text-base"
                     />
                   </div>
                 </div>
@@ -618,7 +618,7 @@ export default function LandingPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-6 bg-[#122649] text-white text-2xl font-black rounded-[30px] shadow-2xl hover:translate-y-[-4px] active:translate-y-0 transition-all disabled:opacity-50"
+                  className="w-full py-4 md:py-6 bg-[#122649] text-white text-lg md:text-2xl font-black rounded-2xl md:rounded-[30px] shadow-2xl hover:translate-y-[-4px] active:translate-y-0 transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? '신청 처리 중...' : '파트너 신청완료'}
                 </button>

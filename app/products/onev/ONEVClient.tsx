@@ -1246,8 +1246,8 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                     <div className="space-y-2 md:space-y-4">
                                         <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">주소</label>
                                         <div className="flex gap-2">
-                                            <input type="text" value={address} readOnly className="flex-1 p-3 md:p-4 bg-gray-100 rounded-lg md:rounded-xl font-bold text-sm md:text-base" placeholder="주소 검색" onClick={() => setShowAddressModal(true)} />
                                             <button type="button" onClick={() => setShowAddressModal(true)} className="px-4 md:px-6 bg-black text-white rounded-lg md:rounded-xl font-bold text-sm md:text-base"><MapPin size={18} className="md:w-5 md:h-5" /></button>
+                                            <input type="text" value={address} readOnly className="flex-1 p-3 md:p-4 bg-gray-100 rounded-lg md:rounded-xl font-bold text-sm md:text-base" placeholder="주소 검색" onClick={() => setShowAddressModal(true)} />
                                         </div>
                                         <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none text-sm md:text-base" placeholder="상세주소 입력" />
                                     </div>
