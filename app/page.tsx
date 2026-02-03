@@ -261,10 +261,16 @@ export default function LandingPage() {
           <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
             대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8"><br className="md:hidden" />13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
           </p>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <Link
+              href="/products/onev"
+              className="px-12 py-6 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/20 transition-all shadow-xl w-full md:w-auto"
+            >
+              상품보러가기
+            </Link>
             <button
               onClick={() => setShowApplyModal(true)}
-              className="px-12 py-6 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl"
+              className="px-12 py-6 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-auto"
             >
               파트너 신청하기
             </button>
@@ -375,12 +381,20 @@ export default function LandingPage() {
             KCC홈씨씨의<br></br><span className="text-blue-500">마케팅 파트너</span>가 되시면,<br />
             파트너의 회원들에게도 <span className="text-[#D4AF37]"><br></br>구독+ 추가혜택</span>을<br className="md:hidden" /> 제공할 수 있습니다.
           </h2>
-          <button
-            onClick={() => setShowApplyModal(true)}
-            className="px-12 py-5 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl"
-          >
-            파트너 신청하기
-          </button>
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+            <Link
+              href="/products/onev"
+              className="px-12 py-5 bg-transparent border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/10 transition-all shadow-xl w-full md:w-auto inline-block"
+            >
+              상품보러가기
+            </Link>
+            <button
+              onClick={() => setShowApplyModal(true)}
+              className="px-12 py-5 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-auto"
+            >
+              파트너 신청하기
+            </button>
+          </div>
         </div>
       </section>
 
