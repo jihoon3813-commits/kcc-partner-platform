@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        // request body에서 필요한 필드 추출
-        // formData: name, contact, id, address, businessNumber, ceoName, password, email, accountNumber
         const {
             name, contact, id, address, businessNumber, ceoName,
             password, email, accountNumber, parentPartnerId
@@ -19,39 +18,40 @@ export async function POST(request: Request) {
             );
         }
 
-        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL || 'https://script.google.com/macros/s/AKfycbzEeEI2vRPjjP79bVdUmNKIqavViAZma96Y80x2S7qi7atEgNFtd7uTulNJDRh8WsqI/exec';
-        if (!gasUrl) {
-            return NextResponse.json(
-                { error: '서버 설정 오류: GAS URL 미설정' },
-                { status: 500 }
-            );
+        // ID 중복 검사
+        const { data: existingUser, error: checkError } = await supabase
+            .from('partners')
+            .select('uid')
+            .eq('uid', id)
+            .maybeSingle();
+
+        if (existingUser) {
+            return NextResponse.json({ error: '이미 사용 중인 아이디입니다.' }, { status: 409 });
         }
 
-        // GAS로 데이터 전송 (redirect: 'follow' 필수)
-        // action=create_partner
-        const response = await fetch(`${gasUrl}?action=create_partner`, {
-            method: 'POST',
-            body: JSON.stringify({
+        // 파트너 등록
+        const { error: insertError } = await supabase
+            .from('partners')
+            .insert({
+                uid: id,
                 name,
+                ceo_name: ceoName,
                 contact,
-                address, // 주소 추가
-                businessNumber,
-                ceoName,
-                password,
+                address,
+                password, // * 실제 운영 시 해시 처리 권장
+                business_number: businessNumber,
+                account_number: accountNumber,
                 email,
-                accountNumber,
-                parentPartnerId: parentPartnerId || '',
-                id: id, // 명시적 ID 사용
-            })
-        });
+                parent_id: parentPartnerId || null,
+                status: '승인대기'
+            });
 
-        const result = await response.json();
-
-        if (result && result.success) {
-            return NextResponse.json({ success: true }, { status: 200 });
-        } else {
-            return NextResponse.json({ success: true }, { status: 200 }); // CORS 등으로 인해 실패로 보일 경우도 성공 처리
+        if (insertError) {
+            console.error('Database Insert Error:', insertError);
+            return NextResponse.json({ error: '데이터베이스 저장 실패' }, { status: 500 });
         }
+
+        return NextResponse.json({ success: true }, { status: 200 });
 
     } catch (error: unknown) {
         console.error('Request Error:', error);
