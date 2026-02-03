@@ -9,7 +9,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: '파트너 ID가 필요합니다.' }, { status: 400 });
         }
 
-        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL;
+        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL || 'https://script.google.com/macros/s/AKfycbzEeEI2vRPjjP79bVdUmNKIqavViAZma96Y80x2S7qi7atEgNFtd7uTulNJDRh8WsqI/exec';
         if (!gasUrl) {
             return NextResponse.json({ error: 'GAS URL 미설정' }, { status: 500 });
         }

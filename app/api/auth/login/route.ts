@@ -9,7 +9,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, message: '아이디와 비밀번호를 입력해주세요.' }, { status: 400 });
         }
 
-        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL;
+        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL || 'https://script.google.com/macros/s/AKfycbzEeEI2vRPjjP79bVdUmNKIqavViAZma96Y80x2S7qi7atEgNFtd7uTulNJDRh8WsqI/exec';
         if (!gasUrl) {
             return NextResponse.json({ success: false, message: 'GAS URL is missing' }, { status: 500 });
         }

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
             );
         }
 
-        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL;
+        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL || 'https://script.google.com/macros/s/AKfycbzEeEI2vRPjjP79bVdUmNKIqavViAZma96Y80x2S7qi7atEgNFtd7uTulNJDRh8WsqI/exec';
         if (!gasUrl) {
             return NextResponse.json(
                 { error: '서버 설정 오류: GAS URL 미설정' },
