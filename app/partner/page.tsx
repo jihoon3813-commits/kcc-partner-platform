@@ -20,6 +20,8 @@ interface Customer {
     '신청일'?: string;
     '신청일시'?: string;
     'Timestamp'?: string;
+    '주소'?: string;
+    '채널'?: string;
     [key: string]: unknown;
 }
 
