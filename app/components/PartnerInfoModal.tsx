@@ -263,6 +263,7 @@ export default function PartnerInfoModal({ isOpen, onClose, currentInfo, onUpdat
                                         value={formData.detailAddress}
                                         onChange={handleChange}
                                         placeholder="상세 주소를 입력하세요"
+                                        autoComplete="off"
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium placeholder:font-normal placeholder:text-gray-400"
                                     />
                                 </div>

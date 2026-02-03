@@ -54,7 +54,7 @@ export async function POST(request: Request) {
                     success: true,
                     partner: {
                         name: user['업체명'],
-                        ceoName: user['대표명'],
+                        ceoName: user['대표자명'],
                         contact: user['연락처'],
                         id: user['아이디']
                     }
