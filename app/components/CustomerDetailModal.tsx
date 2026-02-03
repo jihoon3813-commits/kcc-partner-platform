@@ -1,0 +1,602 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink } from 'lucide-react';
+
+interface Customer {
+    'No.': string | number;
+    '고객명'?: string;
+    '연락처'?: string;
+    '주소'?: string;
+    '라벨'?: string;
+    '진행구분'?: string;
+    '실측일자'?: string;
+    '시공일자'?: string;
+    '가견적 링크'?: string;
+    '최종 견적 링크'?: string;
+    '고객견적서(가)'?: string;
+    '고객견적서(최종)'?: string;
+    '진행현황(상세)_최근'?: string;
+    'KCC 피드백'?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+interface Settings {
+    labels: string[];
+    statuses: string[];
+    progressAuthors: string[];
+    feedbackAuthors: string[];
+}
+
+interface CustomerDetailModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    customer: Customer | null;
+    onUpdate: () => void;
+    currentUser?: string;
+    readOnly?: boolean;
+}
+
+export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdate, currentUser = 'Admin', readOnly = false }: CustomerDetailModalProps) {
+    const [activeTab, setActiveTab] = useState('progress'); // progress, history, feedback
+    const [formData, setFormData] = useState<Partial<Customer>>({});
+    const [settings, setSettings] = useState<Settings>({ labels: [], statuses: [], progressAuthors: [], feedbackAuthors: [] });
+    const [loading, setLoading] = useState(false);
+
+    // 헤더 직접 수정 모드
+    const [isHeaderEditing, setIsHeaderEditing] = useState(false);
+
+    // 로그 관리용 상태
+    const [progressLogs, setProgressLogs] = useState<string[]>([]);
+    const [feedbackLogs, setFeedbackLogs] = useState<string[]>([]);
+
+    // 새 로그 입력 상태
+    const [newLogText, setNewLogText] = useState('');
+    const [selectedAuthor, setSelectedAuthor] = useState('');
+    const [isImportant, setIsImportant] = useState(false);
+
+    const scrollBottomRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isOpen && customer) {
+            setFormData({ ...customer });
+
+            const pLogs = customer['진행현황(상세)_최근'] ? String(customer['진행현황(상세)_최근']).split('\n').filter(Boolean) : [];
+            const fLogs = customer['KCC 피드백'] ? String(customer['KCC 피드백']).split('\n').filter(Boolean) : [];
+
+            setProgressLogs(pLogs);
+            setFeedbackLogs(fLogs);
+
+            fetchSettings();
+            setIsHeaderEditing(false); // 리셋
+        }
+    }, [isOpen, customer]);
+
+    // 탭 변경 시 해당 탭의 기본 작성자로 자동 변경
+    useEffect(() => {
+        if (activeTab === 'progress') {
+            if (settings.progressAuthors && settings.progressAuthors.length > 0) {
+                setSelectedAuthor(settings.progressAuthors[0]);
+            } else {
+                setSelectedAuthor('');
+            }
+        } else if (activeTab === 'feedback') {
+            if (settings.feedbackAuthors && settings.feedbackAuthors.length > 0) {
+                setSelectedAuthor(settings.feedbackAuthors[0]);
+            } else {
+                setSelectedAuthor('');
+            }
+        }
+    }, [activeTab, settings]);
+
+    // 로그 추가 시 스크롤 하단으로
+    useEffect(() => {
+        if (scrollBottomRef.current) {
+            scrollBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [progressLogs, feedbackLogs, activeTab]);
+
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/data?action=read_settings');
+            const json = await res.json();
+            if (json.success) {
+                setSettings(json.data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch settings", e);
+        }
+    };
+
+    const handleSaveLeftPanel = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/data?action=update_customer', {
+                method: 'POST',
+                body: JSON.stringify({
+                    no: customer?.['No.'],
+                    label: formData['라벨'],
+                    status: formData['진행구분'],
+                    name: formData['고객명'],
+                    contact: formData['연락처'],
+                    address: formData['주소'],
+                    measureDate: formData['실측일자'],
+                    constructDate: formData['시공일자'],
+                    linkPreKcc: formData['가견적 링크'],
+                    linkFinalKcc: formData['최종 견적 링크'],
+                    linkPreCust: formData['고객견적서(가)'],
+                    linkFinalCust: formData['고객견적서(최종)'],
+                    pricePre: formData['가견적 금액'],
+                    priceFinal: formData['최종견적 금액'],
+                    actor: currentUser
+                })
+            });
+            const json = await res.json();
+            if (json.success) {
+                alert('저장되었습니다.');
+                setIsHeaderEditing(false); // 헤더 수정모드 종료
+                onUpdate();
+                onClose();
+            } else {
+                alert('저장 실패: ' + json.message);
+            }
+        } catch {
+            alert('오류 발생');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 로그 추가
+    const handleAddLog = () => {
+        if (!newLogText.trim()) return;
+
+        const type = activeTab === 'feedback' ? 'feedback' : 'progress';
+
+        const today = new Date();
+        const dateStr = `[${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}]`;
+        const importantMark = isImportant ? '[중요] ' : '';
+        const logEntry = `${dateStr} ${selectedAuthor ? `[${selectedAuthor}]` : ''} ${importantMark}${newLogText}`;
+
+        let updatedLogs;
+        if (type === 'progress') {
+            updatedLogs = [logEntry, ...progressLogs];
+            setProgressLogs(updatedLogs);
+        } else {
+            updatedLogs = [logEntry, ...feedbackLogs];
+            setFeedbackLogs(updatedLogs);
+        }
+
+        setNewLogText('');
+        setIsImportant(false);
+        saveLogsToServer(type, updatedLogs);
+    };
+
+    const handleDeleteLog = (index: number) => {
+        if (!confirm('이 로그를 삭제하시겠습니까?')) return;
+        const type = activeTab === 'feedback' ? 'feedback' : 'progress';
+
+        let updatedLogs;
+        if (type === 'progress') {
+            updatedLogs = progressLogs.filter((_, i) => i !== index);
+            setProgressLogs(updatedLogs);
+        } else {
+            updatedLogs = feedbackLogs.filter((_, i) => i !== index);
+            setFeedbackLogs(updatedLogs);
+        }
+        saveLogsToServer(type, updatedLogs);
+    };
+
+    const saveLogsToServer = async (type: 'progress' | 'feedback', logs: string[]) => {
+        const fieldName = type === 'progress' ? 'progress' : 'feedback';
+        const fullText = logs.join('\n');
+
+        try {
+            await fetch('/api/data?action=update_customer', {
+                method: 'POST',
+                body: JSON.stringify({
+                    no: customer?.['No.'],
+                    [fieldName]: fullText,
+                    actor: currentUser
+                })
+            });
+            onUpdate();
+        } catch (e: unknown) {
+            console.error("Log save failed", e);
+        }
+    };
+
+    // 링크 수정 핸들러
+    const handleEditLink = (key: string, currentVal: string) => {
+        const url = prompt('링크를 입력하세요', currentVal || '');
+        if (url !== null) {
+            setFormData({ ...formData, [key]: url });
+        }
+    };
+
+    if (!isOpen || !customer) return null;
+
+    const currentLogs = activeTab === 'feedback' ? feedbackLogs : progressLogs;
+
+    // 링크 렌더링 헬퍼
+    const renderLinkButtons = (label: string, key: string, colorClass: string) => {
+        const hasLink = !!formData[key];
+
+        // colorClass 예: "bg-blue-50 text-blue-600 border-blue-200"
+        // 진한 버전 예: "hover:bg-blue-600 hover:text-white"
+
+        return (
+            <div className="space-y-1">
+                <span className="text-[10px] text-gray-400 font-medium">{label}</span>
+                <div className="flex gap-1">
+                    {hasLink ? (
+                        <>
+                            <a
+                                href={formData[key]}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={`flex-1 py-2 rounded border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm`}
+                            >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span className="ml-1">이동</span>
+                            </a>
+                            {!readOnly && (
+                                <button
+                                    onClick={() => handleEditLink(key, formData[key])}
+                                    className={`px-2 rounded border text-xs font-medium bg-white hover:bg-gray-50 text-gray-500 shadow-sm transition-colors`}
+                                >
+                                    <Edit2 className="w-3 h-3" />
+                                </button>
+                            )}
+                        </>
+                    ) : (
+                        <button
+                            className={`w-full py-2 rounded border text-xs font-medium transition-colors bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed`}
+                            onClick={() => !readOnly && handleEditLink(key, '')}
+                            disabled={readOnly}
+                        >
+                            {readOnly ? '미등록' : '등록'}
+                        </button>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
+            <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden font-sans">
+
+                {/* 1. Header Area */}
+                <div className="bg-[#1e293b] text-white px-6 py-5 flex justify-between items-start shrink-0">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1 min-h-[32px]">
+                            {isHeaderEditing ? (
+                                <input
+                                    type="text"
+                                    className="bg-slate-700 border-slate-600 text-white rounded px-2 py-1 font-bold text-xl outline-none focus:ring-1 w-48"
+                                    value={formData['고객명'] || ''}
+                                    onChange={(e) => setFormData({ ...formData, '고객명': e.target.value })}
+                                />
+                            ) : (
+                                <h2 className="text-2xl font-bold tracking-tight">{formData['고객명']}</h2>
+                            )}
+
+                            <div className="flex items-center gap-2 bg-slate-700/50 rounded-lg px-2 py-1 border border-slate-600">
+                                <span className="text-xs text-slate-300 font-medium">No. {customer['No.']}</span>
+                            </div>
+
+                            {!readOnly && (
+                                <button
+                                    onClick={() => isHeaderEditing ? handleSaveLeftPanel() : setIsHeaderEditing(true)}
+                                    className="text-slate-400 hover:text-white transition-colors p-1 rounded hover:bg-slate-700"
+                                    title={isHeaderEditing ? "저장" : "정보 수정"}
+                                >
+                                    {isHeaderEditing ? <Check className="w-4 h-4 text-green-400" /> : <Edit2 className="w-4 h-4" />}
+                                </button>
+                            )}
+
+                            {isHeaderEditing && (
+                                <button
+                                    onClick={() => {
+                                        setIsHeaderEditing(false);
+                                        setFormData({ ...formData, ...customer }); // 원복
+                                    }}
+                                    className="text-slate-400 hover:text-white transition-colors p-1 rounded hover:bg-slate-700"
+                                    title="취소"
+                                >
+                                    <X className="w-4 h-4 text-red-400" />
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm text-slate-400 font-light mt-2 h-6">
+                            <div className="flex items-center gap-1.5 flex-1 max-w-xs">
+                                <Phone className="w-3.5 h-3.5 shrink-0" />
+                                {isHeaderEditing ? (
+                                    <input
+                                        type="text"
+                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-xs outline-none focus:ring-1 w-full"
+                                        value={formData['연락처'] || ''}
+                                        onChange={(e) => setFormData({ ...formData, '연락처': e.target.value })}
+                                        placeholder="연락처"
+                                    />
+                                ) : (
+                                    <span>{formData['연락처']}</span>
+                                )}
+                            </div>
+                            <div className="w-px h-3 bg-slate-600 shrink-0"></div>
+                            <div className="flex items-center gap-1.5 flex-1">
+                                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                {isHeaderEditing ? (
+                                    <input
+                                        type="text"
+                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-xs outline-none focus:ring-1 w-full"
+                                        value={formData['주소'] || ''}
+                                        onChange={(e) => setFormData({ ...formData, '주소': e.target.value })}
+                                        placeholder="주소"
+                                    />
+                                ) : (
+                                    <span>{formData['주소']}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="bg-slate-700/50 hover:bg-slate-600 text-slate-300 hover:text-white p-2 rounded-full transition-all ml-4"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* 2. Main Content */}
+                <div className="flex-1 flex overflow-hidden">
+
+                    {/* Left Sidebar */}
+                    <div className="w-96 bg-white border-r border-gray-200 overflow-y-auto p-5 shrink-0 flex flex-col gap-5">
+
+                        {/* Status Card */}
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+                            <div className="flex items-center gap-2 text-gray-900 font-semibold text-sm border-b pb-2 mb-2">
+                                <Settings className="w-4 h-4 text-gray-500" />
+                                상태 변경
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">라벨</label>
+                                    <select
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all disabled:opacity-70 disabled:bg-gray-100"
+                                        value={formData['라벨'] || ''}
+                                        onChange={(e) => setFormData({ ...formData, '라벨': e.target.value })}
+                                        disabled={readOnly}
+                                    >
+                                        <option value="">선택 안함</option>
+                                        {settings.labels.map((l: string) => <option key={l} value={l}>{l}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">진행구분</label>
+                                    <select
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all disabled:opacity-70 disabled:bg-gray-100"
+                                        value={formData['진행구분'] || ''}
+                                        onChange={(e) => setFormData({ ...formData, '진행구분': e.target.value })}
+                                        disabled={readOnly}
+                                    >
+                                        <option value="">상태 선택</option>
+                                        {settings.statuses.map((s: string) => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Schedule Card */}
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+                            <div className="flex items-center gap-2 text-gray-900 font-semibold text-sm border-b pb-2 mb-2">
+                                <Calendar className="w-4 h-4 text-gray-500" />
+                                일정 관리
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-green-600 mb-1.5">실측일</label>
+                                    <input
+                                        type="date"
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-green-100 focus:border-green-400 outline-none transition-all disabled:opacity-70 disabled:bg-gray-100"
+                                        value={formData['실측일자'] ? String(formData['실측일자']).substring(0, 10) : ''}
+                                        onChange={(e) => setFormData({ ...formData, '실측일자': e.target.value })}
+                                        disabled={readOnly}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-blue-600 mb-1.5">시공일</label>
+                                    <input
+                                        type="date"
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all disabled:opacity-70 disabled:bg-gray-100"
+                                        value={formData['시공일자'] ? String(formData['시공일자']).substring(0, 10) : ''}
+                                        onChange={(e) => setFormData({ ...formData, '시공일자': e.target.value })}
+                                        disabled={readOnly}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Links Card */}
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+                            <div className="flex items-center gap-2 text-gray-900 font-semibold text-sm border-b pb-2 mb-2">
+                                <LinkIcon className="w-4 h-4 text-gray-500" />
+                                견적서 링크
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                {renderLinkButtons('KCC (가)', '가견적 링크', 'bg-blue-50 text-blue-600 border-blue-100')}
+                                {renderLinkButtons('KCC (최종)', '최종 견적 링크', 'bg-indigo-50 text-indigo-600 border-indigo-100')}
+                                {renderLinkButtons('고객 (가)', '고객견적서(가)', 'bg-orange-50 text-orange-600 border-orange-100')}
+                                {renderLinkButtons('고객 (최종)', '고객견적서(최종)', 'bg-green-50 text-green-600 border-green-100')}
+                            </div>
+                        </div>
+
+                        {/* Estimate Amounts card */}
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
+                            <div className="flex items-center gap-2 text-gray-900 font-semibold text-sm border-b pb-2 mb-2">
+                                <Settings className="w-4 h-4 text-gray-500" />
+                                견적 금액
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-[10px] font-medium text-gray-400 mb-1">가견적 금액</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-right disabled:opacity-70 disabled:bg-gray-100"
+                                            value={(formData['가견적 금액'] !== undefined && formData['가견적 금액'] !== '') ? Number(formData['가견적 금액']).toLocaleString() : ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                                setFormData({ ...formData, '가견적 금액': val ? Number(val) : '' });
+                                            }}
+                                            placeholder="0"
+                                            disabled={readOnly}
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">원</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-medium text-gray-400 mb-1">최종견적 금액</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all text-right disabled:opacity-70 disabled:bg-gray-100"
+                                            value={(formData['최종견적 금액'] !== undefined && formData['최종견적 금액'] !== '') ? Number(formData['최종견적 금액']).toLocaleString() : ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                                setFormData({ ...formData, '최종견적 금액': val ? Number(val) : '' });
+                                            }}
+                                            placeholder="0"
+                                            disabled={readOnly}
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">원</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {!readOnly && (
+                            <button
+                                onClick={handleSaveLeftPanel}
+                                disabled={loading}
+                                className="w-full py-3 bg-[hsl(var(--primary))] text-white font-medium rounded-lg hover:bg-[hsl(var(--primary))]/90 flex items-center justify-center gap-2 mt-auto shadow-md transition-all"
+                            >
+                                {loading ? '저장 중...' : <><Save className="w-4 h-4" /> 변경사항 저장</>}
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Right Content Area (Logs) - unchanged logic, just layout */}
+                    <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0">
+                        {/* Tabs */}
+                        <div className="flex bg-white border-b border-gray-200 px-6">
+                            {[
+                                { id: 'progress', label: '진행현황' },
+                                { id: 'feedback', label: '피드백' }
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`px-6 py-4 text-sm font-semibold transition-all relative ${activeTab === tab.id
+                                        ? 'text-blue-600'
+                                        : 'text-gray-400 hover:text-gray-600'
+                                        }`}
+                                >
+                                    {tab.label}
+                                    {activeTab === tab.id && (
+                                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600"></div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                            {currentLogs.length === 0 ? (
+                                <div className="h-full flex items-center justify-center text-gray-300 text-sm">
+                                    기록 없음
+                                </div>
+                            ) : (
+                                currentLogs.map((log, idx) => (
+                                    <div key={idx} className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 flex gap-3 group">
+                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
+                                            <User className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start">
+                                                <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                                                    {log.startsWith('[') ? log.split(']')[0] + ']' : 'Today'}
+                                                </div>
+                                                {!readOnly && (
+                                                    <button onClick={() => handleDeleteLog(idx)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                                {log}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            <div ref={scrollBottomRef} />
+                        </div>
+
+                        {/* Input Area */}
+                        {!readOnly && (
+                            <div className="p-4 bg-white border-t border-gray-200">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <select
+                                        className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 outline-none"
+                                        value={selectedAuthor}
+                                        onChange={(e) => setSelectedAuthor(e.target.value)}
+                                    >
+                                        <option value="">작성자 선택</option>
+                                        {(activeTab === 'feedback' ? settings.feedbackAuthors : settings.progressAuthors).map((a: string) => (
+                                            <option key={a} value={a}>{a}</option>
+                                        ))}
+                                    </select>
+                                    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isImportant ? 'bg-red-500 border-red-500' : 'border-gray-300 bg-white'}`}>
+                                            {isImportant && <Check className="w-3 h-3 text-white" />}
+                                        </div>
+                                        <input type="checkbox" className="hidden" checked={isImportant} onChange={(e) => setIsImportant(e.target.checked)} />
+                                        <span className="text-xs text-gray-500">중요</span>
+                                    </label>
+                                </div>
+                                <div className="relative">
+                                    <textarea
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-4 pr-12 py-3 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none resize-none transition-all"
+                                        placeholder="내용 입력..."
+                                        rows={1}
+                                        value={newLogText}
+                                        onChange={(e) => setNewLogText(e.target.value)}
+                                        // Enter to submit (Shift+Enter for newline)
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleAddLog();
+                                            }
+                                        }}
+                                        style={{ minHeight: '52px', maxHeight: '120px' }}
+                                    />
+                                    <button
+                                        onClick={handleAddLog}
+                                        disabled={!newLogText.trim()}
+                                        className="absolute right-2 bottom-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors shadow-sm"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -1,0 +1,436 @@
+'use client';
+
+import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Search, Filter, Calendar, ChevronRight, Link as LinkIcon, Phone, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw } from 'lucide-react';
+import CustomerDetailModal from '@/app/components/CustomerDetailModal';
+import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+
+type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'custom';
+
+interface Customer {
+    'No.': string | number;
+    '신청일'?: string;
+    '신청일시'?: string;
+    '고객명': string;
+    '연락처': string;
+    '주소': string;
+    '진행구분': string;
+    '라벨'?: string;
+    '채널': string;
+    'KCC 피드백'?: string;
+    '진행현황(상세)_최근'?: string;
+    '가견적 링크'?: string;
+    '최종 견적 링크'?: string;
+    '고객견적서(가)'?: string;
+    '고객견적서(최종)'?: string;
+    '실측일자'?: string;
+    '시공일자'?: string;
+    '가견적 금액'?: string | number;
+    '최종견적 금액'?: string | number;
+    [key: string]: string | number | boolean | undefined | null;
+}
+
+function AdminCustomersContent() {
+    const searchParams = useSearchParams();
+    const routerStatus = searchParams.get('status');
+
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+    // Search & Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState(routerStatus || '');
+    const [labelFilter, setLabelFilter] = useState('');
+    const [partnerFilter, setPartnerFilter] = useState('');
+
+    // Date Filters
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
+    const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
+    const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/data?action=read');
+            const json = await res.json();
+            if (json.success) {
+                // No. 기준 내림차순 정렬 (최신순)
+                const sorted = json.data.sort((a: Customer, b: Customer) => {
+                    const noA = String(a['No.']);
+                    const noB = String(b['No.']);
+                    if (noA.includes('-') || noB.includes('-')) {
+                        return noB.localeCompare(noA, undefined, { numeric: true });
+                    }
+                    return Number(noB) - Number(noA);
+                });
+                setCustomers(sorted);
+            }
+        } catch (error) {
+            console.error('Failed to fetch customers:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+        if (routerStatus) setStatusFilter(routerStatus);
+    }, [routerStatus, fetchData]);
+
+    // Derive unique values for filters
+    const filterOptions = useMemo(() => {
+        const labels = Array.from(new Set(customers.map(c => c['라벨']).filter(Boolean)));
+        const statuses = Array.from(new Set(customers.map(c => c['진행구분']).filter(Boolean)));
+        const partners = Array.from(new Set(customers.map(c => c['채널']).filter(Boolean)));
+        return { labels, statuses, partners };
+    }, [customers]);
+
+    // Filtering logic
+    const filteredCustomers = useMemo(() => {
+        // 1. Date filter boundaries
+        const now = new Date();
+        let start: Date;
+        let end: Date = endOfMonth(now);
+
+        switch (dateFilter) {
+            case 'currentMonth': start = startOfMonth(now); break;
+            case '3months': start = subMonths(now, 3); break;
+            case '6months': start = subMonths(now, 6); break;
+            case '1year': start = subMonths(now, 12); break;
+            case 'custom':
+                start = parseISO(customStartDate);
+                end = parseISO(customEndDate);
+                break;
+            default: start = subMonths(now, 3);
+        }
+
+        return customers.filter(c => {
+            // Date Filter
+            const dateStr = c['신청일'] || c['신청일시'];
+            if (dateStr) {
+                try {
+                    const itemDate = new Date(dateStr);
+                    if (!isWithinInterval(itemDate, { start, end })) return false;
+                } catch { /* skip date check if invalid */ }
+            }
+
+            // Text Search
+            const searchMatch = !searchTerm ||
+                (c['고객명'] && c['고객명'].includes(searchTerm)) ||
+                (c['연락처'] && c['연락처'].includes(searchTerm)) ||
+                (c['주소'] && c['주소'].includes(searchTerm));
+            if (!searchMatch) return false;
+
+            // Status Filter
+            if (statusFilter && c['진행구분'] !== statusFilter) {
+                // '완료' 필터일 경우 '완료' 글자가 들어간 모든 상태 포함
+                if (statusFilter === '완료') {
+                    if (!c['진행구분']?.includes('완료')) return false;
+                } else {
+                    return false;
+                }
+            }
+
+            // Label Filter
+            if (labelFilter && c['라벨'] !== labelFilter) return false;
+
+            // Partner Filter
+            if (partnerFilter && c['채널'] !== partnerFilter) return false;
+
+            return true;
+        });
+    }, [customers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
+
+    const handleResetFilters = () => {
+        setSearchTerm('');
+        setStatusFilter('');
+        setLabelFilter('');
+        setPartnerFilter('');
+        setDateFilter('3months');
+    };
+
+    return (
+        <div className="lg:px-4 lg:py-2 space-y-6">
+            {/* Header & Main Controls */}
+            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">고객 현황 관리</h1>
+                        <p className="text-sm text-gray-500 font-medium">전체 고객의 상태와 인입 정보를 정밀 필터링하여 관리합니다.</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex bg-gray-100 p-1 rounded-xl">
+                            {(['currentMonth', '3months', '6months', 'custom'] as const).map((type) => (
+                                <button
+                                    key={type}
+                                    onClick={() => setDateFilter(type)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateFilter === type ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                    {type === 'currentMonth' ? '당월' : type === '3months' ? '3개월' : type === '6months' ? '6개월' : '직접선택'}
+                                </button>
+                            ))}
+                        </div>
+                        {dateFilter === 'custom' && (
+                            <div className="flex items-center gap-2">
+                                <input type="date" value={customStartDate} onChange={(e) => setCustomStartDate(e.target.value)} className="border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-blue-100" />
+                                <span className="text-gray-400">~</span>
+                                <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} className="border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-blue-100" />
+                            </div>
+                        )}
+                        <button
+                            onClick={handleResetFilters}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                            title="필터 초기화"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Search Input */}
+                    <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="고객명, 연락처, 주소 검색..."
+                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none font-medium"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Label Filter */}
+                    <div className="relative">
+                        <Filter className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <select
+                            className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none font-medium appearance-none cursor-pointer"
+                            value={labelFilter}
+                            onChange={(e) => setLabelFilter(e.target.value)}
+                        >
+                            <option value="">라벨 전체</option>
+                            {filterOptions.labels.filter((l): l is string => Boolean(l)).map((l, i) => <option key={i} value={l}>{l}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Status Filter */}
+                    <div className="relative">
+                        <CheckCircle2 className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <select
+                            className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none font-medium appearance-none cursor-pointer"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="">진행구분 전체</option>
+                            {filterOptions.statuses.filter((s): s is string => Boolean(s)).map((s, i) => <option key={i} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Partner Filter */}
+                    <div className="relative">
+                        <TrendingUp className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <select
+                            className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none font-medium appearance-none cursor-pointer"
+                            value={partnerFilter}
+                            onChange={(e) => setPartnerFilter(e.target.value)}
+                        >
+                            <option value="">파트너 전체</option>
+                            {filterOptions.partners.filter((p): p is string => Boolean(p)).map((p, i) => <option key={i} value={p}>{p}</option>)}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {/* List Header & Summary */}
+            <div className="flex items-center justify-between px-2">
+                <p className="text-sm font-bold text-gray-500">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+                <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
+                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> 일반</span>
+                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-yellow-500 rounded-full"></div> 체크</span>
+                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-green-600 rounded-full"></div> 완료</span>
+                </div>
+            </div>
+
+            {/* Customer List */}
+            <div className="grid grid-cols-1 gap-4">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-40 gap-6 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                        <div className="relative">
+                            <div className="w-16 h-16 border-4 border-blue-50 rounded-full animate-spin border-t-blue-500 shadow-lg shadow-blue-500/10"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <RefreshCcw className="w-6 h-6 text-blue-500 animate-pulse" />
+                            </div>
+                        </div>
+                        <div className="text-center space-y-1">
+                            <p className="text-gray-900 font-black text-lg tracking-tighter uppercase italic">Synchronizing Data...</p>
+                            <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">클라우드 데이터베이스와 동기화 중입니다</p>
+                        </div>
+                    </div>
+                ) : filteredCustomers.length === 0 ? (
+                    <div className="bg-white p-20 rounded-2xl border border-gray-100 text-center text-gray-400 font-bold">검색 조건에 맞는 고객이 없습니다.</div>
+                ) : (
+                    filteredCustomers.map((customer, index) => (
+                        <div
+                            key={index}
+                            onClick={() => setSelectedCustomer(customer)}
+                            className="bg-white border border-gray-100 rounded-2xl p-3 lg:p-4 flex flex-col lg:flex-row gap-4 lg:gap-6 hover:shadow-2xl hover:border-blue-200 transition-all cursor-pointer group relative overflow-hidden"
+                        >
+                            {/* Accent Bar */}
+                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer['라벨'] === '체크' ? 'bg-yellow-500' :
+                                customer['라벨'] === '완료' ? 'bg-green-600' :
+                                    customer['라벨'] === '보류' ? 'bg-slate-400' :
+                                        'bg-blue-500'
+                                }`}></div>
+
+                            {/* 1. 기본 정보 & 상태 */}
+                            <div className="lg:w-[380px] shrink-0 border-b lg:border-b-0 lg:border-r border-gray-50 pb-3 lg:pb-0 lg:pr-6">
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[11px] font-black px-3 py-1 rounded-full border ${customer['진행구분']?.includes('완료') ? 'bg-green-50 text-green-700 border-green-200 shadow-sm shadow-green-100' :
+                                                customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                                                    'bg-white text-blue-600 border-blue-600 shadow-sm shadow-blue-100 animate-pulse-slow'
+                                                }`}>
+                                                {customer['진행구분'] || '접수'}
+                                            </span>
+                                            {customer['라벨'] && (
+                                                <span className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest ${customer['라벨'] === '완료' ? 'bg-[#107c41]' :
+                                                    customer['라벨'] === '체크' ? 'bg-[#D4AF37]' :
+                                                        customer['라벨'] === '보류' ? 'bg-slate-500' :
+                                                            'bg-blue-600'
+                                                    }`}>
+                                                    {customer['라벨']}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter">
+                                                {customer['신청일'] || '-'}
+                                            </span>
+                                            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">No.{customer['No.']}</span>
+                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{customer['채널']}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-baseline gap-3 mt-0.5">
+                                        <h3 className="text-xl font-black text-gray-900 leading-tight">{customer['고객명']}</h3>
+                                        <span className="text-base text-gray-500 font-bold tracking-tight">{customer['연락처']}</span>
+                                    </div>
+
+                                    <div className="flex items-start gap-2 text-sm text-gray-400 font-medium">
+                                        <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                        <span className="truncate" title={customer['주소']}>{customer['주소']}</span>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <div className={`flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-lg border ${customer['실측일자'] ? 'bg-green-50/50 border-green-100 text-green-700' : 'bg-gray-50 border-gray-50 text-gray-300'}`}>
+                                            <Calendar className="w-3 h-3" />
+                                            <span className="font-bold">실측: {customer['실측일자'] ? String(customer['실측일자']).substring(5, 10).replace('-', '.') : '-'}</span>
+                                        </div>
+                                        <div className={`flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-lg border ${customer['시공일자'] ? 'bg-blue-50/50 border-blue-100 text-blue-700' : 'bg-gray-50 border-gray-50 text-gray-300'}`}>
+                                            <ClipboardList className="w-3 h-3" />
+                                            <span className="font-bold">시공: {customer['시공일자'] ? String(customer['시공일자']).substring(5, 10).replace('-', '.') : '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 2. 중앙 로그 요약 */}
+                            <div className="flex-1 min-w-0 py-1 flex flex-col justify-center space-y-2">
+                                <div className="space-y-2">
+                                    <div className="flex gap-2 items-start group/line">
+                                        <span className={`shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-lg ${customer['KCC 피드백'] ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-gray-50 text-gray-300'}`}>피드백</span>
+                                        <p className={`text-[13px] line-clamp-2 ${customer['KCC 피드백'] ? 'text-gray-700 leading-relaxed' : 'text-gray-200 italic font-medium'}`}>
+                                            {customer['KCC 피드백'] || '등록된 피드백이 없습니다.'}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2 items-start group/line">
+                                        <span className={`shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-lg ${customer['진행현황(상세)_최근'] ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-gray-50 text-gray-300'}`}>진행기록</span>
+                                        <p className={`text-[13px] line-clamp-2 ${customer['진행현황(상세)_최근'] ? 'text-gray-700 leading-relaxed' : 'text-gray-200 italic'}`}>
+                                            {customer['진행현황(상세)_최근'] || '최근 진행 기록이 없습니다.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 3. 우측 컨트롤 & 일정 */}
+                            <div className="lg:w-48 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex gap-2 justify-end lg:justify-start">
+                                    <BadgeLink href={customer['가견적 링크']} color="blue" label="K(가)" />
+                                    <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="K(최)" />
+                                    <BadgeLink href={customer['고객견적서(가)']} color="orange" label="고(가)" />
+                                    <BadgeLink href={customer['고객견적서(최종)']} color="green" label="고(최)" />
+                                </div>
+
+                                {/* Estimate Amounts */}
+                                {(customer['가견적 금액'] || customer['최종견적 금액']) && (
+                                    <div className="grid grid-cols-1 gap-1.5 px-0.5">
+                                        {customer['가견적 금액'] && (
+                                            <div className="flex justify-between items-center bg-blue-50/50 px-3 py-1.5 rounded-xl border border-blue-100/50">
+                                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter italic">Pre-Est</span>
+                                                <span className="text-[13px] font-bold text-blue-600 tabular-nums">
+                                                    {Number(customer['가견적 금액']).toLocaleString()}
+                                                    <small className="ml-0.5 text-[10px] font-medium text-blue-400/80">원</small>
+                                                </span>
+                                            </div>
+                                        )}
+                                        {customer['최종견적 금액'] && (
+                                            <div className="flex justify-between items-center bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100/50">
+                                                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tighter italic">Final</span>
+                                                <span className="text-[13px] font-bold text-indigo-700 tabular-nums">
+                                                    {Number(customer['최종견적 금액']).toLocaleString()}
+                                                    <small className="ml-0.5 text-[10px] font-medium text-indigo-400/80">원</small>
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {/* Detailed Popup */}
+            <CustomerDetailModal
+                isOpen={!!selectedCustomer}
+                onClose={() => setSelectedCustomer(null)}
+                customer={selectedCustomer}
+                onUpdate={fetchData}
+            />
+        </div>
+    );
+}
+
+export default function AdminCustomersPage() {
+    return (
+        <Suspense fallback={<div className="p-20 text-center font-bold text-gray-400">화면 고치는 중...</div>}>
+            <AdminCustomersContent />
+        </Suspense>
+    );
+}
+
+// 뱃지 링크 컴포넌트
+function BadgeLink({ href, color, label }: { href: string | undefined, color: string, label: string }) {
+    const colorClasses: Record<string, string> = {
+        blue: href ? 'bg-blue-50 text-blue-600 border-blue-100 shadow-blue-50' : 'bg-gray-50 text-gray-200 border-gray-50',
+        indigo: href ? 'bg-indigo-50 text-indigo-600 border-indigo-100 shadow-indigo-50' : 'bg-gray-50 text-gray-200 border-gray-50',
+        orange: href ? 'bg-orange-50 text-orange-600 border-orange-100 shadow-orange-50' : 'bg-gray-50 text-gray-200 border-gray-50',
+        green: href ? 'bg-green-50 text-green-600 border-green-100 shadow-green-100' : 'bg-gray-50 text-gray-200 border-gray-50',
+    };
+
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => !href && e.preventDefault()}
+            className={`w-8 h-8 flex items-center justify-center rounded-xl border-2 text-[9px] font-black transition-all ${colorClasses[color]} ${href ? 'hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/10' : 'cursor-default opacity-40'}`}
+        >
+            {label}
+        </a>
+    );
+}
