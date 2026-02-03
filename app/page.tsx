@@ -5,11 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   Calendar, UserCheck, Building2, Wrench, Gauge,
-  Timer, Home, ClipboardCheck, X, Search, Loader2
+  Timer, Home, ClipboardCheck, X, Search, Loader2, Menu
 } from 'lucide-react';
 import DaumPostcode from 'react-daum-postcode';
 
 export default function LandingPage() {
+  // Mobile Menu State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // Modal State
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -84,7 +87,7 @@ export default function LandingPage() {
       if (data.success) {
         // Backend returns all partners in 'data', so we filter here
         const allPartners = data.data || [];
-        const filtered = allPartners.filter((p: any) =>
+        const filtered = allPartners.filter((p: { [key: string]: string }) =>
           p['업체명'] && p['업체명'].toLowerCase().includes(query.toLowerCase())
         );
         setSearchResults(filtered);
@@ -172,24 +175,64 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 overflow-x-hidden">
       {/* Header */}
+      {/* Header */}
       <header className="fixed top-0 left-0 right-0 h-20 flex items-center px-6 md:px-12 z-[100] transition-all bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-32 relative">
-            <Image
-              src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
-              alt="KCC HomeCC Logo"
-              fill
-              className="object-contain"
-              unoptimized
-            />
+        <div className="flex items-center justify-between w-full">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="h-8 w-32 relative">
+              <Image
+                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                alt="KCC HomeCC Logo"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+            <span className="font-black text-xl tracking-tighter text-[#122649] border-l pl-2 border-gray-200">Partner</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex gap-6 text-sm font-bold text-gray-500">
+            <Link href="/products/onev" className="hover:text-[#122649] transition-colors">상품페이지</Link>
+            <Link href="/admin" className="hover:text-[#122649] transition-colors">본사 Admin</Link>
+            <Link href="/partner" className="hover:text-[#122649] transition-colors">파트너 Admin</Link>
           </div>
-          <span className="font-black text-xl tracking-tighter text-[#122649] border-l pl-2 border-gray-200">Partner</span>
-        </Link>
-        <div className="ml-auto flex gap-6 text-sm font-bold text-gray-500">
-          <Link href="/products/onev" className="hover:text-[#122649]">상품페이지</Link>
-          <Link href="/admin" className="hover:text-[#122649]">본사 Admin</Link>
-          <Link href="/partner" className="hover:text-[#122649]">파트너 Admin</Link>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2 text-gray-700"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="absolute top-20 left-0 right-0 bg-white border-b border-gray-100 shadow-xl md:hidden flex flex-col p-4 space-y-4 animate-in slide-in-from-top-2">
+            <Link
+              href="/products/onev"
+              className="text-gray-700 font-bold p-2 hover:bg-gray-50 rounded-lg"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              상품페이지
+            </Link>
+            <Link
+              href="/admin"
+              className="text-gray-700 font-bold p-2 hover:bg-gray-50 rounded-lg"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              본사 Admin
+            </Link>
+            <Link
+              href="/partner"
+              className="text-gray-700 font-bold p-2 hover:bg-gray-50 rounded-lg"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              파트너 Admin
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* 1. Hero Section (Image 2) */}
@@ -209,13 +252,13 @@ export default function LandingPage() {
           <div className="inline-block border border-white/30 bg-white/10 backdrop-blur-md px-8 py-3 rounded-full mb-12 animate-fade-in-up">
             <span className="text-blue-300 font-black tracking-widest uppercase">Premium Membership</span>
           </div>
-          <h1 className="text-5xl lg:text-9xl font-black mb-8 tracking-tighter leading-none">
+          <h1 className="text-5xl lg:text-9xl font-black mb-8 tracking-tighter leading-none break-keep">
             <span className="block text-gray-400 text-3xl md:text-5xl mb-4 font-light tracking-normal opacity-80">목돈 깨지 마세요!</span>
-            KCC홈씨씨<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"><br></br>윈도우ONE</span><br />
-            <span className="text-white text-7xl md:text-9xl">구독 서비스</span>
+            KCC홈씨씨<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"><br className="md:hidden" />윈도우ONE</span><br className="hidden md:block" />
+            <span className="text-white text-7xl md:text-9xl"><br className="md:hidden" />구독서비스</span>
           </h1>
           <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8">13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
+            대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8"><br className="md:hidden" />13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
             <button
@@ -232,20 +275,20 @@ export default function LandingPage() {
       <section className="py-24 bg-white overflow-hidden">
         <div className="container mx-auto px-5 lg:px-24 max-w-4xl text-center">
           <div className="inline-block px-8 py-3 bg-white border-2 border-orange-200 text-orange-600 rounded-full text-lg font-black tracking-tight mb-12 shadow-sm animate-fade-in">
-            난방비·소음·결로 샷시 하나로 끝!
+            난방비·소음·결로<br className="md:hidden" />샷시 하나로 끝!
           </div>
           <div className="mb-16">
             <h2 className="text-5xl md:text-7xl font-black text-gray-900 leading-tight tracking-tighter">
               <span className="relative inline-block">
                 60개월
                 <span className="absolute -bottom-2 left-0 w-full h-3 bg-blue-600/20 -z-10 rotate-1"></span>
-              </span> 창호구독<br />
+              </span><br className="md:hidden" />창호구독<br />
               <span className="text-gray-900">초특가 패키지</span>
             </h2>
           </div>
           <div className="relative inline-block mb-24 min-w-[320px]">
             <div className="bg-[#122649] text-white px-12 py-5 rounded-xl text-2xl font-black relative z-10 shadow-2xl skew-x-[-10deg]">
-              <div className="skew-x-[10deg]">홈씨씨 윈도우 6가지 특전</div>
+              <div className="skew-x-[10deg]">홈씨씨 윈도우<br className="md:hidden" />6가지 특전</div>
             </div>
             <div className="absolute -left-3 bottom-[-10px] w-6 h-6 bg-[#0a162b] rotate-45 -z-10"></div>
             <div className="absolute -right-3 bottom-[-10px] w-6 h-6 bg-[#0a162b] rotate-45 -z-10"></div>

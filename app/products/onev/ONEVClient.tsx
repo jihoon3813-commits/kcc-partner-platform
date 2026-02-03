@@ -201,22 +201,23 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/50"></div>
                 </div>
                 <div className="container mx-auto px-8 md:px-20 relative z-10 text-center text-white mt-20">
-                    <div className="inline-block border border-white/30 bg-white/10 backdrop-blur-md px-8 py-3 rounded-full mb-12 animate-fade-in-up">
-                        <span className="text-blue-300 font-black tracking-widest uppercase">Premium Membership</span>
+                    <div className="inline-block w-[280px] md:w-auto border border-white/30 bg-white/10 backdrop-blur-md px-4 md:px-8 py-3 rounded-full mb-12 animate-fade-in-up">
+                        <span className="text-blue-300 font-black tracking-widest uppercase text-sm md:text-base">Premium Membership</span>
                     </div>
-                    <h1 className="text-5xl lg:text-9xl font-black mb-8 tracking-tighter leading-none">
+                    <h1 className="text-5xl lg:text-9xl font-black mb-8 tracking-tighter leading-none break-keep">
                         <span className="block text-gray-400 text-3xl md:text-5xl mb-4 font-light tracking-normal opacity-80">목돈 깨지 마세요!</span>
-                        KCC홈씨씨<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"><br></br>윈도우ONE</span><br />
-                        <span className="text-white text-7xl md:text-9xl">구독 서비스</span>
+                        KCC홈씨씨<br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">윈도우ONE</span><br />
+                        <span className="text-white text-6xl md:text-[160px] whitespace-nowrap">구독서비스</span>
                     </h1>
                     <p className="text-xl md:text-3xl font-medium mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                        대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8">13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
+                        대한민국 창호의 기준, <span className="text-white font-bold underline decoration-blue-500 underline-offset-8"><br className="md:hidden" />13년 품질보증</span>으로<br />당신의 일상을 완벽하게 바꿉니다.
                     </p>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <button onClick={() => setShowConsultModal(true)} className="px-12 py-6 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl">상담 예약하기</button>
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 w-full max-w-md md:max-w-none mx-auto">
+                        <button onClick={() => setShowConsultModal(true)} className="w-full md:w-auto px-6 md:px-12 py-5 md:py-6 bg-white text-black font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-xl">상담 예약하기</button>
                         {partnerId && (
-                            <button onClick={fetchBenefit} disabled={isFetching} className="px-12 py-6 bg-orange-600 text-white font-black text-xl rounded-full hover:scale-105 transition-all shadow-[0_0_30px_rgba(234,88,12,0.5)] flex items-center gap-2">
-                                {isFetching ? <Loader2 className="animate-spin" /> : <Gift />}
+                            <button onClick={fetchBenefit} disabled={isFetching} className="w-full md:w-auto px-6 md:px-12 py-5 md:py-6 bg-orange-600 text-white font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-[0_0_30px_rgba(234,88,12,0.5)] flex items-center justify-center gap-2 whitespace-nowrap">
+                                {isFetching ? <Loader2 className="animate-spin" /> : <Gift className="shrink-0" />}
                                 파트너 단독 혜택보기
                             </button>
                         )}
@@ -238,7 +239,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                             <span className="relative inline-block">
                                 60개월
                                 <span className="absolute -bottom-2 left-0 w-full h-3 bg-blue-600/20 -z-10 rotate-1"></span>
-                            </span> 창호구독<br />
+                            </span><br className="md:hidden" />창호구독<br />
                             <span className="text-gray-900">초특가 패키지</span>
                         </h2>
                     </div>
@@ -396,16 +397,16 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </section>
 
             {/* Rising Interior Costs Section */}
-            <section className="py-32 bg-[#122649] text-white overflow-hidden text-center">
+            <section className="py-16 md:py-32 bg-[#122649] text-white overflow-hidden text-center">
                 <div className="container mx-auto px-5 lg:px-24 max-w-4xl">
-                    <div className="mb-20">
+                    <div className="mb-10 md:mb-20">
                         <div className="relative inline-block">
                             <h2 className="text-7xl md:text-9xl font-black italic text-[#ff8a00] mb-4 tracking-tighter animate-pulse">
                                 35.6% UP!
                             </h2>
                             <div className="absolute -bottom-4 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#ff8a00] to-transparent opacity-50"></div>
                         </div>
-                        <h3 className="text-4xl md:text-6xl font-black mt-16 mb-8 tracking-tight">
+                        <h3 className="text-4xl md:text-6xl font-black mt-8 md:mt-16 mb-4 md:mb-8 tracking-tight">
                             매년 오르는<br className="md:hidden" />인테리어 비용!
                         </h3>
                         <p className="text-2xl md:text-3xl font-bold opacity-80 text-blue-100/70">
@@ -477,39 +478,39 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
 
                     <div className="mt-20 flex flex-col items-center gap-4">
                         <p className="text-white/40 font-bold text-sm tracking-widest italic">
-                            2020-2023 기준 (출처 : 한국건설산업연구원)
+                            2020-2023 기준<br className="md:hidden" />(출처 : 한국건설산업연구원)
                         </p>
                     </div>
                 </div>
             </section>
 
             {/* Subscription Solution Section */}
-            <section className="py-24 bg-[#122649] text-white text-center pb-40">
+            <section className="py-12 md:py-24 bg-[#122649] text-white text-center pb-20 md:pb-40">
                 <div className="container mx-auto px-5 lg:px-24 max-w-4xl">
                     <h3 className="text-3xl md:text-5xl font-black mb-4 opacity-80">답은?</h3>
-                    <h2 className="text-5xl md:text-8xl font-black mb-12 tracking-tighter leading-tight">
+                    <h2 className="text-5xl md:text-8xl font-black mb-6 md:mb-12 tracking-tighter leading-tight">
                         KCC글라스의<br />홈씨씨 윈도우<br className="md:hidden" />구독!
                     </h2>
 
                     {/* Badge */}
-                    <div className="inline-block border-[3px] border-[#ff8a00] rounded-full px-10 py-4 mb-20 bg-[#ff8a00]/5 shadow-[0_0_20px_rgba(255,138,0,0.2)]">
-                        <span className="text-[#ff8a00] text-xl md:text-3xl font-black tracking-tight">
+                    <div className="inline-block border-[3px] border-[#ff8a00] rounded-full px-6 md:px-10 py-3 md:py-4 mb-10 md:mb-20 bg-[#ff8a00]/5 shadow-[0_0_20px_rgba(255,138,0,0.2)]">
+                        <span className="text-[#ff8a00] text-lg md:text-3xl font-black tracking-tight">
                             부담 없이 60개월 균등하게<br className="md:hidden" />나눠 내니까!
                         </span>
                     </div>
 
                     {/* Solution Cards */}
-                    <div className="space-y-6 max-w-3xl mx-auto">
+                    <div className="space-y-4 md:space-y-6 max-w-3xl mx-auto">
                         {[
                             { no: '01', text: '비용 상승 및 인플레이션 걱정 NO' },
                             { no: '02', text: '최대 60개월 구독으로 부담 DOWN' },
                             { no: '03', text: '합리적인 견적과 품질을 제안합니다.' }
                         ].map((item, i) => (
-                            <div key={i} className="bg-white rounded-[30px] p-8 md:p-10 flex items-center shadow-[0_15px_40px_rgba(0,0,0,0.2)] border-b-[8px] border-gray-200 group hover:translate-y-1 hover:border-b-[4px] transition-all duration-300">
-                                <span className="text-[#ff8a00] text-3xl md:text-4xl font-black mr-8 italic tracking-tighter shrink-0 tabular-nums">
+                            <div key={i} className="bg-white rounded-[20px] md:rounded-[30px] p-6 md:p-10 flex flex-col md:flex-row items-center md:items-center shadow-[0_15px_40px_rgba(0,0,0,0.2)] border-b-[8px] border-gray-200 group hover:translate-y-1 hover:border-b-[4px] transition-all duration-300">
+                                <span className="text-[#ff8a00] text-3xl md:text-4xl font-black md:mr-8 italic tracking-tighter shrink-0 tabular-nums mb-2 md:mb-0">
                                     {item.no}.
                                 </span>
-                                <p className="text-gray-900 text-2xl md:text-4xl font-black text-left leading-tight tracking-tight">
+                                <p className="text-gray-900 text-xl md:text-4xl font-black text-center md:text-left leading-tight tracking-tight w-full md:w-auto break-keep">
                                     {item.text}
                                 </p>
                             </div>
@@ -519,29 +520,29 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </section>
 
             {/* Why Window Replacement Section */}
-            <section className="py-24 bg-white text-center">
+            <section className="py-16 md:py-24 bg-white text-center">
                 <div className="container mx-auto px-5 lg:px-24 max-w-5xl">
-                    <div className="mb-16 flex flex-col items-center">
-                        <div className="w-20 h-20 bg-[#122649] text-white rounded-full flex items-center justify-center mb-10 shadow-xl">
-                            <HelpCircle size={44} />
+                    <div className="mb-12 md:mb-16 flex flex-col items-center">
+                        <div className="w-14 h-14 md:w-20 md:h-20 bg-[#122649] text-white rounded-full flex items-center justify-center mb-6 md:mb-10 shadow-xl">
+                            <HelpCircle className="w-7 h-7 md:w-11 md:h-11" />
                         </div>
-                        <h2 className="text-5xl md:text-7xl font-black text-[#122649] mb-8 tracking-tighter">
+                        <h2 className="text-3xl md:text-7xl font-black text-[#122649] mb-4 md:mb-8 tracking-tighter">
                             창호교체,<br className="md:hidden" /> 왜 필요한가요?
                         </h2>
-                        <p className="text-xl md:text-2xl font-bold text-gray-600 leading-relaxed max-w-3xl">
+                        <p className="text-base md:text-2xl font-bold text-gray-600 leading-relaxed max-w-3xl break-keep">
                             노후화된 창은 처짐과 뒤틀림, 유격이 계속 진행되어<br className="hidden md:block" />
-                            기본 성능을 다하지 못하고<br className="md:hidden" />기능성이 나빠집니다.
+                            기본 성능을 다하지 못하고 기능성이 나빠집니다.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12">
                         {[
                             { title: '곰팡이 발생', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/ce5262457e6aa.png' },
                             { title: '난방비 증가', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/51b0086563e87.png' },
                             { title: '빗물, 소음', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/cf9834b5da915.png' }
                         ].map((item, i) => (
                             <div key={i} className="group">
-                                <div className="relative aspect-square rounded-[40px] overflow-hidden mb-8 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500">
+                                <div className="relative aspect-video md:aspect-square rounded-[20px] md:rounded-[40px] overflow-hidden mb-4 md:mb-8 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500">
                                     <Image
                                         src={item.img}
                                         alt={item.title}
@@ -550,7 +551,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                         unoptimized
                                     />
                                 </div>
-                                <h4 className="text-2xl md:text-3xl font-black text-gray-800">
+                                <h4 className="text-xl md:text-3xl font-black text-gray-800">
                                     {item.title}
                                 </h4>
                             </div>
@@ -583,53 +584,53 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                     </div>
 
                     {/* Hexagon Grid Container */}
-                    <div className="relative min-h-[700px] md:min-h-[850px] max-w-5xl mx-auto mt-20 flex items-center justify-center">
+                    <div className="relative min-h-[500px] md:min-h-[850px] max-w-5xl mx-auto mt-20 flex items-center justify-center scale-90 md:scale-100">
                         {/* Centered Hexagon (기밀성) */}
-                        <div className="absolute z-10 w-60 h-60 md:w-80 md:h-80 transition-all duration-500 hover:scale-105 group drop-shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+                        <div className="absolute z-10 w-48 h-48 md:w-80 md:h-80 transition-all duration-500 hover:scale-105 group drop-shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
                             <div className="w-full h-full bg-[#ff8a00] clip-hex p-[4px] md:p-[6px]"> {/* Vivid Border */}
                                 <div className="w-full h-full bg-white clip-hex flex flex-col items-center justify-center">
-                                    <span className="text-3xl md:text-5xl font-black mb-3 text-gray-900 tracking-tighter">기밀성</span>
-                                    <span className="text-sm md:text-xl font-bold text-gray-500 text-center leading-tight">내부 공기를<br />보존하는 기능</span>
+                                    <span className="text-2xl md:text-5xl font-black mb-1 md:mb-3 text-gray-900 tracking-tighter">기밀성</span>
+                                    <span className="text-xs md:text-xl font-bold text-gray-500 text-center leading-tight">내부 공기를<br />보존하는 기능</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Top Left (단열성) */}
-                        <div className="absolute -translate-x-[78%] -translate-y-[68%] w-56 h-56 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
+                        <div className="absolute -translate-x-[75%] -translate-y-[65%] w-36 h-36 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
                             <div className="w-full h-full bg-white/30 clip-hex p-[2px] md:p-[3px]">
                                 <div className="w-full h-full bg-white/95 clip-hex flex flex-col items-center justify-center backdrop-blur-md">
-                                    <span className="text-2xl md:text-4xl font-black mb-2 text-[#122649]">단열성</span>
-                                    <span className="text-xs md:text-lg font-bold text-gray-500 text-center leading-tight">내외부 온도를<br />차단하는 기능</span>
+                                    <span className="text-xl md:text-4xl font-black mb-1 md:mb-2 text-[#122649]">단열성</span>
+                                    <span className="text-[10px] md:text-lg font-bold text-gray-500 text-center leading-tight">내외부 온도를<br />차단하는 기능</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Top Right (차음성) */}
-                        <div className="absolute translate-x-[78%] -translate-y-[68%] w-56 h-56 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
+                        <div className="absolute translate-x-[75%] -translate-y-[65%] w-36 h-36 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
                             <div className="w-full h-full bg-white/30 clip-hex p-[2px] md:p-[3px]">
                                 <div className="w-full h-full bg-white/95 clip-hex flex flex-col items-center justify-center backdrop-blur-md">
-                                    <span className="text-2xl md:text-4xl font-black mb-2 text-[#122649]">차음성</span>
-                                    <span className="text-xs md:text-lg font-bold text-gray-400 text-center leading-tight">내외부 소음을<br />차단하는 기능</span>
+                                    <span className="text-xl md:text-4xl font-black mb-1 md:mb-2 text-[#122649]">차음성</span>
+                                    <span className="text-[10px] md:text-lg font-bold text-gray-400 text-center leading-tight">내외부 소음을<br />차단하는 기능</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Bottom Left (내풍압성) */}
-                        <div className="absolute -translate-x-[78%] translate-y-[68%] w-56 h-56 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
+                        <div className="absolute -translate-x-[75%] translate-y-[65%] w-36 h-36 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
                             <div className="w-full h-full bg-white/30 clip-hex p-[2px] md:p-[3px]">
                                 <div className="w-full h-full bg-white/95 clip-hex flex flex-col items-center justify-center backdrop-blur-md">
-                                    <span className="text-2xl md:text-4xl font-black mb-2 text-[#122649]">내풍압성</span>
-                                    <span className="text-xs md:text-lg font-bold text-gray-400 text-center leading-tight">외부 풍압을<br />견디는 강도</span>
+                                    <span className="text-xl md:text-4xl font-black mb-1 md:mb-2 text-[#122649]">내풍압성</span>
+                                    <span className="text-[10px] md:text-lg font-bold text-gray-400 text-center leading-tight">외부 풍압을<br />견디는 강도</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Bottom Right (수밀성) */}
-                        <div className="absolute translate-x-[78%] translate-y-[68%] w-56 h-56 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
+                        <div className="absolute translate-x-[75%] translate-y-[65%] w-36 h-36 md:w-72 md:h-72 transition-all duration-500 hover:scale-105 group drop-shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
                             <div className="w-full h-full bg-white/30 clip-hex p-[2px] md:p-[3px]">
                                 <div className="w-full h-full bg-white/95 clip-hex flex flex-col items-center justify-center backdrop-blur-md">
-                                    <span className="text-2xl md:text-4xl font-black mb-2 text-[#122649]">수밀성</span>
-                                    <span className="text-xs md:text-lg font-bold text-gray-400 text-center leading-tight">외부 빗물을<br />차단하는 성능</span>
+                                    <span className="text-xl md:text-4xl font-black mb-1 md:mb-2 text-[#122649]">수밀성</span>
+                                    <span className="text-[10px] md:text-lg font-bold text-gray-400 text-center leading-tight">외부 빗물을<br />차단하는 성능</span>
                                 </div>
                             </div>
                         </div>
@@ -643,7 +644,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                     <div className="mb-16">
                         <h3 className="text-3xl md:text-5xl font-bold mb-4 text-gray-900 tracking-tight">기본에 충실하다!</h3>
                         <h2 className="text-5xl md:text-7xl font-black text-[#122649] tracking-tighter">
-                            뛰어난<br className="md:hidden" />에너지효율 <span className="text-[#122649]">1등급</span>
+                            뛰어난<br className="md:hidden" />에너지효율 <span className="text-[#122649]"><br className="md:hidden" />1등급</span>
                         </h2>
                     </div>
 
@@ -741,10 +742,10 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
                         {[
-                            { title: '우수한 단열', desc: '두 겹의 은막 코팅으로\n단열성 UP', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/2f132f6c78244.png' },
+                            { title: '우수한 단열', desc: '두 겹의 은막 코팅으로 단열성 UP', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/2f132f6c78244.png' },
                             { title: '프라이버시 보호', desc: '프라이버시 보호 기능 UP', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7bc0d8c223ddf.png' },
-                            { title: '태양열 차단', desc: '태양열 차단으로\n냉방비 SAVE', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7402ea548f260.png' },
-                            { title: '자외선 차단', desc: '일반유리 대비\n자외선 차단효과 우수', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/cbc27b322011e.png' }
+                            { title: '태양열 차단', desc: '태양열 차단으로 냉방비 SAVE', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7402ea548f260.png' },
+                            { title: '자외선 차단', desc: '일반유리 대비 자외선 차단효과 우수', img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/cbc27b322011e.png' }
                         ].map((item, i) => (
                             <div key={i} className="bg-white p-6 md:p-12 rounded-[40px] shadow-[0_15px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.1)] transition-all hover:-translate-y-2 group border border-gray-50 flex flex-row md:flex-col items-center text-left md:text-center">
                                 <div className="relative w-24 h-24 md:w-32 md:h-32 shrink-0 md:mx-auto mb-0 mr-6 md:mr-0 md:mb-10">
@@ -773,19 +774,19 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                 <div className="container mx-auto px-2 lg:px-24 text-center">
                     <h2 className="text-3xl md:text-7xl font-black mb-6 md:mb-12 tracking-[-0.075em] md:tracking-tighter italic underline decoration-blue-500 underline-offset-[10px] md:underline-offset-[20px] whitespace-nowrap">유리는 역시, KCC글라스</h2>
                     <p className="text-xl md:text-3xl text-blue-400 font-bold mb-12 md:mb-24 tracking-tight md:tracking-widest mt-6 md:mt-12 break-keep leading-relaxed">창호 성능의 핵심,<br className="md:hidden" />유리를 보면 정답이 보입니다.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 max-w-6xl mx-auto">
-                        <div className="bg-white/5 p-8 md:p-16 rounded-[60px] md:rounded-[80px] border border-white/10 hover:bg-white/10 transition-all text-left">
-                            <div className="text-gray-500 mb-6 md:mb-10 font-bold text-xl md:text-3xl tracking-widest uppercase italic border-b border-white/10 pb-4">Standard Glass</div>
-                            <h3 className="text-3xl md:text-5xl font-black mb-4 md:mb-8 whitespace-nowrap">일반 투명 유리</h3>
-                            <p className="text-gray-400 text-lg md:text-2xl font-medium leading-relaxed break-keep">열 전달이 매우 쉬워 냉방과 난방 시 에너지 손실이 심각하며, 결로에 취약합니다.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-20 max-w-6xl mx-auto">
+                        <div className="bg-white/5 p-6 md:p-16 rounded-[40px] md:rounded-[80px] border border-white/10 hover:bg-white/10 transition-all text-left">
+                            <div className="text-gray-500 mb-4 md:mb-10 font-bold text-lg md:text-3xl tracking-widest uppercase italic border-b border-white/10 pb-4">Standard Glass</div>
+                            <h3 className="text-2xl md:text-5xl font-black mb-4 md:mb-8 whitespace-nowrap">일반 투명 유리</h3>
+                            <p className="text-gray-400 text-base md:text-2xl font-medium leading-relaxed break-keep">열 전달이 매우 쉬워 냉방과 난방 시 에너지 손실이 심각하며, 결로에 취약합니다.</p>
                         </div>
 
                         {/* KCC Premium Glass */}
-                        <div className="bg-gradient-to-br from-blue-600 to-blue-900 p-8 md:p-16 rounded-[60px] md:rounded-[80px] shadow-[0_0_80px_rgba(37,99,235,0.4)] hover:scale-105 transition-all text-left relative overflow-hidden">
-                            <Award className="absolute -top-10 -right-10 w-60 h-60 opacity-10 rotate-12" />
-                            <div className="text-yellow-400 mb-10 font-black text-3xl tracking-widest uppercase italic border-b border-white/20 pb-4">KCC Premium Glass</div>
-                            <h3 className="text-3xl md:text-5xl font-black mb-8 text-white text-shadow whitespace-nowrap">KCC글라스 로이 유리</h3>
-                            <p className="text-blue-100 text-2xl font-medium leading-relaxed">특수 은(Silver) 코팅 레이어가 태양열을 차단하고 실내 온기를 잡아두는 고성능 유리입니다.</p>
+                        <div className="bg-gradient-to-br from-blue-600 to-blue-900 p-6 md:p-16 rounded-[40px] md:rounded-[80px] shadow-[0_0_80px_rgba(37,99,235,0.4)] hover:scale-105 transition-all text-left relative overflow-hidden">
+                            <Award className="absolute -top-10 -right-10 w-40 h-40 md:w-60 md:h-60 opacity-10 rotate-12" />
+                            <div className="text-yellow-400 mb-4 md:mb-10 font-black text-lg md:text-3xl tracking-widest uppercase italic border-b border-white/20 pb-4">KCC Premium Glass</div>
+                            <h3 className="text-2xl md:text-5xl font-black mb-4 md:mb-8 text-white text-shadow whitespace-nowrap">KCC글라스 로이 유리</h3>
+                            <p className="text-blue-100 text-base md:text-2xl font-medium leading-relaxed">특수 은(Silver) 코팅 레이어가 태양열을 차단하고 실내 온기를 잡아두는 고성능 유리입니다.</p>
                         </div>
                     </div>
                 </div>
@@ -898,7 +899,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                         </p>
                                     </div>
                                 </div>
-                                <div className="w-full md:w-64 h-48 relative rounded-3xl overflow-hidden shadow-inner bg-gray-50 flex items-center justify-center p-4">
+                                <div className="hidden md:flex w-full md:w-64 h-48 relative rounded-3xl overflow-hidden shadow-inner bg-gray-50 items-center justify-center p-4">
                                     <Image
                                         src={plan.img}
                                         alt={plan.title}
@@ -918,23 +919,23 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </section >
 
             {/* 11. 1-Day Construction Process */}
-            <section className="py-40 bg-white">
+            <section className="py-20 md:py-40 bg-white">
                 <div className="container mx-auto px-5 lg:px-24 text-center">
-                    <h2 className="text-6xl font-black mb-12 tracking-tighter">거주 중에도<br className="md:hidden" />가능한 <span className="text-blue-600"><br className="md:hidden" />하루의 기적</span></h2>
-                    <p className="text-2xl text-gray-500 mb-24 max-w-2xl mx-auto font-bold tracking-tight">아침 출근 후 저녁 퇴근까지, 당신의 공간을 완벽하게 바꿔드립니다.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-20 max-w-7xl mx-auto">
+                    <h2 className="text-4xl md:text-6xl font-black mb-6 md:mb-12 tracking-tighter">거주 중에도<br className="md:hidden" />가능한 <span className="text-blue-600"><br className="md:hidden" />하루의 기적</span></h2>
+                    <p className="text-lg md:text-2xl text-gray-500 mb-12 md:mb-24 max-w-2xl mx-auto font-bold tracking-tight break-keep">아침 출근 후 저녁 퇴근까지, 당신의 공간을 완벽하게 바꿔드립니다.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-20 max-w-7xl mx-auto">
                         {[
                             { step: '08:30', title: '완벽 보양', desc: '특수 필름과 에어백을 이용해 가구와 바닥을 100% 보호합니다.' },
                             { step: '11:00', title: '정밀 교체', desc: '본사 표준 시공 팀이 기존 창을 안전하게 철거하고 신규 프레임을 안착시킵니다.' },
                             { step: '17:30', title: '마감 & 정리', desc: '최종 실리콘 작업 후 시공 흔적 하나 없이 완벽하게 청소하여 인도합니다.' },
                         ].map((item, i) => (
                             <div key={i} className="group flex flex-col items-center">
-                                <div className="text-4xl font-black text-blue-600 mb-10 bg-blue-50 w-44 h-44 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-2xl scale-110 relative">
+                                <div className="text-2xl md:text-4xl font-black text-blue-600 mb-6 md:mb-10 bg-blue-50 w-32 h-32 md:w-44 md:h-44 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-2xl scale-110 relative">
                                     <div className="absolute inset-2 border-2 border-dashed border-blue-200 rounded-full group-hover:border-white/50"></div>
                                     {item.step}
                                 </div>
-                                <h3 className="text-4xl font-black mb-6 tracking-tight">{item.title}</h3>
-                                <p className="text-gray-500 text-xl font-bold leading-relaxed">{item.desc}</p>
+                                <h3 className="text-2xl md:text-4xl font-black mb-4 md:mb-6 tracking-tight">{item.title}</h3>
+                                <p className="text-gray-500 text-base md:text-xl font-bold leading-relaxed break-keep">{item.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -942,27 +943,27 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </section >
 
             {/* 12. 13-Year Gold Warranty */}
-            <section className="py-48 bg-gradient-to-b from-[#1a1a1a] to-[#000] text-white text-center relative overflow-hidden">
+            <section className="py-24 md:py-48 bg-gradient-to-b from-[#1a1a1a] to-[#000] text-white text-center relative overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-blue-600/5 rounded-full blur-[150px]"></div>
                 <div className="container mx-auto px-5 lg:px-24 relative z-10">
-                    <div className="mb-24 scale-125">
-                        <Award className="w-56 h-56 text-[#D4AF37] mx-auto mb-16 animate-pulse" />
-                        <h2 className="text-8xl md:text-[180px] font-black tracking-tighter italic leading-none opacity-90 drop-shadow-[0_0_50px_rgba(212,175,55,0.3)]">13 YEARS</h2>
-                        <p className="text-4xl font-black tracking-[.5em] text-[#D4AF37] uppercase mt-4">Master Gold Warranty</p>
+                    <div className="mb-12 md:mb-24 scale-100 md:scale-125">
+                        <Award className="w-32 h-32 md:w-56 md:h-56 text-[#D4AF37] mx-auto mb-8 md:mb-16 animate-pulse" />
+                        <h2 className="text-6xl md:text-[180px] font-black tracking-tighter italic leading-none opacity-90 drop-shadow-[0_0_50px_rgba(212,175,55,0.3)]">13 YEARS</h2>
+                        <p className="text-xl md:text-4xl font-black tracking-[.3em] md:tracking-[.5em] text-[#D4AF37] uppercase mt-4">Master Gold Warranty</p>
                     </div>
-                    <p className="text-4xl md:text-6xl font-black mb-16 leading-tight tracking-tighter max-w-5xl mx-auto italic">차원이 다른 자부심,<br />본사가 직접 보증하는 <span className="text-[#D4AF37]"><br className="md:hidden" />13년의 약속</span></p>
-                    <p className="text-2xl text-gray-500 font-bold max-w-3xl mx-auto leading-relaxed">프레임 변질, 유리 결로,<br className="md:hidden" />하드웨어 기능 저하 시<br></br>평생에 가까운 안심 서비스를<br className="md:hidden" />약속드립니다.</p>
+                    <p className="text-2xl md:text-6xl font-black mb-8 md:mb-16 leading-tight tracking-tighter max-w-5xl mx-auto italic">차원이 다른 자부심,<br />본사가 직접 보증하는 <span className="text-[#D4AF37]"><br className="md:hidden" />13년의 약속</span></p>
+                    <p className="text-base md:text-2xl text-gray-500 font-bold max-w-3xl mx-auto leading-relaxed break-keep">프레임 변질, 유리 결로,<br className="md:hidden" />하드웨어 기능 저하 시<br></br>평생에 가까운 안심 서비스를<br className="md:hidden" />약속드립니다.</p>
                 </div>
             </section >
 
             {/* 13. Case Study Gallery */}
-            <section className="py-32 bg-white text-center">
+            <section className="py-16 md:py-32 bg-white text-center">
                 <div className="container mx-auto px-5 lg:px-24">
-                    <div className="mb-24">
-                        <h2 className="text-6xl font-black mb-6 tracking-tight text-[#122649]"><span className="text-[#122649]">홈씨씨 윈도우</span> <span className="text-[#D4AF37] underline decoration-4 underline-offset-8">시공사례</span></h2>
-                        <p className="text-2xl text-gray-500 font-bold">미세먼지·소음 걱정<br className="md:hidden" />없는 깨끗한 우리 집</p>
+                    <div className="mb-12 md:mb-24">
+                        <h2 className="text-3xl md:text-6xl font-black mb-4 md:mb-6 tracking-tight text-[#122649]"><span className="text-[#122649]">홈씨씨 윈도우</span> <span className="text-[#D4AF37] underline decoration-4 underline-offset-8">시공사례</span></h2>
+                        <p className="text-base md:text-2xl text-gray-500 font-bold">미세먼지·소음 걱정 없는 깨끗한 우리 집</p>
                     </div>
-                    <div className="max-w-7xl mx-auto space-y-32">
+                    <div className="max-w-7xl mx-auto space-y-12 md:space-y-32">
                         {[
                             {
                                 b: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/a66927dde3d9c.png',
@@ -989,20 +990,20 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                 at: '한겨울에도 훈훈하고 넓은 KCC 홈씨씨 단열 창호'
                             }
                         ].map((item, i) => (
-                            <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
-                                <div className="group space-y-8">
-                                    <div className="relative h-[400px] md:h-[600px] w-full overflow-hidden rounded-[80px] shadow-lg">
+                            <div key={i} className="grid grid-cols-2 gap-3 md:gap-20">
+                                <div className="group space-y-3 md:space-y-8">
+                                    <div className="relative h-[200px] md:h-[600px] w-full overflow-hidden rounded-[20px] md:rounded-[80px] shadow-lg">
                                         <Image src={item.b} className="object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-105" alt="Before" fill unoptimized />
-                                        <div className="absolute top-10 left-10 bg-black/50 backdrop-blur-md px-8 py-3 rounded-full text-white font-black text-xl">BEFORE</div>
+                                        <div className="absolute top-3 left-3 md:top-10 md:left-10 bg-black/50 backdrop-blur-md px-3 py-1 md:px-8 md:py-3 rounded-full text-white font-black text-[10px] md:text-xl">BEFORE</div>
                                     </div>
-                                    <p className="text-gray-400 font-bold text-2xl italic">{item.bt}</p>
+                                    <p className="text-gray-400 font-bold text-xs md:text-2xl italic leading-tight break-keep">{item.bt}</p>
                                 </div>
-                                <div className="group space-y-8">
-                                    <div className="relative h-[400px] md:h-[600px] w-full overflow-hidden rounded-[80px] shadow-2xl border-4 border-blue-50">
+                                <div className="group space-y-3 md:space-y-8">
+                                    <div className="relative h-[200px] md:h-[600px] w-full overflow-hidden rounded-[20px] md:rounded-[80px] shadow-2xl border-2 md:border-4 border-blue-50">
                                         <Image src={item.a} className="object-cover transition-all duration-1000 group-hover:scale-110" alt="After" fill unoptimized />
-                                        <div className="absolute top-10 left-10 bg-blue-600 px-8 py-3 rounded-full text-white font-black text-xl shadow-xl">AFTER</div>
+                                        <div className="absolute top-3 left-3 md:top-10 md:left-10 bg-blue-600 px-3 py-1 md:px-8 md:py-3 rounded-full text-white font-black text-[10px] md:text-xl shadow-xl">AFTER</div>
                                     </div>
-                                    <p className="text-gray-900 font-black text-2xl">{item.at}</p>
+                                    <p className="text-gray-900 font-black text-xs md:text-2xl leading-tight break-keep">{item.at}</p>
                                 </div>
                             </div>
                         ))}
@@ -1011,49 +1012,49 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </section >
 
             {/* 14. Final CTA Form */}
-            <section id="final-cta" className="py-48 bg-white overflow-hidden relative">
+            <section id="final-cta" className="py-12 md:py-48 bg-white overflow-hidden relative">
                 <div className="container mx-auto px-5 lg:px-24 max-w-5xl relative z-10">
-                    <div className="bg-gradient-to-br from-[#2a1d17] to-[#120a07] p-8 lg:p-32 rounded-[50px] lg:rounded-[100px] text-white shadow-[0_50px_100px_rgba(0,0,0,0.3)] relative overflow-hidden border-t-[8px] lg:border-t-[12px] border-[#D4AF37] text-center">
+                    <div className="bg-gradient-to-br from-[#2a1d17] to-[#120a07] px-6 py-12 lg:p-32 rounded-[30px] lg:rounded-[100px] text-white shadow-[0_50px_100px_rgba(0,0,0,0.3)] relative overflow-hidden border-t-[8px] lg:border-t-[12px] border-[#D4AF37] text-center">
                         <div className="absolute top-0 right-0 p-32 opacity-5 -rotate-12 scale-150"><Award size={200} /></div>
-                        <div className="mb-16">
-                            <p className="text-2xl text-gray-400 mb-4 font-medium tracking-widest">아직도 망설이십니까?</p>
-                            <h2 className="text-4xl lg:text-8xl font-black mb-8 drop-shadow-2xl tracking-tighter leading-none text-white">지금 바꾸셔야<br className="md:hidden" />합니다.</h2>
-                            <div className="w-20 h-1 bg-[#b8860b] mx-auto mb-8"></div>
-                            <p className="text-3xl text-[#b8860b] font-bold">더 이상의 고민은 난방비만 버릴 뿐입니다.</p>
+                        <div className="mb-10 md:mb-16">
+                            <p className="text-base md:text-2xl text-gray-400 mb-4 font-medium tracking-widest">아직도 망설이십니까?</p>
+                            <h2 className="text-4xl lg:text-8xl font-black mb-6 md:mb-8 drop-shadow-2xl tracking-tighter leading-none text-white">지금<br className="md:hidden" />바꾸셔야<br className="md:hidden" />합니다.</h2>
+                            <div className="w-20 h-1 bg-[#b8860b] mx-auto mb-6 md:mb-8"></div>
+                            <p className="text-lg md:text-3xl text-[#b8860b] font-bold break-keep">더 이상의 고민은 <br className="md:hidden" />난방비만 버릴 뿐입니다.</p>
                         </div>
 
-                        <div className="space-y-6 max-w-2xl mx-auto mb-16 text-left">
+                        <div className="space-y-4 max-w-2xl mx-auto mb-10 md:mb-16 text-left pl-2 md:pl-0">
                             {[
-                                "목돈 부담 없이, 최장 <span class='text-yellow-400'>60개월 구독</span>",
-                                "겨울 추위 끝, 차원이 다른 <span class='text-yellow-400'>단열 기술</span>",
-                                "업계 유일! <span class='text-yellow-400'>13년 최장 품질 보증</span>"
+                                "목돈 부담 없이,<br class='md:hidden' /> 최장 <span class='text-yellow-400'>60개월 구독</span>",
+                                "겨울 추위 끝,<br class='md:hidden' /> 차원이 다른 <span class='text-yellow-400'>단열 기술</span>",
+                                "업계 유일!<br class='md:hidden' /> <span class='text-yellow-400'>13년 최장 품질 보증</span>"
                             ].map((html, i) => (
-                                <div key={i} className="flex items-center gap-6 text-2xl font-bold text-gray-200">
-                                    <div className="shrink-0 w-12 h-12 rounded-xl bg-[#b8860b] flex items-center justify-center text-black font-black text-xl shadow-lg">✓</div>
-                                    <p dangerouslySetInnerHTML={{ __html: html }}></p>
+                                <div key={i} className="flex items-center gap-3 md:gap-6 text-base md:text-2xl font-bold text-gray-200">
+                                    <div className="shrink-0 w-6 h-6 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-[#b8860b] flex items-center justify-center text-black font-black text-xs md:text-xl shadow-lg">✓</div>
+                                    <p dangerouslySetInnerHTML={{ __html: html }} className="leading-tight"></p>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="space-y-4 max-w-3xl mx-auto mb-20">
+                        <div className="space-y-3 max-w-3xl mx-auto mb-10 md:mb-20">
                             {[
-                                "<strong>[한정 혜택]</strong> 블랙 STS 방충망 <span class='font-normal'>무상 업그레이드</span>",
-                                "<strong>[한정 혜택]</strong> 더블 로이(Double Low-E) <span class='font-normal'>무상 업그레이드</span>"
+                                "<strong>[한정 혜택]</strong> 블랙 STS 방충망 <br class='md:hidden' /><span class='font-normal'>무상 업그레이드</span>",
+                                "<strong>[한정 혜택]</strong> 더블 로이(Double Low-E) <br class='md:hidden' /><span class='font-normal'>무상 업그레이드</span>"
                             ].map((html, i) => (
-                                <div key={i} className="bg-gradient-to-r from-[#b8860b] to-[#8a6608] p-4 md:p-6 rounded-[30px] md:rounded-full text-black text-lg md:text-2xl font-bold shadow-lg flex items-center justify-center gap-2 md:gap-3 leading-tight">
-                                    <Gift size={24} className="text-red-900 shrink-0" />
+                                <div key={i} className="bg-gradient-to-r from-[#b8860b] to-[#8a6608] p-4 md:p-6 rounded-[20px] md:rounded-full text-black text-sm md:text-2xl font-bold shadow-lg flex items-center justify-start md:justify-center gap-3 leading-tight text-left md:text-center">
+                                    <Gift size={20} className="text-red-900 shrink-0 md:w-6 md:h-6" />
                                     <span dangerouslySetInnerHTML={{ __html: html }} className="break-keep"></span>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="flex items-center justify-center gap-4 text-3xl md:text-4xl font-black text-[#d4af37] mb-16 animate-pulse">
-                            <Ruler className="text-gray-400" />
-                            100% 무료! 실측 상담부터 받아보세요.
+                        <div className="flex items-center justify-center gap-2 md:gap-4 text-lg md:text-4xl font-black text-[#d4af37] mb-8 md:mb-16 animate-pulse">
+                            <Ruler className="text-gray-400 w-5 h-5 md:w-10 md:h-10" />
+                            100% 무료!<br className="md:hidden" />실측 상담부터 받아보세요.
                         </div>
 
                         <div className="text-center">
-                            <button onClick={() => setShowConsultModal(true)} className="px-16 py-8 bg-[#D4AF37] text-black text-3xl font-black rounded-[40px] shadow-[0_20px_50px_rgba(212,175,55,0.4)] hover:bg-[#B8860B] hover:-translate-y-2 transition-all active:scale-95 uppercase tracking-tight animate-bounce-slow">
+                            <button onClick={() => setShowConsultModal(true)} className="px-8 py-4 md:px-16 md:py-8 bg-[#D4AF37] text-black text-xl md:text-3xl font-black rounded-[40px] shadow-[0_20px_50px_rgba(212,175,55,0.4)] hover:bg-[#B8860B] hover:-translate-y-2 transition-all active:scale-95 uppercase tracking-tight animate-bounce-slow w-full md:w-auto">
                                 무료 상담 신청하기
                             </button>
                         </div>
@@ -1167,24 +1168,24 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowBenefitModal(false)}></div>
                     <div className="bg-white rounded-[30px] w-full max-w-md relative z-10 overflow-hidden shadow-3xl animate-in zoom-in duration-300">
                         {/* Header */}
-                        <div className="bg-[#EA580C] p-8 text-white text-center relative">
+                        <div className="bg-[#EA580C] p-6 md:p-8 text-white text-center relative">
                             <button onClick={() => setShowBenefitModal(false)} className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
                                 <X size={24} />
                             </button>
                             <div className="flex items-center justify-center gap-2 mb-4 opacity-90">
                                 <span className="bg-white/20 p-1.5 rounded-lg"><Gift size={16} /></span>
-                                <span className="font-black tracking-widest text-sm">PARTNER SPECIAL</span>
+                                <span className="font-black tracking-widest text-xs md:text-sm">PARTNER SPECIAL</span>
                             </div>
-                            <h2 className="text-3xl font-black leading-tight mb-2">
+                            <h2 className="text-xl md:text-3xl font-black leading-tight mb-2">
                                 {partnerData['업체명']} 전용<br />
                                 <span className="text-[#FCD34D]">시크릿 혜택 안내</span>
                             </h2>
                         </div>
 
                         {/* Content */}
-                        <div className="p-8">
-                            <div className="border-2 border-dashed border-orange-200 bg-orange-50 rounded-2xl p-8 text-center mb-8">
-                                <p className="text-2xl font-black text-[#EA580C] italic">
+                        <div className="p-6 md:p-8">
+                            <div className="border-2 border-dashed border-orange-200 bg-orange-50 rounded-2xl p-4 md:p-8 text-center mb-6 md:mb-8">
+                                <p className="text-lg md:text-2xl font-black text-[#EA580C] italic break-keep leading-snug">
                                     &quot;{partnerData['특별혜택'] || '혜택 정보를 불러올 수 없습니다.'}&quot;
                                 </p>
                             </div>
@@ -1207,57 +1208,57 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             {showConsultModal && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowConsultModal(false)}></div>
-                    <div className="bg-white rounded-[40px] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-                        <div className="bg-[#D4AF37] p-8 text-black relative">
-                            <button onClick={() => setShowConsultModal(false)} className="absolute top-6 right-6 hover:rotate-90 transition-transform"><X size={32} /></button>
-                            <h2 className="text-3xl font-black">무료 견적 상담 신청</h2>
+                    <div className="bg-white rounded-[20px] md:rounded-[40px] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+                        <div className="bg-[#D4AF37] p-4 md:p-8 text-black relative">
+                            <button onClick={() => setShowConsultModal(false)} className="absolute top-4 right-4 md:top-6 md:right-6 hover:rotate-90 transition-transform"><X size={24} className="md:w-8 md:h-8" /></button>
+                            <h2 className="text-xl md:text-3xl font-black">무료 견적 상담 신청</h2>
                         </div>
 
                         {/* Tabs */}
                         <div className="flex border-b border-gray-200">
-                            <button onClick={() => setConsultType('quick')} className={`flex-1 py-6 font-black text-xl transition-colors ${consultType === 'quick' ? 'bg-white text-[#D4AF37] border-b-4 border-[#D4AF37]' : 'bg-gray-50 text-gray-400'}`}>빠른 상담</button>
-                            <button onClick={() => setConsultType('accurate')} className={`flex-1 py-6 font-black text-xl transition-colors ${consultType === 'accurate' ? 'bg-white text-[#D4AF37] border-b-4 border-[#D4AF37]' : 'bg-gray-50 text-gray-400'}`}>정확한 상담</button>
+                            <button onClick={() => setConsultType('quick')} className={`flex-1 py-3 md:py-6 font-black text-base md:text-xl transition-colors ${consultType === 'quick' ? 'bg-white text-[#D4AF37] border-b-4 border-[#D4AF37]' : 'bg-gray-50 text-gray-400'}`}>빠른 상담</button>
+                            <button onClick={() => setConsultType('accurate')} className={`flex-1 py-3 md:py-6 font-black text-base md:text-xl transition-colors ${consultType === 'accurate' ? 'bg-white text-[#D4AF37] border-b-4 border-[#D4AF37]' : 'bg-gray-50 text-gray-400'}`}>정확한 상담</button>
                         </div>
 
-                        <form className="p-8 space-y-6" onSubmit={handleConsultSubmit}>
-                            <div className="space-y-4">
-                                <label className="block text-gray-500 font-bold mb-1">성함</label>
-                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none" required placeholder="성함 입력" />
+                        <form className="p-4 md:p-8 space-y-4 md:space-y-6" onSubmit={handleConsultSubmit}>
+                            <div className="space-y-2 md:space-y-4">
+                                <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">성함</label>
+                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none text-sm md:text-base" required placeholder="성함 입력" />
                             </div>
-                            <div className="space-y-4">
-                                <label className="block text-gray-500 font-bold mb-1">연락처</label>
-                                <input type="tel" value={contact} onChange={handleAutoHyphen} className="w-full p-4 bg-gray-50 rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none" required placeholder="010-0000-0000" pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}" />
+                            <div className="space-y-2 md:space-y-4">
+                                <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">연락처</label>
+                                <input type="tel" value={contact} onChange={handleAutoHyphen} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none text-sm md:text-base" required placeholder="010-0000-0000" pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}" />
                             </div>
 
                             {consultType === 'quick' ? (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <select className="p-4 bg-gray-50 rounded-xl font-bold outline-none" value={selectedSido} onChange={handleSidoChange} required>
+                                <div className="grid grid-cols-2 gap-2 md:gap-4">
+                                    <select className="p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none text-sm md:text-base" value={selectedSido} onChange={handleSidoChange} required>
                                         <option value="">시/도 선택</option>
                                         {Object.keys(koreaDistrictData).map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
-                                    <select className="p-4 bg-gray-50 rounded-xl font-bold outline-none" value={selectedGungu} onChange={(e) => setSelectedGungu(e.target.value)} required>
+                                    <select className="p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none text-sm md:text-base" value={selectedGungu} onChange={(e) => setSelectedGungu(e.target.value)} required>
                                         <option value="">시/구/군</option>
                                         {selectedSido && koreaDistrictData[selectedSido].map(g => <option key={g} value={g}>{g}</option>)}
                                     </select>
                                 </div>
                             ) : (
                                 <>
-                                    <div className="space-y-4">
-                                        <label className="block text-gray-500 font-bold mb-1">주소</label>
+                                    <div className="space-y-2 md:space-y-4">
+                                        <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">주소</label>
                                         <div className="flex gap-2">
-                                            <input type="text" value={address} readOnly className="flex-1 p-4 bg-gray-100 rounded-xl font-bold" placeholder="주소 검색" onClick={() => setShowAddressModal(true)} />
-                                            <button type="button" onClick={() => setShowAddressModal(true)} className="px-6 bg-black text-white rounded-xl font-bold"><MapPin size={20} /></button>
+                                            <input type="text" value={address} readOnly className="flex-1 p-3 md:p-4 bg-gray-100 rounded-lg md:rounded-xl font-bold text-sm md:text-base" placeholder="주소 검색" onClick={() => setShowAddressModal(true)} />
+                                            <button type="button" onClick={() => setShowAddressModal(true)} className="px-4 md:px-6 bg-black text-white rounded-lg md:rounded-xl font-bold text-sm md:text-base"><MapPin size={18} className="md:w-5 md:h-5" /></button>
                                         </div>
-                                        <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none" placeholder="상세주소 입력" />
+                                        <input type="text" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold border border-transparent focus:border-[#D4AF37] outline-none text-sm md:text-base" placeholder="상세주소 입력" />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-2 md:gap-4">
                                         <div>
-                                            <label className="block text-gray-500 font-bold mb-1">평형</label>
-                                            <input type="text" value={pyeong} onChange={(e) => setPyeong(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none" placeholder="30평" />
+                                            <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">평형</label>
+                                            <input type="text" value={pyeong} onChange={(e) => setPyeong(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none text-sm md:text-base" placeholder="30평" />
                                         </div>
                                         <div>
-                                            <label className="block text-gray-500 font-bold mb-1">확장 여부</label>
-                                            <select value={expansion} onChange={(e) => setExpansion(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none">
+                                            <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">확장 여부</label>
+                                            <select value={expansion} onChange={(e) => setExpansion(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none text-sm md:text-base">
                                                 <option value="">선택</option>
                                                 <option value="확장됨">확장됨</option>
                                                 <option value="안됨">안됨</option>
@@ -1265,18 +1266,18 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-2 md:gap-4">
                                         <div>
-                                            <label className="block text-gray-500 font-bold mb-1">거주 상태</label>
-                                            <select value={residence} onChange={(e) => setResidence(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none">
+                                            <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">거주 상태</label>
+                                            <select value={residence} onChange={(e) => setResidence(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none text-sm md:text-base">
                                                 <option value="">선택</option>
                                                 <option value="거주중">거주중</option>
                                                 <option value="공실">공실 (이사예정)</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-gray-500 font-bold mb-1">희망 시공</label>
-                                            <select value={schedule} onChange={(e) => setSchedule(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none">
+                                            <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">희망 시공</label>
+                                            <select value={schedule} onChange={(e) => setSchedule(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none text-sm md:text-base">
                                                 <option value="">선택</option>
                                                 <option value="즉시">즉시</option>
                                                 <option value="1~2개월">1~2개월 내</option>
@@ -1285,18 +1286,18 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-gray-500 font-bold mb-1">특이사항</label>
-                                        <textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none h-24 resize-none" placeholder="특이사항을 입력해주세요."></textarea>
+                                        <label className="block text-gray-500 font-bold mb-1 text-sm md:text-base">특이사항</label>
+                                        <textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} className="w-full p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl font-bold outline-none h-20 md:h-24 resize-none text-sm md:text-base" placeholder="특이사항을 입력해주세요."></textarea>
                                     </div>
                                 </>
                             )}
 
-                            <div className="flex items-center gap-3 pt-4">
-                                <input type="checkbox" id="modal-agree" required checked={isAgreed} onChange={(e) => setIsAgreed(e.target.checked)} className="w-6 h-6 accent-[#D4AF37]" />
-                                <label htmlFor="modal-agree" className="text-gray-500 font-bold cursor-pointer select-none">개인정보 수집 및 이용 동의</label>
+                            <div className="flex items-center gap-2 md:gap-3 pt-2 md:pt-4">
+                                <input type="checkbox" id="modal-agree" required checked={isAgreed} onChange={(e) => setIsAgreed(e.target.checked)} className="w-5 h-5 md:w-6 md:h-6 accent-[#D4AF37]" />
+                                <label htmlFor="modal-agree" className="text-gray-500 font-bold cursor-pointer select-none text-sm md:text-base">개인정보 수집 및 이용 동의</label>
                             </div>
 
-                            <button type="submit" disabled={isSubmitting} className="w-full py-6 bg-[#D4AF37] text-black font-black text-2xl rounded-2xl shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all">
+                            <button type="submit" disabled={isSubmitting} className="w-full py-4 md:py-6 bg-[#D4AF37] text-black font-black text-lg md:text-2xl rounded-xl md:rounded-2xl shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all">
                                 {isSubmitting ? '접수 중...' : '상담 신청하기'}
                             </button>
                         </form>
