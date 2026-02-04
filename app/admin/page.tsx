@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { Users, TrendingUp, Calendar, ArrowRight, Filter, ClipboardList, CheckCircle2, Clock, XCircle, AlertCircle, Search, FileText, RefreshCcw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'custom';
 
@@ -37,42 +39,65 @@ interface Customer {
 
 export default function AdminDashboard() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
-    const [allData, setAllData] = useState<{ customers: Customer[], partners: Partner[] }>({ customers: [], partners: [] });
-    const [connError, setConnError] = useState<string | null>(null);
+
+    // Convex Queries
+    const convexCustomers = useQuery(api.customers.listCustomers);
+    const convexPartners = useQuery(api.partners.listPartners);
 
     // Filters
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
     const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        setConnError(null);
-        try {
-            const res = await fetch('/api/data?action=read_dashboard');
-            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+    // Loading State
+    const loading = convexCustomers === undefined || convexPartners === undefined;
+    const [connError, setConnError] = useState<string | null>(null);
 
-            const result = await res.json();
-            if (result.success && result.data) {
-                setAllData({
-                    customers: Array.isArray(result.data.customers) ? result.data.customers : [],
-                    partners: Array.isArray(result.data.partners) ? result.data.partners : []
-                });
-            } else {
-                setConnError(result.message || '데이터를 가져오는데 실패했습니다.');
-            }
-        } catch (e: unknown) {
-            console.error('Dashboard fetchData Error:', e);
-            setConnError('서버 연결에 실패했습니다. API 설정을 확인해주세요.');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    // Map Convex Data to Legacy Structure
+    const allData = useMemo(() => {
+        if (!convexCustomers || !convexPartners) return { customers: [], partners: [] };
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        const customers = convexCustomers.map(c => ({
+            'No.': c.no || '',
+            '고객명': c.name || '',
+            '연락처': c.contact || '',
+            '주소': c.address || '',
+            '진행구분': c.status || '접수',
+            '라벨': c.label || '일반',
+            '채널': c.channel || '',
+            'KCC 피드백': c.feedback || '',
+            '진행현황(상세)_최근': c.progress_detail || '',
+            '가견적 링크': c.link_pre_kcc || '',
+            '최종 견적 링크': c.link_final_kcc || '',
+            '고객견적서(가)': c.link_pre_cust || '',
+            '고객견적서(최종)': c.link_final_cust || '',
+            '실측일자': c.measure_date || '',
+            '시공일자': c.construct_date || '',
+            '가견적 금액': c.price_pre || 0,
+            '최종견적 금액': c.price_final || 0,
+            '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
+            '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
+            '등록일': c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '', // Fallback for date filter
+            'Timestamp': c._creationTime ? new Date(c._creationTime).toISOString() : '',
+        }));
+
+        const partners = convexPartners.map(p => ({
+            '아이디': p.uid,
+            '업체명': p.name,
+            '대표명': p.ceo_name,
+            '연락처': p.contact,
+            '주소': p.address,
+            '상태': p.status || '승인대기',
+            '사업자번호': p.business_number,
+            '계좌번호': p.account_number,
+            '이메일': p.email,
+            '등록일': p._creationTime ? new Date(p._creationTime).toISOString().split('T')[0] : '',
+            '신청일시': p._creationTime ? new Date(p._creationTime).toISOString() : '',
+            'Timestamp': p._creationTime ? new Date(p._creationTime).toISOString() : '',
+        }));
+
+        return { customers, partners };
+    }, [convexCustomers, convexPartners]);
 
     // Date filtering logic
     const filteredData = useMemo(() => {
@@ -245,7 +270,7 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
                         대시보드
                         <div className="flex items-center gap-2">
-                            <button onClick={fetchData} className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${loading ? 'animate-spin' : ''}`} title="새로고침">
+                            <button onClick={() => { }} className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${loading ? 'animate-spin' : ''}`} title="자동 동기화 중">
                                 <RefreshCcw className="w-5 h-5 text-gray-400" />
                             </button>
                             <button
@@ -255,7 +280,6 @@ export default function AdminDashboard() {
                                             const res = await fetch('/api/data?action=init_database', { method: 'POST', body: JSON.stringify({}) });
                                             const result = await res.json();
                                             alert(result.message);
-                                            fetchData();
                                         } catch {
                                             alert('초기화 실패');
                                         }
@@ -413,9 +437,9 @@ export default function AdminDashboard() {
                                 filteredData.partners.slice(0, 6).map((p, i) => (
                                     <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-100">
                                         <div className="min-w-0">
-                                            <p className="text-sm font-black text-gray-900 truncate">{p['업체명'] || p['name'] || '-'} </p>
+                                            <p className="text-sm font-black text-gray-900 truncate">{p['업체명'] || '-'} </p>
                                             <p className="text-[10px] text-gray-500 font-medium">{p['등록일'] || p['신청일시']?.substring(0, 10) || p['Timestamp']?.substring(0, 10) || '-'} </p>
-                                            <p className="text-[10px] text-gray-400 truncate">{p['연락처'] || p['contact']}</p>
+                                            <p className="text-[10px] text-gray-400 truncate">{p['연락처']}</p>
                                         </div>
                                         <span className={`px-2 py-1 rounded-lg text-[9px] font-black ${p['상태'] === '승인대기' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
                                             {p['상태'] || '승인대기'}
