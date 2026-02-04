@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { ChevronRight, Award, Loader2, Calendar, UserCheck, Building2, Wrench, Gauge, Timer, Home, ClipboardCheck, HelpCircle, X, Gift, Ruler, MessageCircle, MapPin } from 'lucide-react';
 import DaumPostcode from 'react-daum-postcode';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 const koreaDistrictData: { [key: string]: string[] } = {
     "서울특별시": ["강남구", "강동구", "강북구", "강서구", "관악구", "광진구", "구로구", "금천구", "노원구", "도봉구", "동대문구", "동작구", "마포구", "서대문구", "서초구", "성동구", "성북구", "송파구", "양천구", "영등포구", "용산구", "은평구", "종로구", "중구", "중랑구"],
@@ -46,9 +48,36 @@ interface ONEVClientProps {
 }
 
 export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClientProps) {
-    const [partnerData, setPartnerData] = useState<PartnerData | null>(initialPartnerData);
     const [showBenefitModal, setShowBenefitModal] = useState(false);
-    const [isFetching, setIsFetching] = useState(false);
+
+    // Convex Data
+    const partner = useQuery(api.partners.getPartnerByUid, partnerId ? { uid: partnerId } : "skip");
+    const partnerDataForBenefit = useMemo(() => {
+        if (!partner) return null;
+        const rawBenefit = partner.special_benefits || "";
+        let benefitsStr = rawBenefit;
+
+        try {
+            if (rawBenefit && (rawBenefit.startsWith('{') || rawBenefit.startsWith('['))) {
+                const benefitsObj = JSON.parse(rawBenefit);
+                if (typeof benefitsObj === 'object') {
+                    const findVal = (target: string) => {
+                        const key = Object.keys(benefitsObj).find(k => k.toLowerCase() === target.toLowerCase());
+                        return key ? benefitsObj[key] : null;
+                    };
+                    benefitsStr = findVal('P001') || findVal('onev') || findVal('vbf140') || Object.values(benefitsObj)[0] || '';
+                }
+            }
+        } catch (e) {
+            console.warn('Benefit parsing failed:', e);
+        }
+
+        if (!benefitsStr || benefitsStr === '{}') {
+            benefitsStr = '등록된 특별 혜택이 없습니다. 본사 혜택과 동일하게 적용됩니다.';
+        }
+
+        return { ...partner, '특별혜택': benefitsStr, '업체명': partner.name };
+    }, [partner]);
 
     // Consultation States
     const [name, setName] = useState('');
@@ -70,6 +99,8 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
     const [schedule, setSchedule] = useState('');
     const [remarks, setRemarks] = useState('');
 
+    const createCustomerMutation = useMutation(api.customers.createCustomer);
+
     // Check for 'consult' query param
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -80,63 +111,12 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
         }
     }, []);
 
-    const fetchBenefit = async () => {
-        if (!partnerId) return;
-        setIsFetching(true);
-        try {
-            const cached = sessionStorage.getItem(`benefit_${partnerId}`);
-            let partner;
-            if (cached) {
-                partner = JSON.parse(cached);
-            } else {
-                const res = await fetch(`/api/data?action=read_partner_config&partnerId=${partnerId}`);
-                const data = await res.json();
-                if (data.success && data.partner) {
-                    partner = data.partner;
-                    sessionStorage.setItem(`benefit_${partnerId}`, JSON.stringify(partner));
-                } else if (data.success && !data.partner) {
-                    alert('유효하지 않은 파트너 정보입니다.');
-                    setIsFetching(false);
-                    return;
-                }
-            }
-
-            if (partner) {
-                const rawBenefit = partner['상품별혜택'] || partner['특별혜택'] || '';
-                let benefitsStr = rawBenefit;
-
-                // Try parsing JSON if applicable
-                try {
-                    if (rawBenefit && (rawBenefit.startsWith('{') || rawBenefit.startsWith('['))) {
-                        const benefitsObj = JSON.parse(rawBenefit);
-                        if (typeof benefitsObj === 'object') {
-                            // Case-insensitive lookup
-                            const findVal = (target: string) => {
-                                const key = Object.keys(benefitsObj).find(k => k.toLowerCase() === target.toLowerCase());
-                                return key ? benefitsObj[key] : null;
-                            };
-                            benefitsStr = findVal('P001') || findVal('onev') || findVal('vbf140') || Object.values(benefitsObj)[0] || '';
-                        }
-                    } else if (rawBenefit) {
-                        benefitsStr = rawBenefit;
-                    }
-                } catch (e) {
-                    console.warn('Benefit parsing failed:', e);
-                    benefitsStr = rawBenefit;
-                }
-
-                if (!benefitsStr || benefitsStr === '{}') {
-                    benefitsStr = '등록된 특별 혜택이 없습니다. 본사 혜택과 동일하게 적용됩니다.';
-                }
-
-                setPartnerData({ ...partner, '특별혜택': benefitsStr });
-                setShowBenefitModal(true);
-            }
-        } catch (e) {
-            console.error('Benefit fetch failed', e);
-        } finally {
-            setIsFetching(false);
+    const fetchBenefit = () => {
+        if (!partner) {
+            if (partnerId) alert('파트너 정보를 불러오는 중이거나 유효하지 않습니다.');
+            return;
         }
+        setShowBenefitModal(true);
     };
 
     const handleSidoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -172,32 +152,33 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
 
         setIsSubmitting(true);
         try {
-            const body = {
-                consultType: consultType === 'quick' ? '빠른상담' : '정확한상담',
-                name, contact,
+            const progressDetail = [
+                pyeong ? `평형: ${pyeong}` : '',
+                expansion ? `확장: ${expansion}` : '',
+                residence ? `거주: ${residence}` : '',
+                schedule ? `희망일: ${schedule}` : '',
+                remarks ? `특이사항: ${remarks}` : ''
+            ].filter(Boolean).join(' / ');
+
+            await createCustomerMutation({
+                name,
+                contact,
                 address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress} [${zonecode}]`,
-                channel: partnerData ? `${partnerData['업체명']} (ONEV)` : 'ONEV',
-                label: '일반', status: '접수',
-                pyeong: consultType === 'accurate' ? pyeong : '',
-                expansion: consultType === 'accurate' ? expansion : '',
-                residence: consultType === 'accurate' ? residence : '',
-                schedule: consultType === 'accurate' ? schedule : '',
-                remarks: consultType === 'accurate' ? remarks : ''
-            };
-            const res = await fetch('/api/data?action=create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                channel: partner ? partner.name : '본사(직접)',
+                label: '일반',
+                status: '접수',
+                progress_detail: progressDetail,
+                created_at: new Date().toISOString().split('T')[0]
             });
-            if ((await res.json()).success) {
-                alert('상담 신청이 정상적으로 접수되었습니다. 곧 연락드리겠습니다.');
-                setShowConsultModal(false);
-                setShowBenefitModal(false);
-                setName(''); setContact(''); setSelectedSido(''); setSelectedGungu(''); setIsAgreed(false);
-                setAddress(''); setDetailAddress(''); setPyeong(''); setExpansion(''); setResidence(''); setSchedule(''); setRemarks('');
-            } else alert('상담 신청 중 오류가 발생했습니다.');
-        } catch {
-            alert('통신 오류');
+
+            alert('상담 신청이 정상적으로 접수되었습니다. 곧 연락드리겠습니다.');
+            setShowConsultModal(false);
+            setShowBenefitModal(false);
+            setName(''); setContact(''); setSelectedSido(''); setSelectedGungu(''); setIsAgreed(false);
+            setAddress(''); setDetailAddress(''); setPyeong(''); setExpansion(''); setResidence(''); setSchedule(''); setRemarks('');
+        } catch (err: any) {
+            console.error(err);
+            alert('상담 신청 중 오류가 발생했습니다: ' + (err.message || '통신 오류'));
         } finally {
             setIsSubmitting(false);
         }
@@ -227,8 +208,8 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 w-full max-w-md md:max-w-none mx-auto">
                         <button onClick={() => setShowConsultModal(true)} className="w-full md:w-auto px-6 md:px-12 py-5 md:py-6 bg-white text-black font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-xl">상담 예약하기</button>
                         {partnerId && (
-                            <button onClick={fetchBenefit} disabled={isFetching} className="w-full md:w-auto px-6 md:px-12 py-5 md:py-6 bg-orange-600 text-white font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-[0_0_30px_rgba(234,88,12,0.5)] flex items-center justify-center gap-2 whitespace-nowrap">
-                                {isFetching ? <Loader2 className="animate-spin" /> : <Gift className="shrink-0" />}
+                            <button onClick={fetchBenefit} disabled={partner === undefined} className="w-full md:w-auto px-6 md:px-12 py-5 md:py-6 bg-orange-600 text-white font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-[0_0_30px_rgba(234,88,12,0.5)] flex items-center justify-center gap-2 whitespace-nowrap">
+                                {partner === undefined ? <Loader2 className="animate-spin" /> : <Gift className="shrink-0" />}
                                 파트너 단독 혜택보기
                             </button>
                         )}
@@ -337,18 +318,18 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </section>
 
             {/* Benefit Modal */}
-            {showBenefitModal && partnerData && (
+            {showBenefitModal && partnerDataForBenefit && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowBenefitModal(false)}></div>
                     <div className="bg-white rounded-[40px] w-full max-w-lg relative z-10 overflow-hidden shadow-3xl animate-in fade-in zoom-in duration-300">
                         <div className="bg-orange-600 p-10 text-white relative">
                             <button onClick={() => setShowBenefitModal(false)} className="absolute top-6 right-6 hover:rotate-90 transition-transform"><X size={32} /></button>
                             <div className="flex items-center gap-3 mb-4"><div className="p-2 bg-white/20 rounded-xl"><Gift size={24} /></div><span className="text-sm font-black uppercase tracking-widest">Partner Special</span></div>
-                            <h2 className="text-3xl font-black leading-tight">{partnerData['업체명']} 전용<br /><span className="text-yellow-300">시크릿 혜택 안내</span></h2>
+                            <h2 className="text-3xl font-black leading-tight">{partnerDataForBenefit['업체명']} 전용<br /><span className="text-yellow-300">시크릿 혜택 안내</span></h2>
                         </div>
                         <div className="p-10 space-y-8">
                             <div className="text-2xl font-black text-gray-800 whitespace-pre-wrap leading-tight bg-orange-50 p-8 rounded-3xl border-2 border-dashed border-orange-200 text-center italic">
-                                &quot;{partnerData['특별혜택']}&quot;
+                                &quot;{partnerDataForBenefit['특별혜택']}&quot;
                             </div>
                             <button onClick={() => { setShowBenefitModal(false); document.getElementById('final-cta')?.scrollIntoView({ behavior: 'smooth' }); }} className="w-full py-6 bg-black text-white text-2xl font-black rounded-2xl hover:bg-gray-900 transition-all">혜택 적용하여 상담받기</button>
                         </div>
@@ -1174,7 +1155,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             </div>
 
             {/* Benefit Modal */}
-            {showBenefitModal && partnerData && (
+            {showBenefitModal && partnerDataForBenefit && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowBenefitModal(false)}></div>
                     <div className="bg-white rounded-[30px] w-full max-w-md relative z-10 overflow-hidden shadow-3xl animate-in zoom-in duration-300">
@@ -1188,7 +1169,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                                 <span className="font-black tracking-widest text-xs md:text-sm">PARTNER SPECIAL</span>
                             </div>
                             <h2 className="text-xl md:text-3xl font-black leading-tight mb-2">
-                                {partnerData['업체명']} 전용<br />
+                                {partnerDataForBenefit['업체명']} 전용<br />
                                 <span className="text-[#FCD34D]">시크릿 혜택 안내</span>
                             </h2>
                         </div>
@@ -1197,7 +1178,7 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                         <div className="p-6 md:p-8">
                             <div className="border-2 border-dashed border-orange-200 bg-orange-50 rounded-2xl p-4 md:p-8 text-center mb-6 md:mb-8">
                                 <p className="text-lg md:text-2xl font-black text-[#EA580C] italic break-keep leading-snug">
-                                    &quot;{partnerData['특별혜택'] || '혜택 정보를 불러올 수 없습니다.'}&quot;
+                                    &quot;{partnerDataForBenefit['특별혜택'] || '혜택 정보를 불러올 수 없습니다.'}&quot;
                                 </p>
                             </div>
 

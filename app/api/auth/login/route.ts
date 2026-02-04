@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { convex, api } from '@/lib/convex';
 
 export async function POST(request: Request) {
     try {
@@ -11,16 +11,9 @@ export async function POST(request: Request) {
         }
 
         if (isAdmin) {
-            // Admin Login checking 'admins' table
-            const { data: admin, error } = await supabase
-                .from('admins')
-                .select('*')
-                .eq('uid', id)
-                .eq('password', password)
-                .single();
+            const admin = await convex.query(api.admins.getAdminByUid, { uid: id });
 
-            if (error || !admin) {
-                console.error('Admin Login Error:', error);
+            if (!admin || admin.password !== password) {
                 return NextResponse.json({ success: false, message: '아이디 또는 비밀번호가 일치하지 않습니다.' }, { status: 401 });
             }
 
@@ -33,16 +26,9 @@ export async function POST(request: Request) {
             });
 
         } else {
-            // Partner Login checking 'partners' table
-            const { data: partner, error } = await supabase
-                .from('partners')
-                .select('*')
-                .eq('uid', id)
-                .eq('password', password)
-                .single();
+            const partner = await convex.query(api.partners.getPartnerByUid, { uid: id });
 
-            if (error || !partner) {
-                console.error('Partner Login Error:', error);
+            if (!partner || partner.password !== password) {
                 return NextResponse.json({ success: false, message: '아이디 또는 비밀번호가 일치하지 않습니다.' }, { status: 401 });
             }
 

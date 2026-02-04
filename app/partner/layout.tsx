@@ -43,7 +43,7 @@ export default function PartnerLayout({
                     setPartnerInfo({
                         id: p['아이디'],
                         name: p['업체명'],
-                        ceoName: p['대표자명'],
+                        ceoName: p['대표명'],
                         contact: p['연락처'],
                         address: p['주소'],
                         businessNumber: p['사업자번호'],

@@ -105,19 +105,23 @@ export async function GET(request: Request) {
         }
         else if (action === 'read_partner_config') {
             const partnerId = searchParams.get('partnerId');
-            const [productsRes, partnerRes] = await Promise.all([
-                supabase.from('products').select('*'),
-                supabase.from('partners').select('*').eq('uid', partnerId).maybeSingle()
-            ]);
 
-            if (productsRes.error) throw productsRes.error;
-            if (partnerRes.error) throw partnerRes.error;
+            try {
+                const { convex, api } = await import('@/lib/convex');
+                const [products, partner] = await Promise.all([
+                    convex.query(api.products.listProducts),
+                    partnerId ? convex.query(api.partners.getPartnerByUid, { uid: partnerId }) : Promise.resolve(null)
+                ]);
 
-            return NextResponse.json({
-                success: true,
-                products: productsRes.data?.map(mapProductToLegacy) || [],
-                partner: partnerRes.data ? mapPartnerToLegacy(partnerRes.data) : null
-            });
+                return NextResponse.json({
+                    success: true,
+                    products: products.map(mapProductToLegacy),
+                    partner: partner ? mapPartnerToLegacy(partner) : null
+                });
+            } catch (err: any) {
+                console.error('Convex Partner Config Error:', err);
+                throw err;
+            }
         }
         else if (action === 'read_resources') {
             const { data: rows, error } = await supabase.from('resources').select('*').order('created_at', { ascending: false });
@@ -246,17 +250,22 @@ export async function POST(request: Request) {
                 remarks ? `특이사항: ${remarks}` : ''
             ].filter(Boolean).join(' / ');
 
-            const { error } = await supabase.from('customers').insert({
-                '고객명': name,
-                '연락처': contact,
-                '주소': address,
-                '채널': channel || '직접등록',
-                '라벨': label || '일반',
-                '진행구분': status || '접수',
-                '진행현황(상세)_최근': progressDetail,
-                '신청일': new Date().toISOString().split('T')[0]
-            });
-            if (error) throw error;
+            try {
+                const { convex, api } = await import('@/lib/convex');
+                await convex.mutation(api.customers.createCustomer, {
+                    name,
+                    contact,
+                    address,
+                    channel: channel || '직접등록',
+                    label: label || '일반',
+                    status: status || '접수',
+                    progress_detail: progressDetail,
+                    created_at: new Date().toISOString().split('T')[0]
+                });
+            } catch (err: any) {
+                console.error('Convex Insert Error:', err);
+                throw err;
+            }
         }
         else if (action === 'create_resource') {
             const { type, title, description, downloadUrl, thumbnail } = body;

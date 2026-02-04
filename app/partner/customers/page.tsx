@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { Search, Filter, Users, RefreshCcw, MapPin, Calendar, ClipboardList } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 
 type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'custom';
@@ -43,6 +45,76 @@ function PartnerCustomersContent() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [partnerName, setPartnerName] = useState<string>('');
 
+    // Convex Data
+    const convexCustomers = useQuery(api.customers.listCustomers);
+
+    useEffect(() => {
+        const session = Cookies.get('partner_session');
+        if (!session) {
+            window.location.href = '/partner/login';
+            return;
+        }
+        const myInfo = JSON.parse(session);
+        const myName = myInfo.name;
+        setPartnerName(myName);
+
+        if (convexCustomers) {
+            const mapped = convexCustomers.map(c => ({
+                'No.': c.no || '',
+                '라벨': c.label || '일반',
+                '진행구분': c.status || '접수',
+                '채널': c.channel || '',
+                '고객명': c.name || '',
+                '연락처': c.contact || '',
+                '주소': c.address || '',
+                'KCC 피드백': c.feedback || '',
+                '진행현황(상세)_최근': c.progress_detail || '',
+                '가견적 링크': c.link_pre_kcc || '',
+                '최종 견적 링크': c.link_final_kcc || '',
+                '고객견적서(가)': c.link_pre_cust || '',
+                '고객견적서(최종)': c.link_final_cust || '',
+                '실측일자': c.measure_date || '',
+                '시공일자': c.construct_date || '',
+                '가견적 금액': c.price_pre || 0,
+                '최종견적 금액': c.price_final || 0,
+                '신청일': c.created_at || new Date(c._creationTime).toISOString().split('T')[0],
+                '신청일시': new Date(c._creationTime).toLocaleString(),
+                'id': c._id,
+                '_creationTime': c._creationTime
+            }));
+
+            // Filter for my customers
+            const myCustomers = mapped.filter(c => {
+                const channel = String(c['채널'] || '');
+                return channel.includes(myName) || channel === myInfo.id;
+            });
+
+            // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
+            const sorted = myCustomers.sort((a, b) => {
+                const noA = String(a['No.'] || '');
+                const noB = String(b['No.'] || '');
+                const isAEmpty = !noA || noA.includes('-');
+                const isBEmpty = !noB || noB.includes('-');
+
+                if (isAEmpty && !isBEmpty) return -1;
+                if (!isAEmpty && isBEmpty) return 1;
+                if (isAEmpty && isBEmpty) return b._creationTime - a._creationTime;
+
+                const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
+                const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
+                if (nA !== nB) return nB - nA;
+                return b._creationTime - a._creationTime;
+            });
+
+            setCustomers(sorted);
+            setLoading(false);
+        }
+    }, [convexCustomers]);
+
+    const fetchData = useCallback(async () => {
+        // Handled by useQuery
+    }, []);
+
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState(routerStatus || '');
@@ -53,51 +125,9 @@ function PartnerCustomersContent() {
     const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const session = Cookies.get('partner_session');
-            if (!session) {
-                window.location.href = '/partner/login';
-                return;
-            }
-
-            const myInfo = JSON.parse(session);
-            const myName = myInfo.name;
-            setPartnerName(myName);
-
-            const res = await fetch('/api/data?action=read');
-            const json = await res.json();
-
-            if (json.success && Array.isArray(json.data)) {
-                // 내 고객만 필터링
-                const myCustomers = (json.data as Customer[]).filter((c) => {
-                    const channel = String(c['채널'] || '');
-                    return channel.includes(myName) || channel === myInfo.id;
-                });
-
-                // No. 기준 내림차순 정렬
-                const sorted = myCustomers.sort((a, b) => {
-                    const noA = String(a['No.']);
-                    const noB = String(b['No.']);
-                    if (noA.includes('-') || noB.includes('-')) {
-                        return noB.localeCompare(noA, undefined, { numeric: true });
-                    }
-                    return Number(noB) - Number(noA);
-                });
-                setCustomers(sorted);
-            }
-        } catch (error) {
-            console.error('Failed to fetch customers:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
     useEffect(() => {
-        fetchData();
         if (routerStatus) setStatusFilter(routerStatus);
-    }, [routerStatus, fetchData]);
+    }, [routerStatus]);
 
     // Derive unique values for filters
     const filterOptions = useMemo(() => {

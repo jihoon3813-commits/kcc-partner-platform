@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   },
 };
 
+import ConvexClientProvider from "./ConvexClientProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,7 +41,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={inter.className}>
-        {children}
+        <ConvexClientProvider>
+          {children}
+        </ConvexClientProvider>
       </body>
     </html>
   );

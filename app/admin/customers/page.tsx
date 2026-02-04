@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Calendar, ChevronRight, Link as LinkIcon, Phone, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw } from 'lucide-react';
+import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'custom';
 
@@ -50,34 +52,68 @@ function AdminCustomersContent() {
     const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/data?action=read');
-            const json = await res.json();
-            if (json.success) {
-                // No. 기준 내림차순 정렬 (최신순)
-                const sorted = json.data.sort((a: Customer, b: Customer) => {
-                    const noA = String(a['No.']);
-                    const noB = String(b['No.']);
-                    if (noA.includes('-') || noB.includes('-')) {
-                        return noB.localeCompare(noA, undefined, { numeric: true });
-                    }
-                    return Number(noB) - Number(noA);
-                });
-                setCustomers(sorted);
-            }
-        } catch (error) {
-            console.error('Failed to fetch customers:', error);
-        } finally {
+    const batchCreate = useMutation(api.customers.batchCreate);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Convex Data Fetching
+    const convexCustomers = useQuery(api.customers.listCustomers);
+
+    useEffect(() => {
+        if (convexCustomers) {
+            // Map Convex data to legacy interface
+            const mapped = convexCustomers.map(c => ({
+                'id': c._id,
+                'No.': c.no || '-',
+                '신청일': c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '',
+                '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
+                '고객명': c.name || '',
+                '연락처': c.contact || '',
+                '주소': c.address || '',
+                '진행구분': c.status || '접수',
+                '라벨': c.label || '일반',
+                '채널': c.channel || '',
+                'KCC 피드백': c.feedback || '',
+                '진행현황(상세)_최근': c.progress_detail || '',
+                '가견적 링크': c.link_pre_kcc || '',
+                '최종 견적 링크': c.link_final_kcc || '',
+                '고객견적서(가)': c.link_pre_cust || '',
+                '고객견적서(최종)': c.link_final_cust || '',
+                '실측일자': c.measure_date || '',
+                '시공일자': c.construct_date || '',
+                '가견적 금액': c.price_pre || 0,
+                '최종견적 금액': c.price_final || 0,
+                '_creationTime': c._creationTime,
+            }));
+
+            // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
+            const sorted = mapped.sort((a, b) => {
+                const noA = String(a['No.'] || '');
+                const noB = String(b['No.'] || '');
+                const isAEmpty = !noA || noA.includes('-');
+                const isBEmpty = !noB || noB.includes('-');
+
+                if (isAEmpty && !isBEmpty) return -1;
+                if (!isAEmpty && isBEmpty) return 1;
+                if (isAEmpty && isBEmpty) return b._creationTime - a._creationTime;
+
+                const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
+                const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
+                if (nA !== nB) return nB - nA;
+                return b._creationTime - a._creationTime;
+            });
+
+            setCustomers(sorted);
             setLoading(false);
         }
+    }, [convexCustomers]);
+
+    const fetchData = useCallback(async () => {
+        // Now handled by useQuery automatically
     }, []);
 
     useEffect(() => {
-        fetchData();
         if (routerStatus) setStatusFilter(routerStatus);
-    }, [routerStatus, fetchData]);
+    }, [routerStatus]);
 
     // Derive unique values for filters
     const filterOptions = useMemo(() => {
@@ -151,6 +187,80 @@ function AdminCustomersContent() {
         setDateFilter('3months');
     };
 
+    const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const text = event.target?.result as string;
+                // Clean data: replace \r\n with \n and filter empty lines
+                const rows = text.replace(/\r/g, '').split('\n').filter(row => row.trim());
+                if (rows.length < 2) return alert('등록할 데이터가 없습니다 (헤더 포함 최소 2줄 필요).');
+
+                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const data = rows.slice(1).map((row, rowIndex) => {
+                    const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
+                    const obj: any = {};
+                    headers.forEach((header, i) => {
+                        const val = values[i];
+                        if (val === undefined || val === '') return;
+
+                        const mapping: Record<string, string> = {
+                            'No.': 'no',
+                            '라벨': 'label',
+                            '진행구분': 'status',
+                            '진행현황(상세)_최근': 'progress_detail',
+                            '신청일': 'created_at', // Note: Convex automatically manages _creationTime, but we can store this if needed
+                            '채널': 'channel',
+                            '고객명': 'name',
+                            '연락처': 'contact',
+                            '주소': 'address',
+                            'KCC 피드백': 'feedback',
+                            '가견적 링크': 'link_pre_kcc',
+                            '최종 견적 링크': 'link_final_kcc',
+                            '고객견적서(가)': 'link_pre_cust',
+                            '고객견적서(최종)': 'link_final_cust',
+                            '실측일자': 'measure_date',
+                            '시공일자': 'construct_date',
+                            '가견적 금액': 'price_pre',
+                            '최종견적 금액': 'price_final'
+                        };
+                        const field = mapping[header] || header;
+
+                        // Type conversion for numeric fields
+                        if (field === 'price_pre' || field === 'price_final') {
+                            const num = parseFloat(val.replace(/[^0-9.-]/g, ''));
+                            obj[field] = isNaN(num) ? 0 : num;
+                        } else {
+                            obj[field] = val;
+                        }
+                    });
+                    return obj;
+                });
+
+                const result = await batchCreate({ customers: data });
+                if (result.success) {
+                    alert(`${result.count}명의 고객 데이터가 일괄 등록되었습니다.`);
+                    // fetchData() is no longer needed with useQuery, but let's keep it for compatibility if any local state needs refetching
+                }
+            } catch (err: any) {
+                console.error(err);
+                alert(`오류 발생: ${err.message || 'CSV 파싱 또는 데이터 형식이 올바르지 않습니다.'}`);
+            } finally {
+                setIsUploading(false);
+                e.target.value = '';
+            }
+        };
+
+        // Try UTF-8 first, fallback to EUC-KR if needed (or just use reader handle based on user feedback)
+        // For simplicity, let's try reading as a Blob to detect encoding or just stick to one for now.
+        // Most modern Excel exports use UTF-8 now, but legacy is EUC-KR.
+        reader.readAsText(file, 'UTF-8');
+    };
+
     return (
         <div className="lg:px-4 lg:py-2 space-y-6">
             {/* Header & Main Controls */}
@@ -180,6 +290,15 @@ function AdminCustomersContent() {
                                 <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} className="border rounded-lg px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-blue-100" />
                             </div>
                         )}
+
+                        <div className="h-6 w-[1px] bg-gray-200 mx-2 hidden lg:block"></div>
+
+                        <label className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-100 cursor-pointer hover:bg-indigo-700 transition-all ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <Upload className="w-3.5 h-3.5" />
+                            {isUploading ? '등록 중...' : 'CSV 일괄 등록'}
+                            <input type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
+                        </label>
+
                         <button
                             onClick={fetchData}
                             className={`p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all ${loading ? 'animate-spin' : ''}`}

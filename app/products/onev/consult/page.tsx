@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Home, ClipboardCheck, X, MessageCircle, MapPin } from 'lucide-react';
 import DaumPostcode from 'react-daum-postcode';
 import Image from 'next/image';
+import { useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 const koreaDistrictData: { [key: string]: string[] } = {
     "서울특별시": ["강남구", "강동구", "강북구", "강서구", "관악구", "광진구", "구로구", "금천구", "노원구", "도봉구", "동대문구", "동작구", "마포구", "서대문구", "서초구", "성동구", "성북구", "송파구", "양천구", "영등포구", "용산구", "은평구", "종로구", "중구", "중랑구"],
@@ -63,6 +65,8 @@ export default function ConsultPage() {
     const [schedule, setSchedule] = useState('');
     const [remarks, setRemarks] = useState('');
 
+    const createCustomerMutation = useMutation(api.customers.createCustomer);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
@@ -116,29 +120,30 @@ export default function ConsultPage() {
 
         setIsSubmitting(true);
         try {
-            const body = {
-                consultType: consultType === 'quick' ? '빠른상담' : '정확한상담',
-                name, contact,
+            const progressDetail = [
+                pyeong ? `평형: ${pyeong}` : '',
+                expansion ? `확장: ${expansion}` : '',
+                residence ? `거주: ${residence}` : '',
+                schedule ? `희망일: ${schedule}` : '',
+                remarks ? `특이사항: ${remarks}` : ''
+            ].filter(Boolean).join(' / ');
+
+            await createCustomerMutation({
+                name,
+                contact,
                 address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress} [${zonecode}]`,
-                channel: partnerData ? `${partnerData['업체명']} (ONEV)` : 'ONEV',
-                label: '일반', status: '접수',
-                pyeong: consultType === 'accurate' ? pyeong : '',
-                expansion: consultType === 'accurate' ? expansion : '',
-                residence: consultType === 'accurate' ? residence : '',
-                schedule: consultType === 'accurate' ? schedule : '',
-                remarks: consultType === 'accurate' ? remarks : ''
-            };
-            const res = await fetch('/api/data?action=create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                channel: partnerData ? partnerData['업체명'] : '본사(직접)',
+                label: '일반',
+                status: '접수',
+                progress_detail: progressDetail,
+                created_at: new Date().toISOString().split('T')[0]
             });
-            if ((await res.json()).success) {
-                alert('상담 신청이 정상적으로 접수되었습니다. 곧 연락드리겠습니다.');
-                window.close(); // Try to close if it's a popup
-            } else alert('상담 신청 중 오류가 발생했습니다.');
-        } catch {
-            alert('통신 오류');
+
+            alert('상담 신청이 정상적으로 접수되었습니다. 곧 연락드리겠습니다.');
+            window.close(); // Try to close if it's a popup
+        } catch (err: any) {
+            console.error(err);
+            alert('상담 신청 중 오류가 발생했습니다: ' + (err.message || '통신 오류'));
         } finally {
             setIsSubmitting(false);
         }

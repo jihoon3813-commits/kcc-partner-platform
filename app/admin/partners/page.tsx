@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, MoreHorizontal, RefreshCcw, X, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import DaumPostcode from 'react-daum-postcode';
 import Cookies from 'js-cookie';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 interface Partner {
     '아이디': string;
@@ -45,23 +47,41 @@ export default function PartnersPage() {
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
     const [passwordError, setPasswordError] = useState('');
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/data?action=read_partners'); // 파트너 조회 액션 사용
-            const json = await res.json();
-            if (json.success && Array.isArray(json.data)) {
-                setPartners(json.data.reverse()); // 최신순
-            }
-        } catch {
-            alert('데이터 불러오기 실패');
-        } finally {
+    // Convex Mutations
+    const createPartnerMutation = useMutation(api.partners.createPartner);
+    const updatePartnerMutation = useMutation(api.partners.updatePartner);
+    const deletePartnerMutation = useMutation(api.partners.deletePartnerByUid);
+
+    // Convex Data Fetching
+    const convexPartners = useQuery(api.partners.listPartners);
+
+    useEffect(() => {
+        if (convexPartners) {
+            const mapped = convexPartners.map(p => ({
+                '아이디': p.uid,
+                '업체명': p.name,
+                '대표명': p.ceo_name || '',
+                '연락처': p.contact || '',
+                '주소': p.address || '',
+                '상태': p.status || '승인대기',
+                '등록일': p._creationTime,
+                '사업자번호': p.business_number || '',
+                '이메일': p.email || '',
+                '계좌번호': p.account_number || '',
+                '비밀번호': p.password || '',
+                '_id': p._id
+            }));
+            setPartners(mapped);
             setLoading(false);
         }
+    }, [convexPartners]);
+
+    const fetchData = useCallback(async () => {
+        // Handled by useQuery
     }, []);
 
     useEffect(() => {
-        fetchData();
+        // fetchData();
     }, [fetchData]);
 
     // 입력 핸들러 (자동 하이픈 등)
@@ -130,26 +150,27 @@ export default function PartnersPage() {
         }
 
         try {
-            const res = await fetch('/api/partners/apply', { // 기존 apply 라우트 재활용하되, 내부에서 action=create_partner 로 분기됨
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+            await createPartnerMutation({
+                uid: formData.id,
+                name: formData.name,
+                ceo_name: formData.ceoName,
+                contact: formData.contact,
+                address: formData.address,
+                password: formData.password,
+                business_number: formData.businessNumber,
+                account_number: formData.accountNumber,
+                email: formData.email,
+                status: '승인대기'
             });
 
-            const json = await res.json();
-            if (json.success) {
-                alert('파트너가 추가되었습니다.');
-                setIsModalOpen(false);
-                setFormData({
-                    name: '', contact: '', id: '', address: '', businessNumber: '', ceoName: '',
-                    status: '승인대기', password: '', passwordConfirm: '', email: '', accountNumber: ''
-                });
-                fetchData();
-            } else {
-                alert('추가 실패: ' + (json.error || '알 수 없는 오류'));
-            }
-        } catch {
-            alert('서버 오류 발생');
+            alert('파트너가 추가되었습니다.');
+            setIsModalOpen(false);
+            setFormData({
+                name: '', contact: '', id: '', address: '', businessNumber: '', ceoName: '',
+                status: '승인대기', password: '', passwordConfirm: '', email: '', accountNumber: ''
+            });
+        } catch (err: any) {
+            alert('추가 실패: ' + (err.message || '알 수 없는 오류'));
         }
     };
 
@@ -180,22 +201,30 @@ export default function PartnersPage() {
         if (!confirm('수정하시겠습니까?')) return;
 
         try {
-            const res = await fetch('/api/partners/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+            const partnerToUpdate = partners.find(p => p['아이디'] === formData.id);
+            if (!partnerToUpdate || !partnerToUpdate._id) throw new Error('파트너를 찾을 수 없습니다.');
+
+            const updates: any = {};
+            if (formData.name) updates.name = formData.name;
+            if (formData.ceoName) updates.ceo_name = formData.ceoName;
+            if (formData.contact) updates.contact = formData.contact;
+            if (formData.address) updates.address = formData.address;
+            if (formData.status) updates.status = formData.status;
+            if (formData.businessNumber) updates.business_number = formData.businessNumber;
+            if (formData.accountNumber) updates.account_number = formData.accountNumber;
+            if (formData.email) updates.email = formData.email;
+            if (formData.password) updates.password = formData.password;
+
+            await updatePartnerMutation({
+                id: (partnerToUpdate as any)._id,
+                updates
             });
-            const json = await res.json();
-            if (json.success) {
-                alert('수정되었습니다.');
-                setIsDetailModalOpen(false);
-                fetchData();
-            } else {
-                alert('수정 실패: ' + json.message);
-            }
-        } catch (e) {
-            console.error(e);
-            alert('오류 발생');
+
+            alert('수정되었습니다.');
+            setIsDetailModalOpen(false);
+        } catch (err: any) {
+            console.error(err);
+            alert('수정 실패: ' + err.message);
         }
     };
 
@@ -204,23 +233,12 @@ export default function PartnersPage() {
         if (!confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
 
         try {
-            const res = await fetch('/api/partners/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: selectedPartner['아이디'] })
-            });
-
-            const json = await res.json();
-            if (json.success) {
-                alert('삭제되었습니다.');
-                setIsDetailModalOpen(false);
-                fetchData();
-            } else {
-                alert('삭제 실패: ' + json.message);
-            }
-        } catch (e) {
-            console.error(e);
-            alert('오류 발생');
+            await deletePartnerMutation({ uid: selectedPartner['아이디'] });
+            alert('삭제되었습니다.');
+            setIsDetailModalOpen(false);
+        } catch (err: any) {
+            console.error(err);
+            alert('삭제 실패: ' + err.message);
         }
     };
 
@@ -232,25 +250,19 @@ export default function PartnersPage() {
         // 기존 approve API 재사용 가능. 여기선 update 로 '승인' 상태 변경해보자.
 
         try {
-            const res = await fetch('/api/partners/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: selectedPartner['아이디'],
-                    status: '승인'
-                })
+            const partnerToUpdate = partners.find(p => p['아이디'] === selectedPartner['아이디']);
+            if (!partnerToUpdate || !partnerToUpdate._id) throw new Error('파트너를 찾을 수 없습니다.');
+
+            await updatePartnerMutation({
+                id: (partnerToUpdate as any)._id,
+                updates: { status: '승인' }
             });
-            const json = await res.json();
-            if (json.success) {
-                alert('승인되었습니다.');
-                setIsDetailModalOpen(false);
-                fetchData();
-            } else {
-                alert('승인 실패: ' + json.message);
-            }
-        } catch (e) {
-            console.error(e);
-            alert('오류 발생');
+
+            alert('승인되었습니다.');
+            setIsDetailModalOpen(false);
+        } catch (err: any) {
+            console.error(err);
+            alert('승인 실패: ' + err.message);
         }
     };
 

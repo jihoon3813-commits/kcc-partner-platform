@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink } from 'lucide-react';
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface Customer {
     'No.': string | number;
@@ -57,6 +59,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     const [isImportant, setIsImportant] = useState(false);
 
     const scrollBottomRef = useRef<HTMLDivElement>(null);
+    const updateCustomerMutation = useMutation(api.customers.updateCustomer);
 
     useEffect(() => {
         if (isOpen && customer) {
@@ -110,39 +113,34 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     };
 
     const handleSaveLeftPanel = async () => {
+        if (!customer?.id) return alert('고객 ID가 없습니다.');
         setLoading(true);
         try {
-            const res = await fetch('/api/data?action=update_customer', {
-                method: 'POST',
-                body: JSON.stringify({
-                    no: customer?.['No.'],
+            await updateCustomerMutation({
+                id: customer.id,
+                updates: {
                     label: formData['라벨'],
                     status: formData['진행구분'],
                     name: formData['고객명'],
                     contact: formData['연락처'],
                     address: formData['주소'],
-                    measureDate: formData['실측일자'],
-                    constructDate: formData['시공일자'],
-                    linkPreKcc: formData['가견적 링크'],
-                    linkFinalKcc: formData['최종 견적 링크'],
-                    linkPreCust: formData['고객견적서(가)'],
-                    linkFinalCust: formData['고객견적서(최종)'],
-                    pricePre: formData['가견적 금액'],
-                    priceFinal: formData['최종견적 금액'],
-                    actor: currentUser
-                })
+                    measure_date: formData['실측일자'],
+                    construct_date: formData['시공일자'],
+                    link_pre_kcc: formData['가견적 링크'],
+                    link_final_kcc: formData['최종 견적 링크'],
+                    link_pre_cust: formData['고객견적서(가)'],
+                    link_final_cust: formData['고객견적서(최종)'],
+                    price_pre: formData['가견적 금액'] ? Number(formData['가견적 금액']) : undefined,
+                    price_final: formData['최종견적 금액'] ? Number(formData['최종견적 금액']) : undefined,
+                }
             });
-            const json = await res.json();
-            if (json.success) {
-                alert('저장되었습니다.');
-                setIsHeaderEditing(false); // 헤더 수정모드 종료
-                onUpdate();
-                onClose();
-            } else {
-                alert('저장 실패: ' + json.message);
-            }
-        } catch {
-            alert('오류 발생');
+            alert('저장되었습니다.');
+            setIsHeaderEditing(false); // 헤더 수정모드 종료
+            onUpdate();
+            onClose();
+        } catch (e: any) {
+            console.error('Update Error:', e);
+            alert('저장 실패: ' + (e.message || '오류 발생'));
         } finally {
             setLoading(false);
         }
@@ -189,17 +187,16 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     };
 
     const saveLogsToServer = async (type: 'progress' | 'feedback', logs: string[]) => {
-        const fieldName = type === 'progress' ? 'progress' : 'feedback';
+        if (!customer?.id) return;
+        const fieldName = type === 'progress' ? 'progress_detail' : 'feedback';
         const fullText = logs.join('\n');
 
         try {
-            await fetch('/api/data?action=update_customer', {
-                method: 'POST',
-                body: JSON.stringify({
-                    no: customer?.['No.'],
-                    [fieldName]: fullText,
-                    actor: currentUser
-                })
+            await updateCustomerMutation({
+                id: customer.id,
+                updates: {
+                    [fieldName]: fullText
+                }
             });
             onUpdate();
         } catch (e: unknown) {

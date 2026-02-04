@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { convex, api } from '@/lib/convex';
 
 export async function POST(request: Request) {
     try {
@@ -18,45 +18,24 @@ export async function POST(request: Request) {
             );
         }
 
-        // ID 중복 검사
-        const { data: existingUser, error: checkError } = await supabase
-            .from('partners')
-            .select('uid')
-            .eq('uid', id)
-            .maybeSingle();
-
-        if (checkError) {
-            console.error('ID Check Error:', checkError);
-            return NextResponse.json({ error: '중복 검사 중 오류가 발생했습니다.' }, { status: 500 });
-        }
-
-        if (existingUser) {
-            return NextResponse.json({ error: '이미 사용 중인 아이디입니다.' }, { status: 409 });
-        }
-
-        // 파트너 등록
-        const { error: insertError } = await supabase
-            .from('partners')
-            .insert({
+        try {
+            await convex.mutation(api.partners.createPartner, {
                 uid: id,
                 name,
                 ceo_name: ceoName,
                 contact,
                 address,
-                password, // * 실제 운영 시 해시 처리 권장
+                password,
                 business_number: businessNumber,
                 account_number: accountNumber,
                 email,
-                parent_id: parentPartnerId || null,
+                parent_id: parentPartnerId || undefined,
                 status: '승인대기'
             });
-
-        if (insertError) {
-            console.error('Database Insert Error:', insertError);
-            return NextResponse.json({ error: '데이터베이스 저장 실패' }, { status: 500 });
+            return NextResponse.json({ success: true }, { status: 200 });
+        } catch (err: any) {
+            return NextResponse.json({ error: err.message || '데이터베이스 저장 실패' }, { status: 500 });
         }
-
-        return NextResponse.json({ success: true }, { status: 200 });
 
     } catch (error: unknown) {
         console.error('Request Error:', error);
