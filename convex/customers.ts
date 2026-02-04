@@ -37,6 +37,7 @@ export const createCustomer = mutation({
         link_final_kcc: v.optional(v.string()),
         link_pre_cust: v.optional(v.string()),
         link_final_cust: v.optional(v.string()),
+        partner_benefit: v.optional(v.string()),
         created_at: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
@@ -67,6 +68,7 @@ export const updateCustomer = mutation({
             link_final_kcc: v.optional(v.string()),
             link_pre_cust: v.optional(v.string()),
             link_final_cust: v.optional(v.string()),
+            partner_benefit: v.optional(v.string()),
             created_at: v.optional(v.string()),
         }),
     },
@@ -95,6 +97,7 @@ export const batchCreate = mutation({
             link_final_kcc: v.optional(v.string()),
             link_pre_cust: v.optional(v.string()),
             link_final_cust: v.optional(v.string()),
+            partner_benefit: v.optional(v.string()),
             created_at: v.optional(v.string()),
         }))
     },

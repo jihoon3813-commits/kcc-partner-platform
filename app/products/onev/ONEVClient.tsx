@@ -47,7 +47,7 @@ interface ONEVClientProps {
     partnerId: string | null;
 }
 
-export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClientProps) {
+export default function ONEVClient({ partnerId }: ONEVClientProps) {
     const [showBenefitModal, setShowBenefitModal] = useState(false);
 
     // Convex Data
@@ -92,7 +92,6 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [address, setAddress] = useState('');
     const [detailAddress, setDetailAddress] = useState('');
-    const [zonecode, setZonecode] = useState('');
     const [pyeong, setPyeong] = useState('');
     const [expansion, setExpansion] = useState('');
     const [residence, setResidence] = useState('');
@@ -141,7 +140,6 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
         }
         setAddress(fullAddress);
-        setZonecode(data.zonecode);
         setShowAddressModal(false);
     };
 
@@ -160,14 +158,25 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                 remarks ? `특이사항: ${remarks}` : ''
             ].filter(Boolean).join(' / ');
 
+            let partnerBenefit = "";
+            if (partner && partner.special_benefits) {
+                try {
+                    const benefits = JSON.parse(partner.special_benefits);
+                    partnerBenefit = benefits['P001'] || ""; // 'P001' is the code for ONEV
+                } catch (e) {
+                    console.error("Benefit parse error", e);
+                }
+            }
+
             await createCustomerMutation({
                 name,
                 contact,
-                address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress} [${zonecode}]`,
+                address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress}`,
                 channel: partner ? partner.name : '본사(직접)',
                 label: '일반',
                 status: '접수',
                 progress_detail: progressDetail,
+                partner_benefit: partnerBenefit,
                 created_at: new Date().toISOString().split('T')[0]
             });
 
@@ -176,9 +185,9 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
             setShowBenefitModal(false);
             setName(''); setContact(''); setSelectedSido(''); setSelectedGungu(''); setIsAgreed(false);
             setAddress(''); setDetailAddress(''); setPyeong(''); setExpansion(''); setResidence(''); setSchedule(''); setRemarks('');
-        } catch (err: any) {
-            console.error(err);
-            alert('상담 신청 중 오류가 발생했습니다: ' + (err.message || '통신 오류'));
+        } catch (error: unknown) {
+            console.error('Consultation Submit Error:', error);
+            alert('상담 신청 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }

@@ -30,6 +30,7 @@ interface Customer {
     '시공일자'?: string;
     '가견적 금액'?: string | number;
     '최종견적 금액'?: string | number;
+    _creationTime?: number; // Added for sorting
     [key: string]: string | number | boolean | undefined | null;
 }
 
@@ -37,8 +38,6 @@ function AdminCustomersContent() {
     const searchParams = useSearchParams();
     const routerStatus = searchParams.get('status');
 
-    const [customers, setCustomers] = useState<Customer[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
     // Search & Filters
@@ -58,70 +57,68 @@ function AdminCustomersContent() {
     // Convex Data Fetching
     const convexCustomers = useQuery(api.customers.listCustomers);
 
-    useEffect(() => {
-        if (convexCustomers) {
-            // Map Convex data to legacy interface
-            const mapped = convexCustomers.map(c => ({
-                'id': c._id,
-                'No.': c.no || '-',
-                '신청일': c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '',
-                '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
-                '고객명': c.name || '',
-                '연락처': c.contact || '',
-                '주소': c.address || '',
-                '진행구분': c.status || '접수',
-                '라벨': c.label || '일반',
-                '채널': c.channel || '',
-                'KCC 피드백': c.feedback || '',
-                '진행현황(상세)_최근': c.progress_detail || '',
-                '가견적 링크': c.link_pre_kcc || '',
-                '최종 견적 링크': c.link_final_kcc || '',
-                '고객견적서(가)': c.link_pre_cust || '',
-                '고객견적서(최종)': c.link_final_cust || '',
-                '실측일자': c.measure_date || '',
-                '시공일자': c.construct_date || '',
-                '가견적 금액': c.price_pre || 0,
-                '최종견적 금액': c.price_final || 0,
-                '_creationTime': c._creationTime,
-            }));
+    const allMappedCustomers = useMemo(() => {
+        if (!convexCustomers) return [];
+        // Map Convex data to legacy interface
+        const mapped = convexCustomers.map(c => ({
+            'id': c._id,
+            'No.': c.no || '-',
+            '신청일': c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '',
+            '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
+            '고객명': c.name || '',
+            '연락처': c.contact || '',
+            '주소': c.address || '',
+            '진행구분': c.status || '접수',
+            '라벨': c.label || '일반',
+            '채널': c.channel || '',
+            'KCC 피드백': c.feedback || '',
+            '진행현황(상세)_최근': c.progress_detail || '',
+            '가견적 링크': c.link_pre_kcc || '',
+            '최종 견적 링크': c.link_final_kcc || '',
+            '고객견적서(가)': c.link_pre_cust || '',
+            '고객견적서(최종)': c.link_final_cust || '',
+            '실측일자': c.measure_date || '',
+            '시공일자': c.construct_date || '',
+            '가견적 금액': c.price_pre || 0,
+            '최종견적 금액': c.price_final || 0,
+            '_creationTime': c._creationTime,
+        }));
 
-            // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
-            const sorted = mapped.sort((a, b) => {
-                const noA = String(a['No.'] || '');
-                const noB = String(b['No.'] || '');
-                const isAEmpty = !noA || noA.includes('-');
-                const isBEmpty = !noB || noB.includes('-');
+        // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
+        return mapped.sort((a, b) => {
+            const noA = String(a['No.'] || '');
+            const noB = String(b['No.'] || '');
+            const isAEmpty = !noA || noA.includes('-');
+            const isBEmpty = !noB || noB.includes('-');
 
-                if (isAEmpty && !isBEmpty) return -1;
-                if (!isAEmpty && isBEmpty) return 1;
-                if (isAEmpty && isBEmpty) return b._creationTime - a._creationTime;
+            if (isAEmpty && !isBEmpty) return -1;
+            if (!isAEmpty && isBEmpty) return 1;
+            if (isAEmpty && isBEmpty) return (b._creationTime || 0) - (a._creationTime || 0);
 
-                const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
-                const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
-                if (nA !== nB) return nB - nA;
-                return b._creationTime - a._creationTime;
-            });
-
-            setCustomers(sorted);
-            setLoading(false);
-        }
+            const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
+            const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
+            if (!isNaN(nA) && !isNaN(nB) && nA !== nB) return nB - nA;
+            return (b._creationTime || 0) - (a._creationTime || 0);
+        });
     }, [convexCustomers]);
 
-    const fetchData = useCallback(async () => {
-        // Now handled by useQuery automatically
-    }, []);
+    const loading = convexCustomers === undefined;
+
+    // Manual refresh is handled by Convex reactivity, but we keep the handler for UI compatibility
+    const fetchData = useCallback(() => { }, []);
+
 
     useEffect(() => {
-        if (routerStatus) setStatusFilter(routerStatus);
-    }, [routerStatus]);
+        if (routerStatus && routerStatus !== statusFilter) setStatusFilter(routerStatus);
+    }, [routerStatus, statusFilter]);
 
     // Derive unique values for filters
     const filterOptions = useMemo(() => {
-        const labels = Array.from(new Set(customers.map(c => c['라벨']).filter(Boolean)));
-        const statuses = Array.from(new Set(customers.map(c => c['진행구분']).filter(Boolean)));
-        const partners = Array.from(new Set(customers.map(c => c['채널']).filter(Boolean)));
+        const labels = Array.from(new Set(allMappedCustomers.map(c => c['라벨']).filter(Boolean)));
+        const statuses = Array.from(new Set(allMappedCustomers.map(c => c['진행구분']).filter(Boolean)));
+        const partners = Array.from(new Set(allMappedCustomers.map(c => c['채널']).filter(Boolean)));
         return { labels, statuses, partners };
-    }, [customers]);
+    }, [allMappedCustomers]);
 
     // Filtering logic
     const filteredCustomers = useMemo(() => {
@@ -142,12 +139,12 @@ function AdminCustomersContent() {
             default: start = subMonths(now, 3);
         }
 
-        return customers.filter(c => {
+        return allMappedCustomers.filter(c => {
             // Date Filter
             const dateStr = c['신청일'] || c['신청일시'];
             if (dateStr) {
                 try {
-                    const itemDate = new Date(dateStr);
+                    const itemDate = new Date(dateStr as string);
                     if (!isWithinInterval(itemDate, { start, end })) return false;
                 } catch { /* skip date check if invalid */ }
             }
@@ -177,7 +174,7 @@ function AdminCustomersContent() {
 
             return true;
         });
-    }, [customers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
+    }, [allMappedCustomers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
 
     const handleResetFilters = () => {
         setSearchTerm('');
@@ -201,9 +198,9 @@ function AdminCustomersContent() {
                 if (rows.length < 2) return alert('등록할 데이터가 없습니다 (헤더 포함 최소 2줄 필요).');
 
                 const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                const data = rows.slice(1).map((row, rowIndex) => {
+                const data = rows.slice(1).map((row) => {
                     const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
-                    const obj: any = {};
+                    const obj: Record<string, string | number> = {};
                     headers.forEach((header, i) => {
                         const val = values[i];
                         if (val === undefined || val === '') return;
@@ -213,7 +210,7 @@ function AdminCustomersContent() {
                             '라벨': 'label',
                             '진행구분': 'status',
                             '진행현황(상세)_최근': 'progress_detail',
-                            '신청일': 'created_at', // Note: Convex automatically manages _creationTime, but we can store this if needed
+                            '신청일': 'created_at',
                             '채널': 'channel',
                             '고객명': 'name',
                             '연락처': 'contact',
@@ -238,17 +235,17 @@ function AdminCustomersContent() {
                             obj[field] = val;
                         }
                     });
-                    return obj;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return obj as any;
                 });
 
                 const result = await batchCreate({ customers: data });
                 if (result.success) {
                     alert(`${result.count}명의 고객 데이터가 일괄 등록되었습니다.`);
-                    // fetchData() is no longer needed with useQuery, but let's keep it for compatibility if any local state needs refetching
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(err);
-                alert(`오류 발생: ${err.message || 'CSV 파싱 또는 데이터 형식이 올바르지 않습니다.'}`);
+                alert(`오류 발생: ${err instanceof Error ? err.message : 'CSV 파싱 또는 데이터 형식이 올바르지 않습니다.'}`);
             } finally {
                 setIsUploading(false);
                 e.target.value = '';
@@ -416,9 +413,14 @@ function AdminCustomersContent() {
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[11px] font-black px-3 py-1 rounded-full border ${customer['진행구분']?.includes('완료') ? 'bg-green-50 text-green-700 border-green-200 shadow-sm shadow-green-100' :
-                                                customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') ? 'bg-gray-100 text-gray-500 border-gray-200' :
-                                                    'bg-white text-blue-600 border-blue-600 shadow-sm shadow-blue-100 animate-pulse-slow'
+                                            <span className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${customer['진행구분']?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
+                                                customer['진행구분']?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
+                                                    customer['진행구분']?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
+                                                        customer['진행구분']?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
+                                                            customer['진행구분']?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
+                                                                customer['진행구분']?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
+                                                                    customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') || customer['진행구분']?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
+                                                                        'bg-white text-blue-600 border-blue-600 shadow-blue-100'
                                                 }`}>
                                                 {customer['진행구분'] || '접수'}
                                             </span>
@@ -448,7 +450,7 @@ function AdminCustomersContent() {
 
                                     <div className="flex items-start gap-2 text-sm text-gray-400 font-medium">
                                         <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                                        <span className="truncate" title={customer['주소']}>{customer['주소']}</span>
+                                        <span className="truncate" title={customer['주소']}>{customer['주소']?.replace(/\s*\[\d+\]$/, '')}</span>
                                     </div>
 
                                     <div className="flex gap-2">
@@ -492,9 +494,9 @@ function AdminCustomersContent() {
                                 </div>
 
                                 {/* Estimate Amounts */}
-                                {(customer['가견적 금액'] || customer['최종견적 금액']) && (
+                                {(!!customer['가견적 금액'] || !!customer['최종견적 금액']) && (
                                     <div className="grid grid-cols-1 gap-1.5 px-0.5">
-                                        {customer['가견적 금액'] && (
+                                        {!!customer['가견적 금액'] && (
                                             <div className="flex justify-between items-center bg-blue-50/50 px-3 py-1.5 rounded-xl border border-blue-100/50">
                                                 <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter italic">Pre-Est</span>
                                                 <span className="text-[13px] font-bold text-blue-600 tabular-nums">
@@ -503,7 +505,7 @@ function AdminCustomersContent() {
                                                 </span>
                                             </div>
                                         )}
-                                        {customer['최종견적 금액'] && (
+                                        {!!customer['최종견적 금액'] && (
                                             <div className="flex justify-between items-center bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100/50">
                                                 <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tighter italic">Final</span>
                                                 <span className="text-[13px] font-bold text-indigo-700 tabular-nums">

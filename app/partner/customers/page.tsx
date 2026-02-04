@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
+import { useState, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { Search, Filter, Users, RefreshCcw, MapPin, Calendar, ClipboardList } from 'lucide-react';
@@ -40,76 +40,76 @@ function PartnerCustomersContent() {
     const searchParams = useSearchParams();
     const routerStatus = searchParams.get('status');
 
-    const [customers, setCustomers] = useState<Customer[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-    const [partnerName, setPartnerName] = useState<string>('');
+
+    const partnerSession = useMemo(() => {
+        const session = Cookies.get('partner_session');
+        if (!session) return null;
+        try {
+            return JSON.parse(session);
+        } catch {
+            return null;
+        }
+    }, []);
+
+    const partnerName = partnerSession?.name || '';
 
     // Convex Data
     const convexCustomers = useQuery(api.customers.listCustomers);
 
-    useEffect(() => {
-        const session = Cookies.get('partner_session');
-        if (!session) {
-            window.location.href = '/partner/login';
-            return;
-        }
-        const myInfo = JSON.parse(session);
-        const myName = myInfo.name;
-        setPartnerName(myName);
+    // Correctly process and map customers data using useMemo to avoid cascading renders
+    const allMappedCustomers = useMemo(() => {
+        if (!convexCustomers) return [];
+        const mapped = convexCustomers.map(c => ({
+            'No.': c.no || '',
+            '라벨': c.label || '일반',
+            '진행구분': c.status || '접수',
+            '채널': c.channel || '',
+            '고객명': c.name || '',
+            '연락처': c.contact || '',
+            '주소': c.address || '',
+            'KCC 피드백': c.feedback || '',
+            '진행현황(상세)_최근': c.progress_detail || '',
+            '가견적 링크': c.link_pre_kcc || '',
+            '최종 견적 링크': c.link_final_kcc || '',
+            '고객견적서(가)': c.link_pre_cust || '',
+            '고객견적서(최종)': c.link_final_cust || '',
+            '실측일자': c.measure_date || '',
+            '시공일자': c.construct_date || '',
+            '가견적 금액': c.price_pre || 0,
+            '최종견적 금액': c.price_final || 0,
+            '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
+            '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
+            'id': c._id,
+            '_creationTime': c._creationTime
+        }));
 
-        if (convexCustomers) {
-            const mapped = convexCustomers.map(c => ({
-                'No.': c.no || '',
-                '라벨': c.label || '일반',
-                '진행구분': c.status || '접수',
-                '채널': c.channel || '',
-                '고객명': c.name || '',
-                '연락처': c.contact || '',
-                '주소': c.address || '',
-                'KCC 피드백': c.feedback || '',
-                '진행현황(상세)_최근': c.progress_detail || '',
-                '가견적 링크': c.link_pre_kcc || '',
-                '최종 견적 링크': c.link_final_kcc || '',
-                '고객견적서(가)': c.link_pre_cust || '',
-                '고객견적서(최종)': c.link_final_cust || '',
-                '실측일자': c.measure_date || '',
-                '시공일자': c.construct_date || '',
-                '가견적 금액': c.price_pre || 0,
-                '최종견적 금액': c.price_final || 0,
-                '신청일': c.created_at || new Date(c._creationTime).toISOString().split('T')[0],
-                '신청일시': new Date(c._creationTime).toLocaleString(),
-                'id': c._id,
-                '_creationTime': c._creationTime
-            }));
+        // Filter for my customers
+        const myCustomers = mapped.filter(c => {
+            if (!partnerSession) return false;
+            const channel = String(c['채널'] || '');
+            return channel.includes(partnerName) || channel === partnerSession.id;
+        });
 
-            // Filter for my customers
-            const myCustomers = mapped.filter(c => {
-                const channel = String(c['채널'] || '');
-                return channel.includes(myName) || channel === myInfo.id;
-            });
+        // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
+        return myCustomers.sort((a, b) => {
+            const noA = String(a['No.'] || '');
+            const noB = String(b['No.'] || '');
+            const isAEmpty = !noA || noA.includes('-');
+            const isBEmpty = !noB || noB.includes('-');
 
-            // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
-            const sorted = myCustomers.sort((a, b) => {
-                const noA = String(a['No.'] || '');
-                const noB = String(b['No.'] || '');
-                const isAEmpty = !noA || noA.includes('-');
-                const isBEmpty = !noB || noB.includes('-');
+            if (isAEmpty && !isBEmpty) return -1;
+            if (!isAEmpty && isBEmpty) return 1;
+            if (isAEmpty && isBEmpty) return (b._creationTime || 0) - (a._creationTime || 0);
 
-                if (isAEmpty && !isBEmpty) return -1;
-                if (!isAEmpty && isBEmpty) return 1;
-                if (isAEmpty && isBEmpty) return b._creationTime - a._creationTime;
+            const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
+            const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
+            if (!isNaN(nA) && !isNaN(nB) && nA !== nB) return nB - nA;
+            return (b._creationTime || 0) - (a._creationTime || 0);
+        });
+    }, [convexCustomers, partnerName, partnerSession]);
 
-                const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
-                const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
-                if (nA !== nB) return nB - nA;
-                return b._creationTime - a._creationTime;
-            });
-
-            setCustomers(sorted);
-            setLoading(false);
-        }
-    }, [convexCustomers]);
+    const loading = convexCustomers === undefined;
 
     const fetchData = useCallback(async () => {
         // Handled by useQuery
@@ -125,16 +125,14 @@ function PartnerCustomersContent() {
     const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-    useEffect(() => {
-        if (routerStatus) setStatusFilter(routerStatus);
-    }, [routerStatus]);
+    // statusFilter is already initialized with routerStatus above
 
     // Derive unique values for filters
     const filterOptions = useMemo(() => {
-        const labels = Array.from(new Set(customers.map(c => c['라벨']).filter(Boolean)));
-        const statuses = Array.from(new Set(customers.map(c => c['진행구분']).filter(Boolean)));
+        const labels = Array.from(new Set(allMappedCustomers.map(c => c['라벨']).filter(Boolean)));
+        const statuses = Array.from(new Set(allMappedCustomers.map(c => c['진행구분']).filter(Boolean)));
         return { labels, statuses };
-    }, [customers]);
+    }, [allMappedCustomers]);
 
     const filteredCustomers = useMemo(() => {
         // 1. Date filter boundaries
@@ -154,9 +152,9 @@ function PartnerCustomersContent() {
             default: start = subMonths(now, 3);
         }
 
-        return customers.filter(c => {
+        return allMappedCustomers.filter(c => {
             // Date Filter
-            const dateStr = c['신청일'] || c['신청일시'] || c['Timestamp'] || c['등록일'];
+            const dateStr = c['신청일'] || c['신청일시'];
             if (dateStr) {
                 try {
                     const itemDate = new Date(dateStr as string);
@@ -186,7 +184,7 @@ function PartnerCustomersContent() {
 
             return true;
         });
-    }, [customers, searchTerm, statusFilter, labelFilter, dateFilter, customStartDate, customEndDate]);
+    }, [allMappedCustomers, searchTerm, statusFilter, labelFilter, dateFilter, customStartDate, customEndDate]);
 
     const handleResetFilters = () => {
         setSearchTerm('');
@@ -357,9 +355,14 @@ function PartnerCustomersContent() {
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-[11px] font-black px-3 py-1 rounded-full border ${String(customer['진행구분'])?.includes('완료') ? 'bg-green-50 text-green-700 border-green-200 shadow-sm shadow-green-100' :
-                                                    String(customer['진행구분'])?.includes('거부') || String(customer['진행구분'])?.includes('부재') ? 'bg-gray-100 text-gray-500 border-gray-200' :
-                                                        'bg-white text-blue-600 border-blue-600 shadow-sm shadow-blue-100 animate-pulse-slow'
+                                                <span className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${String(customer['진행구분'])?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
+                                                    String(customer['진행구분'])?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
+                                                        String(customer['진행구분'])?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
+                                                            String(customer['진행구분'])?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
+                                                                String(customer['진행구분'])?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
+                                                                    String(customer['진행구분'])?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
+                                                                        String(customer['진행구분'])?.includes('거부') || String(customer['진행구분'])?.includes('부재') || String(customer['진행구분'])?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
+                                                                            'bg-white text-blue-600 border-blue-600 shadow-blue-100'
                                                     }`}>
                                                     {customer['진행구분'] || '접수'}
                                                 </span>
@@ -389,7 +392,7 @@ function PartnerCustomersContent() {
 
                                         <div className="flex items-start gap-2 text-sm text-gray-400 font-medium">
                                             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                                            <span className="truncate" title={customer['주소']}>{customer['주소']}</span>
+                                            <span className="truncate" title={customer['주소']}>{customer['주소']?.replace(/\s*\[\d+\]$/, '')}</span>
                                         </div>
 
                                         <div className="flex gap-2">
@@ -433,9 +436,9 @@ function PartnerCustomersContent() {
                                     </div>
 
                                     {/* Estimate Amounts */}
-                                    {(customer['가견적 금액'] || customer['최종견적 금액']) && (
+                                    {(!!customer['가견적 금액'] || !!customer['최종견적 금액']) && (
                                         <div className="grid grid-cols-1 gap-1.5 px-0.5">
-                                            {customer['가견적 금액'] && (
+                                            {!!customer['가견적 금액'] && (
                                                 <div className="flex justify-between items-center bg-blue-50/50 px-3 py-1.5 rounded-xl border border-blue-100/50">
                                                     <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter italic">Pre-Est</span>
                                                     <span className="text-[13px] font-bold text-blue-600 tabular-nums">
@@ -444,7 +447,7 @@ function PartnerCustomersContent() {
                                                     </span>
                                                 </div>
                                             )}
-                                            {customer['최종견적 금액'] && (
+                                            {!!customer['최종견적 금액'] && (
                                                 <div className="flex justify-between items-center bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100/50">
                                                     <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tighter italic">Final</span>
                                                     <span className="text-[13px] font-bold text-indigo-700 tabular-nums">

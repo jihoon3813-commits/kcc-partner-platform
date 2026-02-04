@@ -36,10 +36,23 @@ export const upsertProduct = mutation({
             .unique();
         if (existing) {
             const { code, ...updates } = args;
+            void code;
             await ctx.db.patch(existing._id, updates);
             return existing._id;
         } else {
             return await ctx.db.insert("products", args);
+        }
+    },
+});
+export const deleteProduct = mutation({
+    args: { code: v.string() },
+    handler: async (ctx, args) => {
+        const existing = await ctx.db
+            .query("products")
+            .withIndex("by_code", (q) => q.eq("code", args.code))
+            .unique();
+        if (existing) {
+            await ctx.db.delete(existing._id);
         }
     },
 });

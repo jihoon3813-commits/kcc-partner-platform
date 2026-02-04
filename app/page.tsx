@@ -176,9 +176,9 @@ export default function LandingPage() {
     <main className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 overflow-x-hidden">
       {/* Header */}
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 flex items-center px-6 md:px-12 z-[100] transition-all bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 flex items-center px-6 md:px-12 z-[100] transition-all bg-transparent md:bg-white/80 md:backdrop-blur-md border-none md:border-b md:border-gray-100">
         <div className="flex items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="hidden md:flex items-center gap-2">
             <div className="h-6 w-24 md:h-8 md:w-32 relative">
               <Image
                 src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
@@ -200,7 +200,7 @@ export default function LandingPage() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-gray-700"
+            className="md:hidden p-2 text-white bg-black/20 backdrop-blur-md rounded-full fixed top-4 right-6 z-[110]"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -248,7 +248,7 @@ export default function LandingPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/50"></div>
         </div>
-        <div className="container mx-auto px-8 md:px-20 relative z-10 text-center text-white mt-20">
+        <div className="container mx-auto px-8 md:px-20 relative z-10 text-center text-white mt-28 md:mt-20">
           <div className="inline-block border border-white/30 bg-white/10 backdrop-blur-md px-8 py-3 rounded-full mb-12 animate-fade-in-up">
             <span className="text-blue-300 font-black tracking-widest uppercase">Premium Membership</span>
           </div>
@@ -380,7 +380,7 @@ export default function LandingPage() {
       <section className="py-24 bg-[#1a1a1a] text-white text-center border-t border-gray-800">
         <div className="container mx-auto px-5 lg:px-24">
           <h2 className="text-3xl lg:text-5xl font-black mb-8 leading-tight">
-            KCC홈씨씨의<br></br><span className="text-blue-500">마케팅 파트너</span>가 되시면,<br />
+            KCC홈씨씨의<br></br><span className="text-blue-500">마케팅 파트너</span>가 되면,<br />
             파트너의 회원들에게도 <span className="text-[#D4AF37]"><br></br>구독+ 추가혜택</span>을<br className="md:hidden" /> 제공할 수 있습니다.
           </h2>
           <div className="flex flex-col md:flex-row justify-center items-center gap-4">

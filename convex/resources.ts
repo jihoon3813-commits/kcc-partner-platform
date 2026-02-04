@@ -7,21 +7,30 @@ export const generateUploadUrl = mutation(async (ctx) => {
 
 export const saveResource = mutation({
     args: {
-        storageId: v.string(),
+        storageId: v.optional(v.string()),
         type: v.string(),
         title: v.string(),
         description: v.optional(v.string()),
         thumbnailStorageId: v.optional(v.string()),
+        manualDownloadUrl: v.optional(v.string()),
+        manualThumbnailUrl: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        const downloadUrl = (await ctx.storage.getUrl(args.storageId))!;
-        let thumbnail = "";
+        let downloadUrl = args.manualDownloadUrl || "";
+        if (args.storageId) {
+            const url = await ctx.storage.getUrl(args.storageId);
+            if (url) downloadUrl = url;
+        }
+
+        let thumbnail = args.manualThumbnailUrl || "";
         if (args.thumbnailStorageId) {
-            thumbnail = (await ctx.storage.getUrl(args.thumbnailStorageId)) || "";
+            const url = await ctx.storage.getUrl(args.thumbnailStorageId);
+            if (url) thumbnail = url;
         }
 
         return await ctx.db.insert("resources", {
             storageId: args.storageId,
+            thumbnailStorageId: args.thumbnailStorageId,
             type: args.type,
             title: args.title,
             description: args.description,

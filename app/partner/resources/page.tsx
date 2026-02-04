@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Download, FileImage, FileVideo, FileText, PlayCircle, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 interface Resource {
     id: string;
@@ -14,27 +16,25 @@ interface Resource {
 }
 
 export default function PartnerResourcesPage() {
-    const [resources, setResources] = useState<Resource[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'all' | 'image' | 'video' | 'file'>('all');
     const [previewResource, setPreviewResource] = useState<Resource | null>(null);
 
-    useEffect(() => {
-        const fetchResources = async () => {
-            try {
-                const res = await fetch('/api/data?action=read_resources');
-                const json = await res.json();
-                if (json.success) {
-                    setResources(json.data);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchResources();
-    }, []);
+    const convexResources = useQuery(api.resources.listResources);
+
+    const resources = React.useMemo(() => {
+        if (!convexResources) return [];
+        return convexResources.map(r => ({
+            id: r._id,
+            type: (r.type || 'image') as 'image' | 'video' | 'file',
+            title: r.title || '',
+            description: r.description || '',
+            date: new Date(r._creationTime).toISOString(),
+            downloadUrl: r.downloadUrl || '',
+            thumbnail: r.thumbnail || ''
+        }));
+    }, [convexResources]);
+
+    const isLoading = convexResources === undefined;
 
     const filteredResources = activeTab === 'all'
         ? resources

@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { Search, Plus, Package, ShieldCheck, ChevronRight, X, Image as ImageIcon, Link as LinkIcon, Trash2, Save, Loader2, Edit3, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -18,8 +20,6 @@ interface Product {
 }
 
 export default function AdminProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,91 +38,26 @@ export default function AdminProductsPage() {
         link: ''
     });
 
-    const fetchProducts = useCallback(async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/data?action=read_products');
-            const json = await res.json();
+    const convexProducts = useQuery(api.products.listProducts);
+    const upsertProductMutation = useMutation(api.products.upsertProduct);
+    const deleteProductMutation = useMutation(api.products.deleteProduct);
 
-            if (json.success && Array.isArray(json.data)) {
-                // Parse products with key normalization
-                const parsedData = json.data.map((p: Record<string, string | string[] | null | undefined>) => {
-                    const getVal = (keys: string[]) => {
-                        for (const k of keys) {
-                            if (p[k] !== undefined && p[k] !== null) return p[k];
-                            const lowerK = k.toLowerCase();
-                            const foundKey = Object.keys(p).find(key => key.toLowerCase() === lowerK);
-                            if (foundKey) return p[foundKey];
-                        }
-                        return '';
-                    };
+    const products = useMemo(() => {
+        if (!convexProducts) return [];
+        return convexProducts.map(p => ({
+            id: p.code,
+            category: p.category || '',
+            name: p.name || '',
+            description: p.description || '',
+            specs: typeof p.specs === 'string' ? JSON.parse(p.specs) : (p.specs || []),
+            price: p.price || '',
+            status: p.status || '',
+            image: p.image || '',
+            link: p.link || ''
+        }));
+    }, [convexProducts]);
 
-                    const rawSpecs = getVal(['specs', '사양']);
-                    let parsedSpecs: string[] = [];
-                    try {
-                        if (typeof rawSpecs === 'string' && rawSpecs.trim()) {
-                            parsedSpecs = JSON.parse(rawSpecs);
-                        } else if (Array.isArray(rawSpecs)) {
-                            parsedSpecs = rawSpecs;
-                        }
-                    } catch {
-                        parsedSpecs = [];
-                    }
-
-                    return {
-                        id: String(getVal(['id']) || ''),
-                        category: String(getVal(['category', '카테고리']) || '기타'),
-                        name: String(getVal(['name', '상품명', '이름']) || '이름 없음'),
-                        description: String(getVal(['description', '설명']) || ''),
-                        specs: parsedSpecs,
-                        price: String(getVal(['price', '가격']) || '별도문의'),
-                        status: String(getVal(['status', '상태']) || '판매중'),
-                        image: String(getVal(['image', '이미지_URL', '이미지']) || ''),
-                        link: String(getVal(['link', '링크', '경로']) || ''),
-                    };
-                });
-
-                if (parsedData.length === 0) {
-                    setProducts([
-                        {
-                            id: 'P001',
-                            category: '창호/샷시',
-                            name: 'KCC홈씨씨 윈도우ONE 구독 서비스',
-                            description: '국내 최고 수준의 단열 성능과 기밀성을 자랑하는 프리미엄 창호 브랜드',
-                            specs: ['단열등급: 1~3등급', '유리두께: 24~28mm', '프레임폭: 140~251mm'],
-                            price: '별도문의',
-                            status: '판매중',
-                            image: 'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80&w=400',
-                            link: '/products/onev',
-                        }
-                    ]);
-                } else {
-                    setProducts(parsedData);
-                }
-            }
-        } catch (error: unknown) {
-            console.error('Fetch products error:', error);
-            setProducts([
-                {
-                    id: 'P001',
-                    category: '창호/샷시',
-                    name: 'KCC홈씨씨 윈도우ONE 구독 서비스',
-                    description: '국내 최고 수준의 단열 성능과 기밀성을 자랑하는 프리미엄 창호 브랜드',
-                    specs: ['단열등급: 1~3등급', '유리두께: 24~28mm', '프레임폭: 140~251mm'],
-                    price: '별도문의',
-                    status: '판매중',
-                    image: 'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80&w=400',
-                    link: '/products/onev',
-                }
-            ]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+    const loading = convexProducts === undefined;
 
     const handleOpenAddModal = () => {
         setEditMode(false);
@@ -175,56 +110,38 @@ export default function AdminProductsPage() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const action = editMode ? 'update_product' : 'create_product';
-            const payload = {
-                ...formData,
+            const productCode = formData.id || `P${Date.now()}`;
+            await upsertProductMutation({
+                code: productCode,
+                name: formData.name,
+                category: formData.category,
+                price: formData.price,
+                status: formData.status,
+                description: formData.description,
+                image: formData.image,
+                link: formData.link,
                 specs: JSON.stringify(formData.specs.filter(s => s.trim() !== ''))
-            };
-
-            const res = await fetch(`/api/data?action=${action}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
             });
 
-            const result = await res.json();
-            if (result.success) {
-                alert(editMode ? '상품 정보가 수정되었습니다.' : '상품이 성공적으로 등록되었습니다.');
-                setIsModalOpen(false);
-                fetchProducts();
-            } else {
-                if (result.message?.includes('찾을 수 없습니다')) {
-                    alert('요청 실패: 해당 상품 정보가 데이터베이스에 존재하지 않습니다. (임시 표시된 기본 상품이거나 삭제된 항목일 수 있습니다. 새 상품 등록 버튼을 이용해 주세요.)');
-                } else {
-                    alert('요청 실패: ' + result.message);
-                }
-            }
-        } catch {
-            alert('서버 오류가 발생했습니다.');
+            alert(editMode ? '상품 정보가 수정되었습니다.' : '상품이 성공적으로 등록되었습니다.');
+            setIsModalOpen(false);
+        } catch (e: unknown) {
+            console.error(e);
+            alert('요청 실패: ' + (e instanceof Error ? e.message : '서버 오류'));
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleDeleteProduct = async (id: string, name: string) => {
+    const handleDeleteProduct = async (code: string, name: string) => {
         if (!confirm(`[${name}] 상품을 정말 삭제하시겠습니까?`)) return;
 
         try {
-            const res = await fetch('/api/data?action=delete_product', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-
-            const result = await res.json();
-            if (result.success) {
-                alert('상품이 삭제되었습니다.');
-                fetchProducts();
-            } else {
-                alert('삭제 실패: ' + result.message);
-            }
-        } catch {
-            alert('서버 오류가 발생했습니다.');
+            await deleteProductMutation({ code });
+            alert('상품이 삭제되었습니다.');
+        } catch (e: unknown) {
+            console.error(e);
+            alert('삭제 실패: ' + (e instanceof Error ? e.message : '서버 오류'));
         }
     };
 
@@ -337,7 +254,7 @@ export default function AdminProductsPage() {
                                 </p>
 
                                 <div className="space-y-3 mb-10 flex-1">
-                                    {product.specs.map((spec, i) => (
+                                    {product.specs.map((spec: string, i: number) => (
                                         <div key={i} className="flex items-center gap-4 text-[13px] text-gray-500 font-black bg-gray-50/80 p-4 rounded-[20px] border border-gray-100/50">
                                             <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
                                             <span className="truncate">{spec}</span>
@@ -479,7 +396,7 @@ export default function AdminProductsPage() {
                                             <button type="button" onClick={addSpecField} className="bg-blue-600 text-white px-4 py-1.5 rounded-full font-black text-[10px] hover:bg-black transition-all">+ ADD FIELD</button>
                                         </label>
                                         <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                            {formData.specs.map((spec, i) => (
+                                            {formData.specs.map((spec: string, i: number) => (
                                                 <div key={i} className="relative">
                                                     <ShieldCheck className="w-6 h-6 absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500" />
                                                     <input

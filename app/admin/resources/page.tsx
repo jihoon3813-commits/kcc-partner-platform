@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Download, FileImage, FileVideo, FileText, PlayCircle, Image as ImageIcon, Plus, Trash2, Loader2, Link as LinkIcon, Save, UploadCloud } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 interface Resource {
     id: string;
@@ -15,8 +16,6 @@ interface Resource {
 }
 
 export default function AdminResourcesPage() {
-    const [resources, setResources] = useState<Resource[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [activeTab, setActiveTab] = useState<'all' | 'image' | 'video' | 'file'>('all');
 
@@ -35,52 +34,38 @@ export default function AdminResourcesPage() {
     const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null);
     const [uploadProgress, setUploadProgress] = useState('');
 
-    useEffect(() => {
-        fetchResources();
-    }, []);
+    const convexResources = useQuery(api.resources.listResources);
+    const generateUploadUrl = useMutation(api.resources.generateUploadUrl);
+    const saveResource = useMutation(api.resources.saveResource);
+    const deleteResourceMutation = useMutation(api.resources.deleteResource);
 
-    const fetchResources = async () => {
-        setIsLoading(true);
+    const resources = React.useMemo(() => {
+        if (!convexResources) return [];
+        return convexResources.map(r => ({
+            id: r._id,
+            type: (r.type || 'image') as 'image' | 'video' | 'file',
+            title: r.title || '',
+            description: r.description || '',
+            date: new Date(r._creationTime).toISOString(),
+            downloadUrl: r.downloadUrl || '',
+            thumbnail: r.thumbnail || ''
+        }));
+    }, [convexResources]);
+
+    const isLoading = convexResources === undefined;
+
+    const uploadToConvex = async (file: File): Promise<string | null> => {
         try {
-            const res = await fetch('/api/data?action=read_resources');
-            const json = await res.json();
-            if (json.success) {
-                setResources(json.data);
-            }
-        } catch {
-            console.error("Failed to fetch resources");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const uploadFileToSupabase = async (file: File): Promise<string | null> => {
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('resources')
-                .upload(filePath, file);
-
-            if (uploadError) {
-                if (uploadError.message.includes('bucket not found')) {
-                    alert('Supabase Storage에 "resources" 버킷이 없습니다. 대시보드에서 public 버킷을 생성해주세요.');
-                } else {
-                    alert('업로드 실패: ' + uploadError.message);
-                }
-                return null;
-            }
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('resources')
-                .getPublicUrl(filePath);
-
-            return publicUrl;
+            const postUrl = await generateUploadUrl();
+            const result = await fetch(postUrl, {
+                method: "POST",
+                headers: { "Content-Type": file.type },
+                body: file,
+            });
+            const { storageId } = await result.json();
+            return storageId;
         } catch (e) {
             console.error(e);
-            alert('업로드 중 오류 발생');
             return null;
         }
     };
@@ -92,20 +77,20 @@ export default function AdminResourcesPage() {
         setUploadProgress('준비 중...');
 
         try {
-            let finalDownloadUrl = newRes.downloadUrl;
-            let finalThumbnailUrl = newRes.thumbnail;
+            let storageId = '';
+            let thumbnailStorageId = undefined;
 
             // 1. Upload Main File
             if (selectedFile) {
                 setUploadProgress('메인 파일 업로드 중...');
-                const uploadedUrl = await uploadFileToSupabase(selectedFile);
-                if (!uploadedUrl) {
+                const id = await uploadToConvex(selectedFile);
+                if (!id) {
                     setIsSubmitting(false);
+                    alert('파일 업로드 실패');
                     return;
                 }
-                finalDownloadUrl = uploadedUrl;
-            } else if (!finalDownloadUrl) {
-                // No file and no URL
+                storageId = id;
+            } else if (!newRes.downloadUrl) {
                 alert('파일을 업로드하거나 다운로드 링크를 입력해주세요.');
                 setIsSubmitting(false);
                 return;
@@ -114,70 +99,56 @@ export default function AdminResourcesPage() {
             // 2. Upload Thumbnail
             if (selectedThumbnail) {
                 setUploadProgress('썸네일 업로드 중...');
-                const uploadedThumb = await uploadFileToSupabase(selectedThumbnail);
-                if (uploadedThumb) {
-                    finalThumbnailUrl = uploadedThumb;
+                const id = await uploadToConvex(selectedThumbnail);
+                if (id) {
+                    thumbnailStorageId = id;
                 }
             }
 
-            // 3. Create Resource Record
+            // 3. Save to database
             setUploadProgress('데이터 저장 중...');
 
-            // If it's an image and no thumbnail is provided, use the main image as thumbnail
-            if (newRes.type === 'image' && !finalThumbnailUrl) {
-                finalThumbnailUrl = finalDownloadUrl;
+            // If manual URL is provided instead of file
+            if (!storageId && newRes.downloadUrl) {
+                // In convex schema, we might need to handle manual URL only resources
+                // Currently saveResource mutation expects storageId. Let's update the mutation or handle here.
+                // For now, let's assume we use storage mostly, but allow manual links if needed.
+                // Let's modify the mutation args if needed, but first let's see if we can adapt.
             }
 
-            const payload = {
-                ...newRes,
-                downloadUrl: finalDownloadUrl,
-                thumbnail: finalThumbnailUrl
-            };
-
-            const res = await fetch('/api/data?action=create_resource', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            await saveResource({
+                storageId: storageId || undefined,
+                type: newRes.type,
+                title: newRes.title,
+                description: newRes.description,
+                thumbnailStorageId: thumbnailStorageId,
+                manualDownloadUrl: newRes.downloadUrl || undefined,
+                manualThumbnailUrl: newRes.thumbnail || undefined,
             });
-            const json = await res.json();
 
-            if (json.success) {
-                alert('자료가 등록되었습니다.');
-                setShowModal(false);
-                setNewRes({ type: 'image', title: '', description: '', downloadUrl: '', thumbnail: '' });
-                setSelectedFile(null);
-                setSelectedThumbnail(null);
-                setUploadProgress('');
-                fetchResources();
-            } else {
-                alert('등록 실패: ' + json.message);
-            }
-        } catch {
-            alert('통신 오류');
+            alert('자료가 등록되었습니다.');
+            setShowModal(false);
+            setNewRes({ type: 'image', title: '', description: '', downloadUrl: '', thumbnail: '' });
+            setSelectedFile(null);
+            setSelectedThumbnail(null);
+            setUploadProgress('');
+        } catch (e: any) {
+            console.error(e);
+            alert('등록 실패: ' + (e.message || '오류 발생'));
         } finally {
             setIsSubmitting(false);
             setUploadProgress('');
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: any) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;
 
         try {
-            const res = await fetch('/api/data?action=delete_resource', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            const json = await res.json();
-            if (json.success) {
-                alert('삭제되었습니다.');
-                fetchResources();
-            } else {
-                alert('삭제 실패: ' + json.message);
-            }
-        } catch {
-            alert('통신 오류');
+            await deleteResourceMutation({ id });
+            alert('삭제되었습니다.');
+        } catch (e: any) {
+            alert('삭제 실패: ' + e.message);
         }
     };
 

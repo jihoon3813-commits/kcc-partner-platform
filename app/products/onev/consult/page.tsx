@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Home, ClipboardCheck, X, MessageCircle, MapPin } from 'lucide-react';
+import { ClipboardCheck, X, MapPin } from 'lucide-react';
 import DaumPostcode from 'react-daum-postcode';
-import Image from 'next/image';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
@@ -43,7 +42,6 @@ interface PostcodeData {
 }
 
 export default function ConsultPage() {
-    const [partnerId, setPartnerId] = useState<string | null>(null);
     const [partnerData, setPartnerData] = useState<PartnerData | null>(null);
 
     // Consultation States
@@ -58,7 +56,6 @@ export default function ConsultPage() {
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [address, setAddress] = useState('');
     const [detailAddress, setDetailAddress] = useState('');
-    const [zonecode, setZonecode] = useState('');
     const [pyeong, setPyeong] = useState('');
     const [expansion, setExpansion] = useState('');
     const [residence, setResidence] = useState('');
@@ -71,7 +68,6 @@ export default function ConsultPage() {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const pId = params.get('p');
-            setPartnerId(pId);
 
             if (pId) {
                 // Fetch partner data
@@ -109,7 +105,6 @@ export default function ConsultPage() {
             fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
         }
         setAddress(fullAddress);
-        setZonecode(data.zonecode);
         setShowAddressModal(false);
     };
 
@@ -128,22 +123,33 @@ export default function ConsultPage() {
                 remarks ? `특이사항: ${remarks}` : ''
             ].filter(Boolean).join(' / ');
 
+            let partnerBenefit = "";
+            if (partnerData && partnerData['상품별혜택']) {
+                try {
+                    const benefits = JSON.parse(partnerData['상품별혜택'] as string);
+                    partnerBenefit = benefits['P001'] || ""; // 'P001' is the code for ONEV
+                } catch (e) {
+                    console.error("Benefit parse error", e);
+                }
+            }
+
             await createCustomerMutation({
                 name,
                 contact,
-                address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress} [${zonecode}]`,
+                address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress}`,
                 channel: partnerData ? partnerData['업체명'] : '본사(직접)',
                 label: '일반',
                 status: '접수',
                 progress_detail: progressDetail,
+                partner_benefit: partnerBenefit,
                 created_at: new Date().toISOString().split('T')[0]
             });
 
             alert('상담 신청이 정상적으로 접수되었습니다. 곧 연락드리겠습니다.');
             window.close(); // Try to close if it's a popup
-        } catch (err: any) {
-            console.error(err);
-            alert('상담 신청 중 오류가 발생했습니다: ' + (err.message || '통신 오류'));
+        } catch (error: unknown) {
+            console.error('Submit error:', error);
+            alert('상담 신청 중 오류가 발생했습니다.');
         } finally {
             setIsSubmitting(false);
         }

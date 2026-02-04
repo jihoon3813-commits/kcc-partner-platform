@@ -12,6 +12,7 @@ export default defineSchema({
         address: v.optional(v.string()), // TEXT
         feedback: v.optional(v.string()), // TEXT
         progress_detail: v.optional(v.string()), // TEXT
+        partner_benefit: v.optional(v.string()), // NEW: Benefit offered to customer
         measure_date: v.optional(v.string()), // DATE as string
         construct_date: v.optional(v.string()), // DATE as string
         price_pre: v.optional(v.float64()), // NUMERIC
@@ -63,5 +64,6 @@ export default defineSchema({
         downloadUrl: v.optional(v.string()),
         thumbnail: v.optional(v.string()),
         storageId: v.optional(v.string()), // For Convex Storage
+        thumbnailStorageId: v.optional(v.string()),
     }),
 });

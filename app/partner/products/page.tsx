@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { Search, Package, ShieldCheck, Loader2, Image as ImageIcon, MessageSquare, Share2, Copy, Check, ExternalLink, X, Save, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Cookies from 'js-cookie';
@@ -17,31 +19,10 @@ interface Product {
     link?: string;
 }
 
-interface RawProductData {
-    id: string;
-    name: string;
-    category: string;
-    description: string;
-    specs: string | string[];
-    price: string;
-    status: string;
-    image: string;
-    link?: string;
-}
-
-interface PartnerInfo {
-    '아이디': string;
-    '업체명': string;
-    '특별혜택'?: string;
-    '상품별혜택'?: string;
-    [key: string]: unknown;
-}
 
 export default function PartnerCombinedProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [sessionPartnerId, setSessionPartnerId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
     const [allBenefits, setAllBenefits] = useState<Record<string, string>>({});
     const [baseUrl, setBaseUrl] = useState('');
 
@@ -53,65 +34,60 @@ export default function PartnerCombinedProductsPage() {
     const [copied, setCopied] = useState(false);
     const [consultCopied, setConsultCopied] = useState(false);
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const session = Cookies.get('partner_session');
-            if (!session) return;
-            const mySession = JSON.parse(session);
-
-            // Set initial partner info from session so links work immediately
-            setPartnerInfo(prev => prev || {
-                '아이디': mySession.id,
-                '업체명': mySession.name
-            });
-
-            // 1. Fetch Master Data
-            const res = await fetch(`/api/data?action=read_partner_config&partnerId=${mySession.id}`);
-            const json = await res.json();
-
-            if (json.success) {
-                // Products
-                const rawProducts = (json.products || []) as RawProductData[];
-                const masterProducts = rawProducts.map((p) => ({
-                    ...p,
-                    specs: typeof p.specs === 'string' ? JSON.parse(p.specs || '[]') : p.specs
-                })).filter((p) => p.status !== '판매중단');
-
-                setProducts(masterProducts.length > 0 ? masterProducts : [{
-                    id: 'P001',
-                    category: '창호/샷시',
-                    name: 'KCC홈씨씨 윈도우ONE 구독 서비스',
-                    description: '국내 최고 수준의 단열 성능과 기밀성을 자랑하는 프리미엄 창호 브랜드',
-                    specs: ['단열등급: 1~3등급', '유리두께: 24~28mm', '프레임폭: 140~251mm'],
-                    price: '별도문의',
-                    status: '판매중',
-                    image: 'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80&w=400',
-                    link: '/products/onev',
-                }]);
-
-                // Partner & Benefits
-                if (json.partner) {
-                    const partner = json.partner as PartnerInfo;
-                    setPartnerInfo(partner);
-                    const rawBenefit = (partner['상품별혜택'] as string) || (partner['특별혜택'] as string) || '{}';
-                    try {
-                        const parsed = JSON.parse(rawBenefit);
-                        setAllBenefits(typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, string>) : {});
-                    } catch { setAllBenefits({}); }
-                }
+    useEffect(() => {
+        const session = Cookies.get('partner_session');
+        if (session) {
+            try {
+                const parsed = JSON.parse(session);
+                setSessionPartnerId(parsed.id);
+            } catch (e) {
+                console.error("Session parse error", e);
             }
-        } catch (error) {
-            console.error('Fetch failed:', error);
-        } finally {
-            setLoading(false);
         }
     }, []);
 
+    const convexProducts = useQuery(api.products.listProducts);
+    const convexPartner = useQuery(api.partners.getPartnerByUid, sessionPartnerId ? { uid: sessionPartnerId } : "skip");
+    const updatePartnerMutation = useMutation(api.partners.updatePartnerByUid);
+
+    const products = useMemo(() => {
+        if (!convexProducts) return [];
+        return convexProducts.map(p => ({
+            id: p.code,
+            category: p.category || '',
+            name: p.name || '',
+            description: p.description || '',
+            specs: typeof p.specs === 'string' ? JSON.parse(p.specs) : (p.specs || []),
+            price: p.price || '',
+            status: p.status || '',
+            image: p.image || '',
+            link: p.link || ''
+        })).filter(p => p.status !== '판매중단');
+    }, [convexProducts]);
+
+    const partnerInfo = useMemo(() => {
+        if (!convexPartner) return null;
+        return {
+            '아이디': convexPartner.uid,
+            '업체명': convexPartner.name,
+            '상품별혜택': convexPartner.special_benefits
+        };
+    }, [convexPartner]);
+
+    useEffect(() => {
+        if (convexPartner?.special_benefits) {
+            try {
+                const parsed = JSON.parse(convexPartner.special_benefits);
+                setAllBenefits(typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, string>) : {});
+            } catch { setAllBenefits({}); }
+        }
+    }, [convexPartner]);
+
     useEffect(() => {
         if (typeof window !== 'undefined') setBaseUrl(window.origin);
-        fetchData();
-    }, [fetchData]);
+    }, []);
+
+    const loading = convexProducts === undefined || (sessionPartnerId && convexPartner === undefined);
 
     const handleOpenSettings = (product: Product) => {
         setSelectedProduct(product);
@@ -125,29 +101,15 @@ export default function PartnerCombinedProductsPage() {
         try {
             const updatedBenefits = { ...allBenefits, [selectedProduct.id]: tempBenefit };
 
-            const res = await fetch('/api/partners/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: partnerInfo['아이디'],
-                    name: partnerInfo['업체명'],
-                    specialBenefits: JSON.stringify(updatedBenefits),
-                    productsInfo: products.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        link: `${baseUrl}${p.link || '/products/onev'}?p=${partnerInfo['아이디']}`
-                    }))
-                })
+            await updatePartnerMutation({
+                uid: partnerInfo['아이디'],
+                updates: {
+                    special_benefits: JSON.stringify(updatedBenefits)
+                }
             });
 
-            const json = await res.json();
-            if (json.success) {
-                setAllBenefits(updatedBenefits);
-                alert('혜택 정보가 저장되었습니다.');
-                // setIsModalOpen(false); // 팝업 유지 요청으로 제거
-            } else {
-                alert('저장 실패: ' + json.message);
-            }
+            setAllBenefits(updatedBenefits);
+            alert('혜택 정보가 저장되었습니다.');
         } catch (err: unknown) {
             console.error('Save error:', err);
             alert('오류가 발생했습니다.');
@@ -235,7 +197,7 @@ export default function PartnerCombinedProductsPage() {
                             </p>
 
                             <div className="bg-gray-50/80 rounded-[24px] p-5 space-y-3 mb-8 flex-1 border border-gray-100/50">
-                                {product.specs.slice(0, 3).map((spec, i) => (
+                                {product.specs.slice(0, 3).map((spec: string, i: number) => (
                                     <div key={i} className="flex items-center gap-3 text-xs text-gray-600 font-bold">
                                         <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                                         <span className="truncate">{spec}</span>

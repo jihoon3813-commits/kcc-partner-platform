@@ -63,7 +63,11 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
     useEffect(() => {
         if (isOpen && customer) {
-            setFormData({ ...customer });
+            const initialData = { ...customer };
+            if (initialData['주소']) {
+                initialData['주소'] = String(initialData['주소']).replace(/\s*\[\d+\]$/, '');
+            }
+            setFormData(initialData);
 
             const pLogs = customer['진행현황(상세)_최근'] ? String(customer['진행현황(상세)_최근']).split('\n').filter(Boolean) : [];
             const fLogs = customer['KCC 피드백'] ? String(customer['KCC 피드백']).split('\n').filter(Boolean) : [];
@@ -219,9 +223,6 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     // 링크 렌더링 헬퍼
     const renderLinkButtons = (label: string, key: string, colorClass: string) => {
         const hasLink = !!formData[key];
-
-        // colorClass 예: "bg-blue-50 text-blue-600 border-blue-200"
-        // 진한 버전 예: "hover:bg-blue-600 hover:text-white"
 
         return (
             <div className="space-y-1">
@@ -480,14 +481,14 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             <button
                                 onClick={handleSaveLeftPanel}
                                 disabled={loading}
-                                className="w-full py-3 bg-[hsl(var(--primary))] text-white font-medium rounded-lg hover:bg-[hsl(var(--primary))]/90 flex items-center justify-center gap-2 mt-auto shadow-md transition-all"
+                                className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 mt-auto shadow-md transition-all"
                             >
                                 {loading ? '저장 중...' : <><Save className="w-4 h-4" /> 변경사항 저장</>}
                             </button>
                         )}
                     </div>
 
-                    {/* Right Content Area (Logs) - unchanged logic, just layout */}
+                    {/* Right Content Area (Logs) */}
                     <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0">
                         {/* Tabs */}
                         <div className="flex bg-white border-b border-gray-200 px-6">
