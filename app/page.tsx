@@ -176,10 +176,10 @@ export default function LandingPage() {
     <main className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 overflow-x-hidden">
       {/* Header */}
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 h-20 flex items-center px-6 md:px-12 z-[100] transition-all bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 h-16 md:h-20 flex items-center px-6 md:px-12 z-[100] transition-all bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-32 relative">
+            <div className="h-6 w-24 md:h-8 md:w-32 relative">
               <Image
                 src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
                 alt="KCC HomeCC Logo"
@@ -188,7 +188,7 @@ export default function LandingPage() {
                 unoptimized
               />
             </div>
-            <span className="font-black text-xl tracking-tighter text-[#122649] border-l pl-2 border-gray-200">Partner</span>
+            <span className="font-black text-lg md:text-xl tracking-tighter text-[#122649] border-l pl-2 border-gray-200">Partner</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -209,7 +209,7 @@ export default function LandingPage() {
 
         {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
-          <div className="absolute top-20 left-0 right-0 bg-white border-b border-gray-100 shadow-xl md:hidden flex flex-col p-4 space-y-4 animate-in slide-in-from-top-2">
+          <div className="absolute top-16 md:top-20 left-0 right-0 bg-white border-b border-gray-100 shadow-xl md:hidden flex flex-col p-4 space-y-4 animate-in slide-in-from-top-2">
             <Link
               href="/products/onev"
               className="text-gray-700 font-bold p-2 hover:bg-gray-50 rounded-lg"
@@ -266,13 +266,13 @@ export default function LandingPage() {
               href="/products/onev"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-12 py-6 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/20 transition-all shadow-xl w-full md:w-[300px] flex items-center justify-center"
+              className="px-8 py-4 md:px-12 md:py-6 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-black text-lg md:text-xl rounded-full hover:scale-105 hover:bg-white/20 transition-all shadow-xl w-full md:w-[300px] flex items-center justify-center"
             >
               상품보러가기
             </Link>
             <button
               onClick={() => setShowApplyModal(true)}
-              className="px-12 py-6 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-[300px]"
+              className="px-8 py-4 md:px-12 md:py-6 bg-white text-black font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-[300px]"
             >
               파트너 신청하기
             </button>
@@ -388,13 +388,13 @@ export default function LandingPage() {
               href="/products/onev"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-12 py-5 bg-transparent border border-white/30 text-white font-black text-xl rounded-full hover:scale-105 hover:bg-white/10 transition-all shadow-xl w-full md:w-[300px] flex items-center justify-center"
+              className="px-8 py-4 md:px-12 md:py-5 bg-transparent border border-white/30 text-white font-black text-lg md:text-xl rounded-full hover:scale-105 hover:bg-white/10 transition-all shadow-xl w-full md:w-[300px] flex items-center justify-center"
             >
               상품보러가기
             </Link>
             <button
               onClick={() => setShowApplyModal(true)}
-              className="px-12 py-5 bg-white text-black font-black text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-[300px]"
+              className="px-8 py-4 md:px-12 md:py-5 bg-white text-black font-black text-lg md:text-xl rounded-full hover:scale-105 transition-all shadow-xl w-full md:w-[300px]"
             >
               파트너 신청하기
             </button>
