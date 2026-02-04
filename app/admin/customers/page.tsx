@@ -181,6 +181,13 @@ function AdminCustomersContent() {
                             </div>
                         )}
                         <button
+                            onClick={fetchData}
+                            className={`p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all ${loading ? 'animate-spin' : ''}`}
+                            title="새로고침"
+                        >
+                            <RefreshCcw className="w-5 h-5" />
+                        </button>
+                        <button
                             onClick={handleResetFilters}
                             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                             title="필터 초기화"

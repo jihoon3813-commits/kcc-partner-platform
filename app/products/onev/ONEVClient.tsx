@@ -94,6 +94,10 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                 if (data.success && data.partner) {
                     partner = data.partner;
                     sessionStorage.setItem(`benefit_${partnerId}`, JSON.stringify(partner));
+                } else if (data.success && !data.partner) {
+                    alert('유효하지 않은 파트너 정보입니다.');
+                    setIsFetching(false);
+                    return;
                 }
             }
 
@@ -113,9 +117,16 @@ export default function ONEVClient({ initialPartnerData, partnerId }: ONEVClient
                             };
                             benefitsStr = findVal('P001') || findVal('onev') || findVal('vbf140') || Object.values(benefitsObj)[0] || '';
                         }
+                    } else if (rawBenefit) {
+                        benefitsStr = rawBenefit;
                     }
                 } catch (e) {
                     console.warn('Benefit parsing failed:', e);
+                    benefitsStr = rawBenefit;
+                }
+
+                if (!benefitsStr || benefitsStr === '{}') {
+                    benefitsStr = '등록된 특별 혜택이 없습니다. 본사 혜택과 동일하게 적용됩니다.';
                 }
 
                 setPartnerData({ ...partner, '특별혜택': benefitsStr });

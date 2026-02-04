@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
     try {
@@ -9,18 +10,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: '파트너 ID가 필요합니다.' }, { status: 400 });
         }
 
-        const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL || 'https://script.google.com/macros/s/AKfycbzEeEI2vRPjjP79bVdUmNKIqavViAZma96Y80x2S7qi7atEgNFtd7uTulNJDRh8WsqI/exec';
-        if (!gasUrl) {
-            return NextResponse.json({ error: 'GAS URL 미설정' }, { status: 500 });
+        const { error } = await supabase
+            .from('partners')
+            .delete()
+            .eq('uid', id);
+
+        if (error) {
+            console.error('Delete Error:', error);
+            return NextResponse.json({ error: '데이터베이스 삭제 실패' }, { status: 500 });
         }
 
-        const response = await fetch(`${gasUrl}?action=delete_partner`, {
-            method: 'POST',
-            body: JSON.stringify({ id })
-        });
-
-        const result = await response.json();
-        return NextResponse.json(result);
+        return NextResponse.json({ success: true, message: '삭제되었습니다.' });
 
     } catch (error: unknown) {
         console.error('Delete Error:', error);

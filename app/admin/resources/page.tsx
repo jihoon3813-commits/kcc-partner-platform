@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Download, FileImage, FileVideo, FileText, PlayCircle, Image as ImageIcon, Plus, Trash2, Loader2, Link as LinkIcon, Save, UploadCloud } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface Resource {
     id: string;
@@ -44,7 +45,7 @@ export default function AdminResourcesPage() {
             const res = await fetch('/api/data?action=read_resources');
             const json = await res.json();
             if (json.success) {
-                setResources(json.data.reverse());
+                setResources(json.data);
             }
         } catch {
             console.error("Failed to fetch resources");
@@ -53,46 +54,33 @@ export default function AdminResourcesPage() {
         }
     };
 
-    const convertToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-                const result = reader.result as string;
-                // Remove the "data:*/*;base64," prefix for GAS
-                const base64 = result.split(',')[1];
-                resolve(base64);
-            };
-            reader.onerror = error => reject(error);
-        });
-    };
-
-    const uploadFileToDrive = async (file: File): Promise<string | null> => {
+    const uploadFileToSupabase = async (file: File): Promise<string | null> => {
         try {
-            const base64Data = await convertToBase64(file);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
 
-            const payload = {
-                filename: file.name,
-                mimeType: file.type,
-                base64Data: base64Data
-            };
+            const { error: uploadError } = await supabase.storage
+                .from('resources')
+                .upload(filePath, file);
 
-            const res = await fetch('/api/data?action=upload_file', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const json = await res.json();
-            if (json.success) {
-                return json.url;
-            } else {
-                alert('파일 업로드 실패: ' + json.message);
+            if (uploadError) {
+                if (uploadError.message.includes('bucket not found')) {
+                    alert('Supabase Storage에 "resources" 버킷이 없습니다. 대시보드에서 public 버킷을 생성해주세요.');
+                } else {
+                    alert('업로드 실패: ' + uploadError.message);
+                }
                 return null;
             }
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('resources')
+                .getPublicUrl(filePath);
+
+            return publicUrl;
         } catch (e) {
             console.error(e);
-            alert('파일 업로드 중 오류 발생');
+            alert('업로드 중 오류 발생');
             return null;
         }
     };
@@ -110,7 +98,7 @@ export default function AdminResourcesPage() {
             // 1. Upload Main File
             if (selectedFile) {
                 setUploadProgress('메인 파일 업로드 중...');
-                const uploadedUrl = await uploadFileToDrive(selectedFile);
+                const uploadedUrl = await uploadFileToSupabase(selectedFile);
                 if (!uploadedUrl) {
                     setIsSubmitting(false);
                     return;
@@ -126,7 +114,7 @@ export default function AdminResourcesPage() {
             // 2. Upload Thumbnail
             if (selectedThumbnail) {
                 setUploadProgress('썸네일 업로드 중...');
-                const uploadedThumb = await uploadFileToDrive(selectedThumbnail);
+                const uploadedThumb = await uploadFileToSupabase(selectedThumbnail);
                 if (uploadedThumb) {
                     finalThumbnailUrl = uploadedThumb;
                 }
@@ -200,24 +188,27 @@ export default function AdminResourcesPage() {
         ? resources
         : resources.filter(res => res.type === activeTab);
 
-    const handleDownload = (e: React.MouseEvent, url: string) => {
+    const handleDownload = async (e: React.MouseEvent, url: string, filename: string) => {
         e.preventDefault();
         e.stopPropagation();
 
-        let downloadLink = url;
-        // Google Drive 'view' link conversion to 'download' link
-        if (url.includes('drive.google.com/uc?export=view')) {
-            downloadLink = url.replace('export=view', 'export=download');
-        }
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
 
-        // Create invisible anchor to trigger download
-        const a = document.createElement('a');
-        a.href = downloadLink;
-        a.setAttribute('download', ''); // Attempt to force download
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blobUrl);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Download failed:', error);
+            // Fallback to simple link opening if fetch fails (e.g. CORS)
+            window.open(url, '_blank');
+        }
     };
 
     const getPreviewContent = (resource: Resource) => {
@@ -246,7 +237,7 @@ export default function AdminResourcesPage() {
             }
         }
 
-        // Fallback for non-Drive images
+        // Supabase or Direct Image
         if (resource.type === 'image') {
             return (
                 <img
@@ -412,7 +403,7 @@ export default function AdminResourcesPage() {
                                 <p className="text-sm text-gray-500 mb-4 line-clamp-2 h-10">{item.description}</p>
 
                                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-                                    <span className="text-xs text-gray-400 font-medium">{item.date}</span>
+                                    <span className="text-xs text-gray-400 font-medium">{item.date?.substring(0, 10)}</span>
 
                                     <div className="flex gap-2">
                                         <button
@@ -423,7 +414,7 @@ export default function AdminResourcesPage() {
                                             {item.type === 'video' ? <PlayCircle size={16} /> : (item.type === 'file' ? <FileText size={16} /> : <ImageIcon size={16} />)}
                                         </button>
                                         <button
-                                            onClick={(e) => handleDownload(e, item.downloadUrl)}
+                                            onClick={(e) => handleDownload(e, item.downloadUrl, item.title)}
                                             className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-indigo-600 transition-colors"
                                         >
                                             <Download size={14} /> 다운로드
@@ -632,7 +623,7 @@ export default function AdminResourcesPage() {
                     <div className="absolute bottom-8 left-0 right-0 text-center">
                         <h3 className="text-white text-xl font-bold mb-4 drop-shadow-md">{previewResource.title}</h3>
                         <button
-                            onClick={(e) => handleDownload(e, previewResource.downloadUrl)}
+                            onClick={(e) => handleDownload(e, previewResource.downloadUrl, previewResource.title)}
                             className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-black hover:scale-105 transition-transform shadow-xl"
                         >
                             <Download size={20} /> 원본 다운로드

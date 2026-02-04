@@ -25,6 +25,11 @@ export async function POST(request: Request) {
             .eq('uid', id)
             .maybeSingle();
 
+        if (checkError) {
+            console.error('ID Check Error:', checkError);
+            return NextResponse.json({ error: '중복 검사 중 오류가 발생했습니다.' }, { status: 500 });
+        }
+
         if (existingUser) {
             return NextResponse.json({ error: '이미 사용 중인 아이디입니다.' }, { status: 409 });
         }

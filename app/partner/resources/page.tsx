@@ -25,7 +25,7 @@ export default function PartnerResourcesPage() {
                 const res = await fetch('/api/data?action=read_resources');
                 const json = await res.json();
                 if (json.success) {
-                    setResources(json.data.reverse());
+                    setResources(json.data);
                 }
             } catch (err) {
                 console.error(err);
@@ -40,24 +40,27 @@ export default function PartnerResourcesPage() {
         ? resources
         : resources.filter(res => res.type === activeTab);
 
-    const handleDownload = (e: React.MouseEvent, url: string) => {
+    const handleDownload = async (e: React.MouseEvent, url: string, filename: string) => {
         e.preventDefault();
         e.stopPropagation();
 
-        let downloadLink = url;
-        // Google Drive 'view' link conversion to 'download' link
-        if (url.includes('drive.google.com/uc?export=view')) {
-            downloadLink = url.replace('export=view', 'export=download');
-        }
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
 
-        // Create invisible anchor to trigger download
-        const a = document.createElement('a');
-        a.href = downloadLink;
-        a.setAttribute('download', '');
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blobUrl);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Download failed:', error);
+            // Fallback
+            window.open(url, '_blank');
+        }
     };
 
     const getPreviewContent = (resource: Resource) => {
@@ -230,7 +233,7 @@ export default function PartnerResourcesPage() {
                                 <p className="text-sm text-gray-500 mb-6 line-clamp-2 h-10">{item.description}</p>
 
                                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-                                    <span className="text-xs text-gray-400 font-medium">{item.date}</span>
+                                    <span className="text-xs text-gray-400 font-medium">{item.date?.substring(0, 10)}</span>
 
                                     <div className="flex gap-2">
                                         <button
@@ -244,7 +247,7 @@ export default function PartnerResourcesPage() {
                                             {item.type === 'video' ? <PlayCircle size={16} /> : (item.type === 'file' ? <FileText size={16} /> : <ImageIcon size={16} />)}
                                         </button>
                                         <button
-                                            onClick={(e) => handleDownload(e, item.downloadUrl)}
+                                            onClick={(e) => handleDownload(e, item.downloadUrl, item.title)}
                                             className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-bold hover:bg-indigo-600 transition-colors shadow-md transform hover:scale-105"
                                         >
                                             <Download size={14} /> 다운로드
@@ -288,7 +291,7 @@ export default function PartnerResourcesPage() {
                     <div className="absolute bottom-8 left-0 right-0 text-center">
                         <h3 className="text-white text-xl font-bold mb-4 drop-shadow-md">{previewResource.title}</h3>
                         <button
-                            onClick={(e) => handleDownload(e, previewResource.downloadUrl)}
+                            onClick={(e) => handleDownload(e, previewResource.downloadUrl, previewResource.title)}
                             className="inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-full font-black hover:scale-105 transition-transform shadow-xl"
                         >
                             <Download size={20} /> 원본 다운로드

@@ -60,6 +60,12 @@ export default function PartnerCombinedProductsPage() {
             if (!session) return;
             const mySession = JSON.parse(session);
 
+            // Set initial partner info from session so links work immediately
+            setPartnerInfo(prev => prev || {
+                '아이디': mySession.id,
+                '업체명': mySession.name
+            });
+
             // 1. Fetch Master Data
             const res = await fetch(`/api/data?action=read_partner_config&partnerId=${mySession.id}`);
             const json = await res.json();
@@ -136,8 +142,6 @@ export default function PartnerCombinedProductsPage() {
 
             const json = await res.json();
             if (json.success) {
-                setAllBenefits(updatedBenefits);
-                alert('혜택 정보가 저장되었습니다.');
                 setAllBenefits(updatedBenefits);
                 alert('혜택 정보가 저장되었습니다.');
                 // setIsModalOpen(false); // 팝업 유지 요청으로 제거
@@ -280,7 +284,9 @@ export default function PartnerCombinedProductsPage() {
                                     <ArrowUpRight className="text-indigo-600" /> 홍보용 전용 링크 (Landing URL)
                                 </div>
                                 <div className="p-6 bg-indigo-50/50 rounded-3xl border-2 border-dashed border-indigo-200 flex flex-col sm:flex-row items-center gap-6">
-                                    <p className="flex-1 font-mono text-sm text-indigo-700 font-black break-all select-all">{landingUrl}</p>
+                                    <p className="flex-1 font-mono text-sm text-indigo-700 font-black break-all select-all">
+                                        {landingUrl || `${baseUrl}${selectedProduct.link || '/products/onev'}?p=${partnerInfo?.['아이디'] || 'loading...'}`}
+                                    </p>
                                     <div className="flex gap-3 shrink-0">
                                         <button onClick={handleCopy} className={`px-6 py-3 rounded-xl font-black text-xs transition-all uppercase ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50'}`}>
                                             {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -300,7 +306,7 @@ export default function PartnerCombinedProductsPage() {
                                 </div>
                                 <div className="p-6 bg-pink-50/50 rounded-3xl border-2 border-dashed border-pink-200 flex flex-col sm:flex-row items-center gap-6">
                                     <p className="flex-1 font-mono text-sm text-pink-700 font-black break-all select-all">
-                                        {baseUrl}/products/onev/consult?p={partnerInfo?.['아이디']}
+                                        {baseUrl}/products/onev/consult?p={partnerInfo?.['아이디'] || '...'}
                                     </p>
                                     <div className="flex gap-3 shrink-0">
                                         <button

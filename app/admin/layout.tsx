@@ -14,16 +14,11 @@ export default function AdminLayout({
 }) {
     const router = useRouter();
     const pathname = usePathname();
-    const [adminInfo, setAdminInfo] = useState<{ name: string, id: string } | null>(() => {
-        if (typeof window === 'undefined') return null;
-        const session = Cookies.get('admin_session');
-        if (session) {
-            try { return JSON.parse(session); } catch { return null; }
-        }
-        return null;
-    });
+    const [adminInfo, setAdminInfo] = useState<{ name: string, id: string } | null>(null);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         if (pathname === '/admin/login') return;
 
         const session = Cookies.get('admin_session');
@@ -32,25 +27,21 @@ export default function AdminLayout({
             return;
         }
 
-        // Sync state if cookie changed (e.g. from another tab or after login)
         try {
             const parsed = JSON.parse(session);
-            if (!adminInfo || adminInfo.id !== parsed.id || adminInfo.name !== parsed.name) {
-                // Use setTimeout to avoid synchronous setState inside useEffect error
-                const timer = setTimeout(() => setAdminInfo(parsed), 0);
-                return () => clearTimeout(timer);
-            }
+            setAdminInfo(parsed);
         } catch {
             Cookies.remove('admin_session');
             router.replace('/admin/login');
         }
-    }, [router, pathname, adminInfo]); // Recalculate on adminInfo change or navigation
+    }, [router, pathname]);
 
     const handleLogout = () => {
         Cookies.remove('admin_session');
         router.push('/admin/login');
     };
 
+    if (!mounted) return null;
     if (pathname === '/admin/login') return <>{children}</>;
     if (!adminInfo) return null;
 

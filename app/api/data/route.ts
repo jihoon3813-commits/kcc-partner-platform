@@ -4,21 +4,24 @@ import { supabase } from '@/lib/supabase';
 // Mapping Supabase columns to Korean keys (Legacy support for Frontend)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapCustomerToLegacy = (c: any) => ({
-    'No.': c.no,
-    '라벨': c.label || '일반',
-    '진행구분': c.status || '접수',
-    '신청일시': c.created_at,
-    '유입채널': c.channel,
-    '고객명': c.name,
-    '연락처': c.contact,
-    '주소': c.address,
-    'KCC 피드백': c.feedback,
-    '진행현황(상세)_최근': c.progress_detail,
-    '실측일자': c.measure_date,
-    '시공일자': c.construct_date,
-    '가견적 금액': c.price_pre,
-    '최종견적 금액': c.price_final,
-    // ID needed for updates
+    'No.': c['No.'],
+    '라벨': c['라벨'],
+    '진행구분': c['진행구분'],
+    '채널': c['채널'],
+    '고객명': c['고객명'],
+    '연락처': c['연락처'],
+    '주소': c['주소'],
+    'KCC 피드백': c['KCC 피드백'],
+    '진행현황(상세)_최근': c['진행현황(상세)_최근'],
+    '가견적 링크': c['가견적 링크'],
+    '최종 견적 링크': c['최종 견적 링크'],
+    '고객견적서(가)': c['고객견적서(가)'],
+    '고객견적서(최종)': c['고객견적서(최종)'],
+    '실측일자': c['실측일자'],
+    '시공일자': c['시공일자'],
+    '가견적 금액': c['가견적 금액'],
+    '최종견적 금액': c['최종견적 금액'],
+    '신청일시': c['신청일'] || c.server_created_at,
     'id': c.id
 });
 
@@ -26,7 +29,7 @@ const mapCustomerToLegacy = (c: any) => ({
 const mapPartnerToLegacy = (p: any) => ({
     '아이디': p.uid,
     '업체명': p.name,
-    '대표자명': p.ceo_name,
+    '대표명': p.ceo_name,
     '연락처': p.contact,
     '주소': p.address,
     '상태': p.status,
@@ -35,21 +38,31 @@ const mapPartnerToLegacy = (p: any) => ({
     '이메일': p.email,
     '상품별혜택': p.special_benefits,
     '상위파트너ID': p.parent_id,
-    '신청일': p.created_at
+    '등록일': p.created_at
 });
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapProductToLegacy = (p: any) => ({
     'id': p.code || p.id,
     'category': p.category,
     'name': p.name,
     'description': p.description,
-    'specs': p.specs,
+    'specs': typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs,
     'price': p.price,
     'status': p.status,
     'image': p.image,
     'link': p.link,
     'createdAt': p.created_at
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapResourceToLegacy = (r: any) => ({
+    'id': r.id,
+    'type': r.type,
+    'title': r.title,
+    'description': r.description,
+    'date': r.created_at,
+    'downloadUrl': r.download_url,
+    'thumbnail': r.thumbnail
 });
 
 export async function GET(request: Request) {
@@ -61,7 +74,7 @@ export async function GET(request: Request) {
         let data: any = [];
 
         if (action === 'read' || action === 'read_customers') {
-            const { data: rows, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+            const { data: rows, error } = await supabase.from('customers').select('*').order('server_created_at', { ascending: false });
             if (error) throw error;
             data = rows.map(mapCustomerToLegacy);
         }
@@ -76,44 +89,60 @@ export async function GET(request: Request) {
             data = rows.map(mapProductToLegacy);
         }
         else if (action === 'read_dashboard') {
-            const [customers, partners] = await Promise.all([
-                supabase.from('customers').select('*').order('created_at', { ascending: false }),
+            const [customersRes, partnersRes] = await Promise.all([
+                supabase.from('customers').select('*').order('server_created_at', { ascending: false }),
                 supabase.from('partners').select('*').order('created_at', { ascending: false })
             ]);
 
+            if (customersRes.error) throw customersRes.error;
+            if (partnersRes.error) throw partnersRes.error;
+
             data = {
-                customers: customers.data?.map(mapCustomerToLegacy) || [],
-                partners: partners.data?.map(mapPartnerToLegacy) || [],
+                customers: customersRes.data?.map(mapCustomerToLegacy) || [],
+                partners: partnersRes.data?.map(mapPartnerToLegacy) || [],
                 logs: []
             };
         }
         else if (action === 'read_partner_config') {
             const partnerId = searchParams.get('partnerId');
-            const [products, partner] = await Promise.all([
+            const [productsRes, partnerRes] = await Promise.all([
                 supabase.from('products').select('*'),
-                supabase.from('partners').select('uid,name,ceo_name,contact,address,business_number,account_number,email,status,parent_id,created_at').eq('uid', partnerId).single()
+                supabase.from('partners').select('*').eq('uid', partnerId).maybeSingle()
             ]);
+
+            if (productsRes.error) throw productsRes.error;
+            if (partnerRes.error) throw partnerRes.error;
 
             return NextResponse.json({
                 success: true,
-                products: products.data?.map(mapProductToLegacy) || [],
-                partner: partner.data ? mapPartnerToLegacy(partner.data) : null
+                products: productsRes.data?.map(mapProductToLegacy) || [],
+                partner: partnerRes.data ? mapPartnerToLegacy(partnerRes.data) : null
+            });
+        }
+        else if (action === 'read_resources') {
+            const { data: rows, error } = await supabase.from('resources').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            data = rows.map(mapResourceToLegacy);
+        }
+        else if (action === 'read_settings') {
+            return NextResponse.json({
+                success: true,
+                data: {
+                    labels: ['체크', '접수', '완료', '보류'],
+                    statuses: [
+                        '접수', '부재', '예약콜', '거부',
+                        '가견적요청', '가견적전달', '가견적불가', '사이즈요청',
+                        '실측요청', '실측진행', '실측취소',
+                        '최종견적요청', '최종견적전달', '수정견적전달', '재견적작업', '견적후취소',
+                        '최종고민중', '계약진행', '결제완료', '공사완료'
+                    ],
+                    progressAuthors: ['오영진', '김지훈'],
+                    feedbackAuthors: ['문창현']
+                }
             });
         }
         else {
-            // Fallback for unknown actions or 'read_settings' (which might be static now)
-            if (action === 'read_settings') {
-                return NextResponse.json({
-                    success: true,
-                    data: {
-                        labels: ['체크', '접수', '완료', '보류'],
-                        statuses: ['접수', '부재', '예약콜', '거부', '사이즈요청', '가견적요청', '계약완료', '시공완료'],
-                        progressAuthors: ['오영진', '김지훈'],
-                        feedbackAuthors: ['문창현']
-                    }
-                });
-            }
-            return NextResponse.json({ success: false, message: 'Unknown action: ' + action });
+            return NextResponse.json({ success: false, message: 'Unknown GET action: ' + action });
         }
 
         return NextResponse.json({ success: true, data });
@@ -132,38 +161,57 @@ export async function POST(request: Request) {
         const body = await request.json();
 
         if (action === 'update_customer') {
-            const { no, ...updates } = body;
+            const { id, ...updates } = body;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const dbUpdates: any = {};
 
-            // Mapping Logic
-            if (updates.label !== undefined) dbUpdates.label = updates.label;
-            if (updates.status !== undefined) dbUpdates.status = updates.status;
-            if (updates.name !== undefined) dbUpdates.name = updates.name;
-            if (updates.contact !== undefined) dbUpdates.contact = updates.contact;
-            if (updates.address !== undefined) dbUpdates.address = updates.address;
-            if (updates.pricePre !== undefined) dbUpdates.price_pre = updates.pricePre;
-            if (updates.priceFinal !== undefined) dbUpdates.price_final = updates.priceFinal;
-            if (updates.measureDate !== undefined) dbUpdates.measure_date = updates.measureDate;
-            if (updates.constructDate !== undefined) dbUpdates.construct_date = updates.constructDate;
-            if (updates.feedback !== undefined) dbUpdates.feedback = updates.feedback;
-            if (updates.progress !== undefined) dbUpdates.progress_detail = updates.progress;
+            // Mapping Logic (To match the new Korean column names in Supabase)
+            if (updates.label !== undefined) dbUpdates['라벨'] = updates.label;
+            if (updates.status !== undefined) dbUpdates['진행구분'] = updates.status;
+            if (updates.name !== undefined) dbUpdates['고객명'] = updates.name;
+            if (updates.contact !== undefined) dbUpdates['연락처'] = updates.contact;
+            if (updates.address !== undefined) dbUpdates['주소'] = updates.address;
+            if (updates.pricePre !== undefined) dbUpdates['가견적 금액'] = updates.pricePre;
+            if (updates.priceFinal !== undefined) dbUpdates['최종견적 금액'] = updates.priceFinal;
+            if (updates.measureDate !== undefined) dbUpdates['실측일자'] = updates.measureDate;
+            if (updates.constructDate !== undefined) dbUpdates['시공일자'] = updates.constructDate;
+            if (updates.linkPreKcc !== undefined) dbUpdates['가견적 링크'] = updates.linkPreKcc;
+            if (updates.linkFinalKcc !== undefined) dbUpdates['최종 견적 링크'] = updates.linkFinalKcc;
+            if (updates.linkPreCust !== undefined) dbUpdates['고객견적서(가)'] = updates.linkPreCust;
+            if (updates.linkFinalCust !== undefined) dbUpdates['고객견적서(최종)'] = updates.linkFinalCust;
+            if (updates.feedback !== undefined) dbUpdates['KCC 피드백'] = updates.feedback;
+            if (updates.progress !== undefined) dbUpdates['진행현황(상세)_최근'] = updates.progress;
 
-            const { error } = await supabase.from('customers').update(dbUpdates).eq('no', no);
+            const { error } = await supabase.from('customers').update(dbUpdates).eq('id', id);
             if (error) throw error;
         }
         else if (action === 'delete_customer') {
-            const { no } = body;
-            const { error } = await supabase.from('customers').delete().eq('no', no);
+            const { id } = body;
+            const { error } = await supabase.from('customers').delete().eq('id', id);
             if (error) throw error;
         }
         else if (action === 'create_product') {
-            const { name, category, price, status, description, specs } = body;
+            const { id, name, category, price, status, description, specs, image, link } = body;
             const { error } = await supabase.from('products').insert({
+                code: id || `P${Date.now()}`,
                 name, category, price, status, description,
-                specs: specs || [],
-                code: body.id || `P${Date.now()}`
+                image, link,
+                specs: typeof specs === 'string' ? JSON.parse(specs) : (specs || [])
             });
+            if (error) throw error;
+        }
+        else if (action === 'update_product') {
+            const { id, name, category, price, status, description, specs, image, link } = body;
+            const { error } = await supabase.from('products').update({
+                name, category, price, status, description,
+                image, link,
+                specs: typeof specs === 'string' ? JSON.parse(specs) : (specs || [])
+            }).eq('code', id);
+            if (error) throw error;
+        }
+        else if (action === 'delete_product') {
+            const { id } = body;
+            const { error } = await supabase.from('products').delete().eq('code', id);
             if (error) throw error;
         }
         else if (action === 'update_partner') {
@@ -183,8 +231,68 @@ export async function POST(request: Request) {
             const { error } = await supabase.from('partners').update(dbUpdates).eq('uid', id);
             if (error) throw error;
         }
+        else if (action === 'create') {
+            const {
+                name, contact, address, channel, label, status,
+                pyeong, expansion, residence, schedule, remarks
+            } = body;
 
-        // ... (Other actions implementation as needed) ...
+            // Build a progress detail string for non-core fields to maintain legacy information
+            const progressDetail = [
+                pyeong ? `평형: ${pyeong}` : '',
+                expansion ? `확장: ${expansion}` : '',
+                residence ? `거주: ${residence}` : '',
+                schedule ? `희망일: ${schedule}` : '',
+                remarks ? `특이사항: ${remarks}` : ''
+            ].filter(Boolean).join(' / ');
+
+            const { error } = await supabase.from('customers').insert({
+                '고객명': name,
+                '연락처': contact,
+                '주소': address,
+                '채널': channel || '직접등록',
+                '라벨': label || '일반',
+                '진행구분': status || '접수',
+                '진행현황(상세)_최근': progressDetail,
+                '신청일': new Date().toISOString().split('T')[0]
+            });
+            if (error) throw error;
+        }
+        else if (action === 'create_resource') {
+            const { type, title, description, downloadUrl, thumbnail } = body;
+            const { error } = await supabase.from('resources').insert({
+                type, title, description,
+                download_url: downloadUrl,
+                thumbnail: thumbnail
+            });
+            if (error) throw error;
+        }
+        else if (action === 'delete_resource') {
+            const { id } = body;
+            const { error } = await supabase.from('resources').delete().eq('id', id);
+            if (error) throw error;
+        }
+        else if (action === 'upload_file') {
+            const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL;
+            if (!gasUrl) throw new Error('GAS URL 미설정 - 파일 업로드는 여전히 GAS를 사용합니다.');
+
+            const response = await fetch(`${gasUrl}?action=upload_file`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const result = await response.json();
+            return NextResponse.json(result);
+        }
+        else if (action === 'init_database') {
+            return NextResponse.json({
+                success: true,
+                message: 'Supabase에서는 SQL 스크립트를 수동으로 실행해야 합니다. 프로젝트 루트의 supabase_schema.sql 파일을 열어 내용을 복사한 뒤, Supabase SQL Editor에서 실행해주세요.'
+            });
+        }
+        else {
+            return NextResponse.json({ success: false, message: 'Unknown POST action: ' + action });
+        }
 
         return NextResponse.json({ success: true, message: 'Operation successful' });
 
