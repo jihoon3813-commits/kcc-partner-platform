@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { convex, api } from '@/lib/convex';
 
 export async function POST(request: Request) {
     try {
@@ -10,15 +10,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: '파트너 ID가 필요합니다.' }, { status: 400 });
         }
 
-        const { error } = await supabase
-            .from('partners')
-            .delete()
-            .eq('uid', id);
-
-        if (error) {
-            console.error('Delete Error:', error);
-            return NextResponse.json({ error: '데이터베이스 삭제 실패' }, { status: 500 });
-        }
+        await convex.mutation(api.partners.deletePartnerByUid, { uid: id });
 
         return NextResponse.json({ success: true, message: '삭제되었습니다.' });
 
@@ -27,3 +19,4 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: '서버 오류' }, { status: 500 });
     }
 }
+

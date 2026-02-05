@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { convex, api } from '@/lib/convex';
 
 export async function POST(request: Request) {
     try {
@@ -23,15 +23,10 @@ export async function POST(request: Request) {
         if (updates.password) dbUpdates.password = updates.password;
         if (updates.specialBenefits) dbUpdates.special_benefits = updates.specialBenefits;
 
-        const { error } = await supabase
-            .from('partners')
-            .update(dbUpdates)
-            .eq('uid', id);
-
-        if (error) {
-            console.error('Update Error:', error);
-            return NextResponse.json({ error: '데이터베이스 업데이트 실패' }, { status: 500 });
-        }
+        await convex.mutation(api.partners.updatePartnerByUid, {
+            uid: id,
+            updates: dbUpdates
+        });
 
         return NextResponse.json({ success: true, message: '수정되었습니다.' });
 
@@ -40,3 +35,4 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: '서버 오류' }, { status: 500 });
     }
 }
+

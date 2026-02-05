@@ -1,28 +1,29 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { convex, api } from '@/lib/convex';
+import { Id } from '@/convex/_generated/dataModel';
 
-// Mapping Supabase columns to Korean keys (Legacy support for Frontend)
+// Mapping Supabase/Convex columns to Korean keys (Legacy support for Frontend)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapCustomerToLegacy = (c: any) => ({
-    'No.': c['No.'],
-    '라벨': c['라벨'],
-    '진행구분': c['진행구분'],
-    '채널': c['채널'],
-    '고객명': c['고객명'],
-    '연락처': c['연락처'],
-    '주소': c['주소'],
-    'KCC 피드백': c['KCC 피드백'],
-    '진행현황(상세)_최근': c['진행현황(상세)_최근'],
-    '가견적 링크': c['가견적 링크'],
-    '최종 견적 링크': c['최종 견적 링크'],
-    '고객견적서(가)': c['고객견적서(가)'],
-    '고객견적서(최종)': c['고객견적서(최종)'],
-    '실측일자': c['실측일자'],
-    '시공일자': c['시공일자'],
-    '가견적 금액': c['가견적 금액'],
-    '최종견적 금액': c['최종견적 금액'],
-    '신청일시': c['신청일'] || c.server_created_at,
-    'id': c.id
+    'No.': c.no,
+    '라벨': c.label,
+    '진행구분': c.status,
+    '채널': c.channel,
+    '고객명': c.name,
+    '연락처': c.contact,
+    '주소': c.address,
+    'KCC 피드백': c.feedback,
+    '진행현황(상세)_최근': c.progress_detail,
+    '가견적 링크': c.link_pre_kcc,
+    '최종 견적 링크': c.link_final_kcc,
+    '고객견적서(가)': c.link_pre_cust,
+    '고객견적서(최종)': c.link_final_cust,
+    '실측일자': c.measure_date,
+    '시공일자': c.construct_date,
+    '가견적 금액': c.price_pre,
+    '최종견적 금액': c.price_final,
+    '신청일시': c.created_at || c._creationTime,
+    'id': c._id // Use Convex ID
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,11 +39,12 @@ const mapPartnerToLegacy = (p: any) => ({
     '이메일': p.email,
     '상품별혜택': p.special_benefits,
     '상위파트너ID': p.parent_id,
-    '등록일': p.created_at
+    '등록일': p._creationTime
 });
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapProductToLegacy = (p: any) => ({
-    'id': p.code || p.id,
+    'id': p.code,
     'category': p.category,
     'name': p.name,
     'description': p.description,
@@ -51,17 +53,17 @@ const mapProductToLegacy = (p: any) => ({
     'status': p.status,
     'image': p.image,
     'link': p.link,
-    'createdAt': p.created_at
+    'createdAt': p._creationTime
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapResourceToLegacy = (r: any) => ({
-    'id': r.id,
+    'id': r._id,
     'type': r.type,
     'title': r.title,
     'description': r.description,
-    'date': r.created_at,
-    'downloadUrl': r.download_url,
+    'date': r._creationTime,
+    'downloadUrl': r.downloadUrl,
     'thumbnail': r.thumbnail
 });
 
@@ -74,32 +76,26 @@ export async function GET(request: Request) {
         let data: any = [];
 
         if (action === 'read' || action === 'read_customers') {
-            const { data: rows, error } = await supabase.from('customers').select('*').order('server_created_at', { ascending: false });
-            if (error) throw error;
+            const rows = await convex.query(api.customers.listCustomers);
             data = rows.map(mapCustomerToLegacy);
         }
         else if (action === 'read_partners') {
-            const { data: rows, error } = await supabase.from('partners').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
+            const rows = await convex.query(api.partners.listPartners);
             data = rows.map(mapPartnerToLegacy);
         }
         else if (action === 'read_products') {
-            const { data: rows, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
+            const rows = await convex.query(api.products.listProducts);
             data = rows.map(mapProductToLegacy);
         }
         else if (action === 'read_dashboard') {
             const [customersRes, partnersRes] = await Promise.all([
-                supabase.from('customers').select('*').order('server_created_at', { ascending: false }),
-                supabase.from('partners').select('*').order('created_at', { ascending: false })
+                convex.query(api.customers.listCustomers),
+                convex.query(api.partners.listPartners)
             ]);
 
-            if (customersRes.error) throw customersRes.error;
-            if (partnersRes.error) throw partnersRes.error;
-
             data = {
-                customers: customersRes.data?.map(mapCustomerToLegacy) || [],
-                partners: partnersRes.data?.map(mapPartnerToLegacy) || [],
+                customers: customersRes.map(mapCustomerToLegacy),
+                partners: partnersRes.map(mapPartnerToLegacy),
                 logs: []
             };
         }
@@ -107,7 +103,6 @@ export async function GET(request: Request) {
             const partnerId = searchParams.get('partnerId');
 
             try {
-                const { convex, api } = await import('@/lib/convex');
                 const [products, partner] = await Promise.all([
                     convex.query(api.products.listProducts),
                     partnerId ? convex.query(api.partners.getPartnerByUid, { uid: partnerId }) : Promise.resolve(null)
@@ -124,8 +119,7 @@ export async function GET(request: Request) {
             }
         }
         else if (action === 'read_resources') {
-            const { data: rows, error } = await supabase.from('resources').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
+            const rows = await convex.query(api.resources.listResources);
             data = rows.map(mapResourceToLegacy);
         }
         else if (action === 'read_settings') {
@@ -169,54 +163,53 @@ export async function POST(request: Request) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const dbUpdates: any = {};
 
-            // Mapping Logic (To match the new Korean column names in Supabase)
-            if (updates.label !== undefined) dbUpdates['라벨'] = updates.label;
-            if (updates.status !== undefined) dbUpdates['진행구분'] = updates.status;
-            if (updates.name !== undefined) dbUpdates['고객명'] = updates.name;
-            if (updates.contact !== undefined) dbUpdates['연락처'] = updates.contact;
-            if (updates.address !== undefined) dbUpdates['주소'] = updates.address;
-            if (updates.pricePre !== undefined) dbUpdates['가견적 금액'] = updates.pricePre;
-            if (updates.priceFinal !== undefined) dbUpdates['최종견적 금액'] = updates.priceFinal;
-            if (updates.measureDate !== undefined) dbUpdates['실측일자'] = updates.measureDate;
-            if (updates.constructDate !== undefined) dbUpdates['시공일자'] = updates.constructDate;
-            if (updates.linkPreKcc !== undefined) dbUpdates['가견적 링크'] = updates.linkPreKcc;
-            if (updates.linkFinalKcc !== undefined) dbUpdates['최종 견적 링크'] = updates.linkFinalKcc;
-            if (updates.linkPreCust !== undefined) dbUpdates['고객견적서(가)'] = updates.linkPreCust;
-            if (updates.linkFinalCust !== undefined) dbUpdates['고객견적서(최종)'] = updates.linkFinalCust;
-            if (updates.feedback !== undefined) dbUpdates['KCC 피드백'] = updates.feedback;
-            if (updates.progress !== undefined) dbUpdates['진행현황(상세)_최근'] = updates.progress;
+            // Map frontend keys to Convex English fields
+            if (updates.label !== undefined) dbUpdates.label = updates.label;
+            if (updates.status !== undefined) dbUpdates.status = updates.status;
+            if (updates.name !== undefined) dbUpdates.name = updates.name;
+            if (updates.contact !== undefined) dbUpdates.contact = updates.contact;
+            if (updates.address !== undefined) dbUpdates.address = updates.address;
+            if (updates.pricePre !== undefined) dbUpdates.price_pre = updates.pricePre;
+            if (updates.priceFinal !== undefined) dbUpdates.price_final = updates.priceFinal;
+            if (updates.measureDate !== undefined) dbUpdates.measure_date = updates.measureDate;
+            if (updates.constructDate !== undefined) dbUpdates.construct_date = updates.constructDate;
+            if (updates.linkPreKcc !== undefined) dbUpdates.link_pre_kcc = updates.linkPreKcc;
+            if (updates.linkFinalKcc !== undefined) dbUpdates.link_final_kcc = updates.linkFinalKcc;
+            if (updates.linkPreCust !== undefined) dbUpdates.link_pre_cust = updates.linkPreCust;
+            if (updates.linkFinalCust !== undefined) dbUpdates.link_final_cust = updates.linkFinalCust;
+            if (updates.feedback !== undefined) dbUpdates.feedback = updates.feedback;
+            if (updates.progress !== undefined) dbUpdates.progress_detail = updates.progress;
 
-            const { error } = await supabase.from('customers').update(dbUpdates).eq('id', id);
-            if (error) throw error;
+            await convex.mutation(api.customers.updateCustomer, {
+                id: id as Id<"customers">,
+                updates: dbUpdates
+            });
         }
         else if (action === 'delete_customer') {
             const { id } = body;
-            const { error } = await supabase.from('customers').delete().eq('id', id);
-            if (error) throw error;
+            await convex.mutation(api.customers.deleteCustomer, { id: id as Id<"customers"> });
         }
         else if (action === 'create_product') {
             const { id, name, category, price, status, description, specs, image, link } = body;
-            const { error } = await supabase.from('products').insert({
+            await convex.mutation(api.products.upsertProduct, {
                 code: id || `P${Date.now()}`,
                 name, category, price, status, description,
                 image, link,
-                specs: typeof specs === 'string' ? JSON.parse(specs) : (specs || [])
+                specs: typeof specs === 'string' ? specs : JSON.stringify(specs || [])
             });
-            if (error) throw error;
         }
         else if (action === 'update_product') {
             const { id, name, category, price, status, description, specs, image, link } = body;
-            const { error } = await supabase.from('products').update({
+            await convex.mutation(api.products.upsertProduct, {
+                code: id, // code matches
                 name, category, price, status, description,
                 image, link,
-                specs: typeof specs === 'string' ? JSON.parse(specs) : (specs || [])
-            }).eq('code', id);
-            if (error) throw error;
+                specs: typeof specs === 'string' ? specs : JSON.stringify(specs || [])
+            });
         }
         else if (action === 'delete_product') {
             const { id } = body;
-            const { error } = await supabase.from('products').delete().eq('code', id);
-            if (error) throw error;
+            await convex.mutation(api.products.deleteProduct, { code: id });
         }
         else if (action === 'update_partner') {
             const { id, ...updates } = body;
@@ -232,8 +225,10 @@ export async function POST(request: Request) {
             if (updates.email) dbUpdates.email = updates.email;
             if (updates.password) dbUpdates.password = updates.password;
 
-            const { error } = await supabase.from('partners').update(dbUpdates).eq('uid', id);
-            if (error) throw error;
+            await convex.mutation(api.partners.updatePartnerByUid, {
+                uid: id,
+                updates: dbUpdates
+            });
         }
         else if (action === 'create') {
             const {
@@ -241,7 +236,6 @@ export async function POST(request: Request) {
                 pyeong, expansion, residence, schedule, remarks
             } = body;
 
-            // Build a progress detail string for non-core fields to maintain legacy information
             const progressDetail = [
                 pyeong ? `평형: ${pyeong}` : '',
                 expansion ? `확장: ${expansion}` : '',
@@ -250,54 +244,32 @@ export async function POST(request: Request) {
                 remarks ? `특이사항: ${remarks}` : ''
             ].filter(Boolean).join(' / ');
 
-            try {
-                const { convex, api } = await import('@/lib/convex');
-                await convex.mutation(api.customers.createCustomer, {
-                    name,
-                    contact,
-                    address,
-                    channel: channel || '직접등록',
-                    label: label || '일반',
-                    status: status || '접수',
-                    progress_detail: progressDetail,
-                    created_at: new Date().toISOString().split('T')[0]
-                });
-            } catch (err: any) {
-                console.error('Convex Insert Error:', err);
-                throw err;
-            }
+            await convex.mutation(api.customers.createCustomer, {
+                name,
+                contact,
+                address,
+                channel: channel || '직접등록',
+                label: label || '일반',
+                status: status || '접수',
+                progress_detail: progressDetail,
+                created_at: new Date().toISOString().split('T')[0]
+            });
         }
         else if (action === 'create_resource') {
             const { type, title, description, downloadUrl, thumbnail } = body;
-            const { error } = await supabase.from('resources').insert({
+            await convex.mutation(api.resources.saveResource, {
                 type, title, description,
-                download_url: downloadUrl,
-                thumbnail: thumbnail
+                manualDownloadUrl: downloadUrl,
+                manualThumbnailUrl: thumbnail
             });
-            if (error) throw error;
         }
         else if (action === 'delete_resource') {
             const { id } = body;
-            const { error } = await supabase.from('resources').delete().eq('id', id);
-            if (error) throw error;
+            await convex.mutation(api.resources.deleteResource, { id: id as Id<"resources"> });
         }
         else if (action === 'upload_file') {
-            const gasUrl = process.env.NEXT_PUBLIC_GAS_APP_URL;
-            if (!gasUrl) throw new Error('GAS URL 미설정 - 파일 업로드는 여전히 GAS를 사용합니다.');
-
-            const response = await fetch(`${gasUrl}?action=upload_file`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const result = await response.json();
-            return NextResponse.json(result);
-        }
-        else if (action === 'init_database') {
-            return NextResponse.json({
-                success: true,
-                message: 'Supabase에서는 SQL 스크립트를 수동으로 실행해야 합니다. 프로젝트 루트의 supabase_schema.sql 파일을 열어 내용을 복사한 뒤, Supabase SQL Editor에서 실행해주세요.'
-            });
+            // Disabled since Google is not used
+            return NextResponse.json({ success: false, message: 'Google Apps Script (GAS) is disabled. File upload not available in current configuration.' });
         }
         else {
             return NextResponse.json({ success: false, message: 'Unknown POST action: ' + action });

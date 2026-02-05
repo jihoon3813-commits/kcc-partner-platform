@@ -112,3 +112,11 @@ export const batchCreate = mutation({
         return { success: true, count: args.customers.length };
     },
 });
+
+export const deleteCustomer = mutation({
+    args: { id: v.id("customers") },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.id);
+    },
+});
+
