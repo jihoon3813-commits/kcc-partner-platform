@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { X, UserPlus, Calendar, Layout, MapPin, Phone, User, MessageSquare, RefreshCcw } from 'lucide-react';
+import { X, UserPlus, Calendar, Layout, MapPin, Phone, User, MessageSquare, RefreshCcw, Hash } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { format } from 'date-fns';
@@ -15,16 +15,25 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
     const createCustomer = useMutation(api.customers.createCustomer);
     const batchCreate = useMutation(api.customers.batchCreate);
     const convexCustomers = useQuery(api.customers.listCustomers);
+    const latestNo = useQuery(api.customers.getLatestNo);
 
     const [formData, setFormData] = useState({
         created_at: format(new Date(), 'yyyy-MM-dd'),
         channel: '',
         customChannel: '',
         rawInfo: '',
+        startNo: '',
     });
 
     const [parsedCustomers, setParsedCustomers] = useState<Array<{ name: string, contact: string, address: string }>>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Update startNo suggestion when latestNo is available
+    useEffect(() => {
+        if (latestNo !== undefined && !formData.startNo) {
+            setFormData(prev => ({ ...prev, startNo: (latestNo + 1).toString() }));
+        }
+    }, [latestNo, formData.startNo]);
 
     // Get unique channels for selection
     const channels = useMemo(() => {
@@ -68,6 +77,7 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
             if (parsedCustomers.length === 1) {
                 const customer = parsedCustomers[0];
                 await createCustomer({
+                    no: formData.startNo || undefined,
                     name: customer.name,
                     contact: customer.contact,
                     address: customer.address,
@@ -77,15 +87,23 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                     label: '일반'
                 });
             } else {
-                const data = parsedCustomers.map(c => ({
-                    name: c.name,
-                    contact: c.contact,
-                    address: c.address,
-                    channel: channel,
-                    created_at: formData.created_at,
-                    status: '접수',
-                    label: '일반'
-                }));
+                const startNum = parseInt(formData.startNo);
+                const data = parsedCustomers.map((c, idx) => {
+                    let no = undefined;
+                    if (!isNaN(startNum)) {
+                        no = (startNum + idx).toString();
+                    }
+                    return {
+                        no,
+                        name: c.name,
+                        contact: c.contact,
+                        address: c.address,
+                        channel: channel,
+                        created_at: formData.created_at,
+                        status: '접수',
+                        label: '일반'
+                    };
+                });
                 await batchCreate({ customers: data });
             }
 
@@ -96,6 +114,7 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                 channel: '',
                 customChannel: '',
                 rawInfo: '',
+                startNo: latestNo !== undefined ? (latestNo + 1).toString() : '',
             });
             setParsedCustomers([]);
         } catch (error) {
@@ -127,7 +146,7 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[80vh]">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Registration Date */}
                         <div className="space-y-2">
@@ -143,32 +162,46 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                             />
                         </div>
 
-                        {/* Channel Selection */}
+                        {/* Starting No */}
                         <div className="space-y-2">
                             <label className="text-sm font-black text-gray-700 flex items-center gap-2">
-                                <Layout className="w-4 h-4 text-indigo-500" /> 유입 채널
+                                <Hash className="w-4 h-4 text-green-500" /> 시작 고객번호 (No.)
                             </label>
-                            <div className="space-y-3">
-                                <select
-                                    value={formData.channel}
-                                    onChange={(e) => setFormData({ ...formData, channel: e.target.value })}
-                                    className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-100 transition-all outline-none appearance-none cursor-pointer"
-                                >
-                                    <option value="">채널 선택 (기본: 직접등록)</option>
-                                    {channels.map((c, i) => <option key={i} value={c as string}>{c as string}</option>)}
-                                    <option value="custom">+ 직접 입력</option>
-                                </select>
-                                {formData.channel === 'custom' && (
-                                    <input
-                                        type="text"
-                                        placeholder="채널명 입력"
-                                        value={formData.customChannel}
-                                        onChange={(e) => setFormData({ ...formData, customChannel: e.target.value })}
-                                        className="w-full px-5 py-4 bg-blue-50/50 border-2 border-blue-100 rounded-2xl text-sm font-bold focus:border-blue-400 transition-all outline-none animate-in slide-in-from-top-2"
-                                        required
-                                    />
-                                )}
-                            </div>
+                            <input
+                                type="text"
+                                value={formData.startNo}
+                                onChange={(e) => setFormData({ ...formData, startNo: e.target.value })}
+                                placeholder="생략 시 자동 부여"
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-100 transition-all outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Channel Selection */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-black text-gray-700 flex items-center gap-2">
+                            <Layout className="w-4 h-4 text-indigo-500" /> 유입 채널
+                        </label>
+                        <div className="space-y-3">
+                            <select
+                                value={formData.channel}
+                                onChange={(e) => setFormData({ ...formData, channel: e.target.value })}
+                                className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-100 transition-all outline-none appearance-none cursor-pointer"
+                            >
+                                <option value="">채널 선택 (기본: 직접등록)</option>
+                                {channels.map((c, i) => <option key={i} value={c as string}>{c as string}</option>)}
+                                <option value="custom">+ 직접 입력</option>
+                            </select>
+                            {formData.channel === 'custom' && (
+                                <input
+                                    type="text"
+                                    placeholder="채널명 입력"
+                                    value={formData.customChannel}
+                                    onChange={(e) => setFormData({ ...formData, customChannel: e.target.value })}
+                                    className="w-full px-5 py-4 bg-blue-50/50 border-2 border-blue-100 rounded-2xl text-sm font-bold focus:border-blue-400 transition-all outline-none animate-in slide-in-from-top-2"
+                                    required
+                                />
+                            )}
                         </div>
                     </div>
 

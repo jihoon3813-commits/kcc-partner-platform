@@ -18,6 +18,24 @@ export const getCustomersByChannel = query({
     },
 });
 
+export const getLatestNo = query({
+    handler: async (ctx) => {
+        const customers = await ctx.db.query("customers").collect();
+        let maxNo = 0;
+
+        for (const customer of customers) {
+            if (customer.no) {
+                // Extract base number (part before '-')
+                const baseNo = parseInt(customer.no.split('-')[0]);
+                if (!isNaN(baseNo) && baseNo > maxNo) {
+                    maxNo = baseNo;
+                }
+            }
+        }
+        return maxNo;
+    }
+});
+
 export const createCustomer = mutation({
     args: {
         no: v.optional(v.string()),
@@ -41,8 +59,25 @@ export const createCustomer = mutation({
         created_at: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
+        let finalNo = args.no;
+        if (!finalNo) {
+            // Auto generate No
+            const customers = await ctx.db.query("customers").collect();
+            let maxNo = 0;
+            for (const customer of customers) {
+                if (customer.no) {
+                    const baseNo = parseInt(customer.no.split('-')[0]);
+                    if (!isNaN(baseNo) && baseNo > maxNo) {
+                        maxNo = baseNo;
+                    }
+                }
+            }
+            finalNo = (maxNo + 1).toString();
+        }
+
         return await ctx.db.insert("customers", {
             ...args,
+            no: finalNo,
             status: args.status ?? "접수",
             label: args.label ?? "일반",
         });
