@@ -43,6 +43,7 @@ export default defineSchema({
         uid: v.string(), // PRIMARY KEY
         password: v.string(),
         name: v.optional(v.string()),
+        role: v.optional(v.string()), // 'admin' | 'tm'
     }).index("by_uid", ["uid"]),
 
     products: defineTable({

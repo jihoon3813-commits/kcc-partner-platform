@@ -14,7 +14,7 @@ export default function AdminLayout({
 }) {
     const router = useRouter();
     const pathname = usePathname();
-    const [adminInfo, setAdminInfo] = useState<{ name: string, id: string } | null>(null);
+    const [adminInfo, setAdminInfo] = useState<{ name: string, id: string, role: string } | null>(null);
     const [mounted, setMounted] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -34,6 +34,11 @@ export default function AdminLayout({
         try {
             const parsed = JSON.parse(session);
             setAdminInfo(parsed);
+
+            // Redirect TM role from dashboard to customers
+            if (parsed.role === 'tm' && pathname === '/admin') {
+                router.replace('/admin/customers');
+            }
         } catch {
             Cookies.remove('admin_session');
             router.replace('/admin/login');
@@ -88,30 +93,34 @@ export default function AdminLayout({
                     </button>
                 </div>
                 <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-4rem)]">
-                    <Link
-                        href="/admin"
-                        className={`flex items-center gap-3 px-3 py-2 text-sm font-bold rounded-xl transition-all ${pathname === '/admin' ? 'bg-blue-50 text-blue-600 shadow-sm shadow-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                    >
-                        <LayoutDashboard className="w-4 h-4" />
-                        대시보드
-                    </Link>
-                    <Link
-                        href="/"
-                        target="_blank"
-                        className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    >
-                        <Home className="w-4 h-4" />
-                        메인페이지
-                    </Link>
+                    {adminInfo.role === 'admin' && (
+                        <>
+                            <Link
+                                href="/admin"
+                                className={`flex items-center gap-3 px-3 py-2 text-sm font-bold rounded-xl transition-all ${pathname === '/admin' ? 'bg-blue-50 text-blue-600 shadow-sm shadow-blue-100' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                            >
+                                <LayoutDashboard className="w-4 h-4" />
+                                대시보드
+                            </Link>
+                            <Link
+                                href="/"
+                                target="_blank"
+                                className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            >
+                                <Home className="w-4 h-4" />
+                                메인페이지
+                            </Link>
+                        </>
+                    )}
                     <div className="pt-6 pb-2 px-3 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
                         관리 업무
                     </div>
                     {[
-                        { href: '/admin/partners', icon: Users, label: '파트너 관리' },
-                        { href: '/admin/customers', icon: UserCheck, label: '고객 관리' },
-                        { href: '/admin/products', icon: ShoppingBag, label: '상품 관리' },
-                        { href: '/admin/resources', icon: FolderDown, label: '자료실 관리' },
-                    ].map((item) => (
+                        { href: '/admin/partners', icon: Users, label: '파트너 관리', roles: ['admin'] },
+                        { href: '/admin/customers', icon: UserCheck, label: '고객 관리', roles: ['admin', 'tm'] },
+                        { href: '/admin/products', icon: ShoppingBag, label: '상품 관리', roles: ['admin'] },
+                        { href: '/admin/resources', icon: FolderDown, label: '자료실 관리', roles: ['admin'] },
+                    ].filter(item => item.roles.includes(adminInfo.role)).map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
@@ -150,7 +159,9 @@ export default function AdminLayout({
                     <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
                             <p className="font-black text-gray-900 text-sm">{adminInfo.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Super Admin</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                {adminInfo.role === 'admin' ? 'Super Admin' : 'TM Center'}
+                            </p>
                         </div>
                         <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-sm font-black text-white shadow-lg shadow-blue-500/20 ring-4 ring-blue-50">
                             {adminInfo.name.substring(0, 1)}

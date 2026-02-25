@@ -22,6 +22,20 @@ export const createInitialAdmin = mutation({
                 uid: "admin",
                 password: "admin1234",
                 name: "최고관리자",
+                role: "admin",
+            });
+        }
+
+        const tmExisting = await ctx.db
+            .query("admins")
+            .withIndex("by_uid", (q) => q.eq("uid", "TM"))
+            .unique();
+        if (!tmExisting) {
+            await ctx.db.insert("admins", {
+                uid: "TM",
+                password: "1234",
+                name: "TM센터",
+                role: "tm",
             });
         }
     },

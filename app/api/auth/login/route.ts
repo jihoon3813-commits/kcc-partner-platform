@@ -21,7 +21,8 @@ export async function POST(request: Request) {
                 success: true,
                 admin: {
                     name: admin.name || '관리자',
-                    id: admin.uid
+                    id: admin.uid,
+                    role: admin.role || 'admin'
                 }
             });
 

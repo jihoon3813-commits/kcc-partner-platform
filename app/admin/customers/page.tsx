@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload } from 'lucide-react';
+import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
+import DirectCustomerModal from '@/app/components/DirectCustomerModal';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -39,6 +40,10 @@ function AdminCustomersContent() {
     const routerStatus = searchParams.get('status');
 
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [isDirectModalOpen, setIsDirectModalOpen] = useState(false);
+
+    // Selection State
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // Search & Filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -51,11 +56,16 @@ function AdminCustomersContent() {
     const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(50);
+
     const batchCreate = useMutation(api.customers.batchCreate);
     const [isUploading, setIsUploading] = useState(false);
 
     // Convex Data Fetching
     const convexCustomers = useQuery(api.customers.listCustomers);
+    const batchDelete = useMutation(api.customers.batchDelete);
 
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers) return [];
@@ -176,12 +186,59 @@ function AdminCustomersContent() {
         });
     }, [allMappedCustomers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
 
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter]);
+
+    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+    const paginatedCustomers = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredCustomers.slice(start, start + itemsPerPage);
+    }, [filteredCustomers, currentPage, itemsPerPage]);
+
     const handleResetFilters = () => {
         setSearchTerm('');
         setStatusFilter('');
         setLabelFilter('');
         setPartnerFilter('');
         setDateFilter('3months');
+        setSelectedIds(new Set());
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredCustomers.length && filteredCustomers.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            const newSelected = new Set(filteredCustomers.map(c => c.id as string));
+            setSelectedIds(newSelected);
+        }
+    };
+
+    const toggleSelect = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleBatchDelete = async () => {
+        if (selectedIds.size === 0) return;
+        if (!confirm(`${selectedIds.size}명의 고객 데이터를 삭제하시겠습니까?`)) return;
+
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await batchDelete({ ids: Array.from(selectedIds) as any });
+            alert('삭제되었습니다.');
+            setSelectedIds(new Set());
+        } catch (err) {
+            console.error(err);
+            alert('삭제 중 오류가 발생했습니다.');
+        }
     };
 
     const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -297,6 +354,14 @@ function AdminCustomersContent() {
                         </label>
 
                         <button
+                            onClick={() => setIsDirectModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
+                        >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            고객 직접등록
+                        </button>
+
+                        <button
                             onClick={fetchData}
                             className={`p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all ${loading ? 'animate-spin' : ''}`}
                             title="새로고침"
@@ -369,8 +434,46 @@ function AdminCustomersContent() {
 
             {/* List Header & Summary */}
             <div className="flex items-center justify-between px-2">
-                <p className="text-sm font-bold text-gray-500">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={toggleSelectAll}
+                        className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                        {selectedIds.size === filteredCustomers.length && filteredCustomers.length > 0 ? (
+                            <CheckSquare className="w-4 h-4 text-blue-600" />
+                        ) : (
+                            <Square className="w-4 h-4 text-gray-300" />
+                        )}
+                        전체선택
+                    </button>
+                    <p className="text-sm font-bold text-gray-500">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBatchDelete}
+                            className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-black border border-red-100 hover:bg-red-100 transition-all animate-in fade-in slide-in-from-left-2"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            {selectedIds.size}명 삭제
+                        </button>
+                    )}
+                </div>
                 <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
+                    <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
+                        <ListOrdered className="w-3 h-3 text-gray-400" />
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="bg-transparent border-none text-[11px] font-black text-gray-500 outline-none cursor-pointer"
+                        >
+                            <option value={50}>50개씩 보기</option>
+                            <option value={100}>100개씩 보기</option>
+                            <option value={200}>200개씩 보기</option>
+                        </select>
+                    </div>
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> 일반</span>
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-yellow-500 rounded-full"></div> 체크</span>
                     <span className="flex items-center gap-1"><div className="w-2 h-2 bg-green-600 rounded-full"></div> 완료</span>
@@ -395,7 +498,7 @@ function AdminCustomersContent() {
                 ) : filteredCustomers.length === 0 ? (
                     <div className="bg-white p-20 rounded-2xl border border-gray-100 text-center text-gray-400 font-bold">검색 조건에 맞는 고객이 없습니다.</div>
                 ) : (
-                    filteredCustomers.map((customer, index) => (
+                    paginatedCustomers.map((customer, index) => (
                         <div
                             key={index}
                             onClick={() => setSelectedCustomer(customer)}
@@ -407,6 +510,16 @@ function AdminCustomersContent() {
                                     customer['라벨'] === '보류' ? 'bg-slate-400' :
                                         'bg-blue-500'
                                 }`}></div>
+
+                            {/* Checkbox */}
+                            <div className="shrink-0 flex items-center pr-2" onClick={(e) => toggleSelect(customer['id'] as string, e)}>
+                                <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selectedIds.has(customer['id'] as string)
+                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                    : 'border-gray-200 group-hover:border-blue-200 bg-gray-50'
+                                    }`}>
+                                    {selectedIds.has(customer['id'] as string) && <CheckSquare className="w-3.5 h-3.5" />}
+                                </div>
+                            </div>
 
                             {/* 1. 기본 정보 & 상태 */}
                             <div className="lg:w-[380px] shrink-0 border-b lg:border-b-0 lg:border-r border-gray-50 pb-3 lg:pb-0 lg:pr-6">
@@ -522,12 +635,66 @@ function AdminCustomersContent() {
                 )}
             </div>
 
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-4">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-100 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-100 transition-all font-bold"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            let pageNum: number;
+                            if (totalPages <= 5) {
+                                pageNum = i + 1;
+                            } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                            } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                            } else {
+                                pageNum = currentPage - 2 + i;
+                            }
+
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${currentPage === pageNum
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
+                                            : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                                        }`}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-100 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-100 transition-all font-bold"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
+            )}
+
             {/* Detailed Popup */}
             <CustomerDetailModal
                 isOpen={!!selectedCustomer}
                 onClose={() => setSelectedCustomer(null)}
                 customer={selectedCustomer}
                 onUpdate={fetchData}
+            />
+
+            <DirectCustomerModal
+                isOpen={isDirectModalOpen}
+                onClose={() => setIsDirectModalOpen(false)}
             />
         </div>
     );

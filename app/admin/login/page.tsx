@@ -10,6 +10,7 @@ import Cookies from 'js-cookie';
 export default function AdminLoginPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({ id: '', password: '' });
+    const [isTM, setIsTM] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -38,11 +39,18 @@ export default function AdminLoginPage() {
             // we'll simulate success for specific admin credentials or standard partner check for now
             // In a real scenario, this would be a strict check.
             if (json.success) {
+                const adminRole = json.admin?.role || 'admin';
                 Cookies.set('admin_session', JSON.stringify({
                     name: json.admin?.name || '관리자',
-                    id: formData.id
+                    id: formData.id,
+                    role: adminRole
                 }), { expires: 1 });
-                router.push('/admin');
+
+                if (adminRole === 'tm') {
+                    router.push('/admin/customers');
+                } else {
+                    router.push('/admin');
+                }
             } else {
                 setError(json.message || '로그인 실패 (권한 없음)');
             }
@@ -112,6 +120,43 @@ export default function AdminLoginPage() {
                                     placeholder="비밀번호"
                                 />
                             </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 px-2">
+                            <label className="flex items-center gap-3 cursor-pointer group/check text-gray-400 hover:text-blue-400 transition-colors">
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        checked={isTM}
+                                        onChange={(e) => {
+                                            setIsTM(e.target.checked);
+                                            if (e.target.checked) {
+                                                setFormData({ id: 'TM', password: '1234' });
+                                            } else {
+                                                setFormData({ id: '', password: '' });
+                                            }
+                                        }}
+                                        className="peer sr-only"
+                                    />
+                                    <div className="w-5 h-5 border-2 border-white/20 rounded-md bg-white/5 transition-all peer-checked:bg-blue-600 peer-checked:border-blue-600 group-hover/check:border-blue-400/50"></div>
+                                    <svg
+                                        className="absolute top-1 left-1 w-3 h-3 text-white scale-0 peer-checked:scale-100 transition-transform duration-200 ease-out"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="4"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                </div>
+                                <span className="font-bold text-sm">
+                                    TM 센터 로그인
+                                </span>
+                            </label>
                         </div>
 
                         {error && (
