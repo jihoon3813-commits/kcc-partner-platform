@@ -119,9 +119,23 @@ function AdminCustomersContent() {
             if (!isAEmpty && isBEmpty) return 1;
             if (isAEmpty && isBEmpty) return (b._creationTime || 0) - (a._creationTime || 0);
 
-            const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
-            const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
-            if (!isNaN(nA) && !isNaN(nB) && nA !== nB) return nB - nA;
+            // Extract base number and suffix
+            const parseNo = (noStr: string) => {
+                const parts = noStr.split('-');
+                const base = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
+                const suffix = parts.length > 1 ? parseInt(parts[1].replace(/[^0-9]/g, ''), 10) : 0;
+                return { base: isNaN(base) ? 0 : base, suffix: isNaN(suffix) ? 0 : suffix };
+            };
+
+            const numA = parseNo(noA);
+            const numB = parseNo(noB);
+
+            if (numA.base !== numB.base) {
+                return numB.base - numA.base;
+            }
+            if (numA.suffix !== numB.suffix) {
+                return numB.suffix - numA.suffix;
+            }
             return (b._creationTime || 0) - (a._creationTime || 0);
         });
     }, [convexCustomers]);
