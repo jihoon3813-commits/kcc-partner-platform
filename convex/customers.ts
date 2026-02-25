@@ -137,9 +137,30 @@ export const batchCreate = mutation({
         }))
     },
     handler: async (ctx, args) => {
+        let currentMaxNo = -1;
+
         for (const customer of args.customers) {
+            let finalNo = customer.no;
+            if (!finalNo) {
+                if (currentMaxNo === -1) {
+                    const allCustomers = await ctx.db.query("customers").collect();
+                    currentMaxNo = 0;
+                    for (const c of allCustomers) {
+                        if (c.no) {
+                            const baseNo = parseInt(c.no.split('-')[0]);
+                            if (!isNaN(baseNo) && baseNo > currentMaxNo) {
+                                currentMaxNo = baseNo;
+                            }
+                        }
+                    }
+                }
+                currentMaxNo++;
+                finalNo = currentMaxNo.toString();
+            }
+
             await ctx.db.insert("customers", {
                 ...customer,
+                no: finalNo,
                 status: customer.status || "접수",
                 label: customer.label || "일반",
             });
@@ -163,4 +184,30 @@ export const batchDelete = mutation({
         }
         return { success: true, count: args.ids.length };
     },
+});
+
+export const assignMissingNumbers = mutation({
+    handler: async (ctx) => {
+        const customers = await ctx.db.query("customers").order("asc").collect();
+        let currentMaxNo = 0;
+
+        // Find max
+        for (const c of customers) {
+            if (c.no) {
+                const baseNo = parseInt(c.no.split('-')[0]);
+                if (!isNaN(baseNo) && baseNo > currentMaxNo) {
+                    currentMaxNo = baseNo;
+                }
+            }
+        }
+
+        // Assign to missing
+        for (const c of customers) {
+            if (!c.no) {
+                currentMaxNo++;
+                await ctx.db.patch(c._id, { no: currentMaxNo.toString() });
+            }
+        }
+        return { success: true };
+    }
 });
