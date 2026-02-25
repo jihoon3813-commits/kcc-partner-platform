@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered } from 'lucide-react';
+import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
 import DirectCustomerModal from '@/app/components/DirectCustomerModal';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
@@ -66,6 +66,20 @@ function AdminCustomersContent() {
     // Convex Data Fetching
     const convexCustomers = useQuery(api.customers.listCustomers);
     const batchDelete = useMutation(api.customers.batchDelete);
+    const duplicateCustomerMutation = useMutation(api.customers.duplicateCustomer);
+
+    const handleDuplicate = async (e: React.MouseEvent, customerId: string) => {
+        e.stopPropagation();
+        if (!confirm('이 고객 정보를 복제하시겠습니까?')) return;
+
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await duplicateCustomerMutation({ id: customerId as any });
+        } catch (error) {
+            console.error(error);
+            alert('복제 중 오류가 발생했습니다.');
+        }
+    };
 
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers) return [];
@@ -599,11 +613,20 @@ function AdminCustomersContent() {
 
                             {/* 3. 우측 컨트롤 & 일정 */}
                             <div className="lg:w-48 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
-                                <div className="flex gap-2 justify-end lg:justify-start">
+                                <div className="flex gap-2 justify-end lg:justify-start items-center">
                                     <BadgeLink href={customer['가견적 링크']} color="blue" label="K(가)" />
                                     <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="K(최)" />
                                     <BadgeLink href={customer['고객견적서(가)']} color="orange" label="고(가)" />
                                     <BadgeLink href={customer['고객견적서(최종)']} color="green" label="고(최)" />
+
+                                    <div className="w-[1px] h-6 bg-gray-100 mx-0.5 hidden lg:block"></div>
+                                    <button
+                                        onClick={(e) => handleDuplicate(e, customer['id'] as string)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
+                                        title="고객 정보 복제"
+                                    >
+                                        <Copy className="w-3.5 h-3.5" />
+                                    </button>
                                 </div>
 
                                 {/* Estimate Amounts */}
@@ -664,8 +687,8 @@ function AdminCustomersContent() {
                                     key={pageNum}
                                     onClick={() => setCurrentPage(pageNum)}
                                     className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${currentPage === pageNum
-                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
-                                            : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
+                                        : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
                                         }`}
                                 >
                                     {pageNum}

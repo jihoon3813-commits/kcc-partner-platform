@@ -211,3 +211,55 @@ export const assignMissingNumbers = mutation({
         return { success: true };
     }
 });
+
+export const duplicateCustomer = mutation({
+    args: { id: v.id("customers") },
+    handler: async (ctx, args) => {
+        const original = await ctx.db.get(args.id);
+        if (!original) throw new Error("Customer not found");
+
+        let newNo = "";
+        if (original.no) {
+            const baseNo = original.no.split('-')[0];
+            const allCustomers = await ctx.db.query("customers").collect();
+            let maxSuffix = 0;
+
+            for (const c of allCustomers) {
+                if (c.no && c.no.startsWith(baseNo + "-")) {
+                    const suffixStr = c.no.split('-')[1];
+                    const suffix = parseInt(suffixStr);
+                    if (!isNaN(suffix) && suffix > maxSuffix) {
+                        maxSuffix = suffix;
+                    }
+                }
+            }
+            newNo = `${baseNo}-${maxSuffix + 1}`;
+        } else {
+            const allCustomers = await ctx.db.query("customers").collect();
+            let maxNo = 0;
+            for (const c of allCustomers) {
+                if (c.no) {
+                    const bNo = parseInt(c.no.split('-')[0]);
+                    if (!isNaN(bNo) && bNo > maxNo) {
+                        maxNo = bNo;
+                    }
+                }
+            }
+            newNo = (maxNo + 1).toString();
+        }
+
+        const newName = original.name ? `${original.name}(복사)` : "(복사)";
+        // Extract internal fields to exclude for insertion
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _id, _creationTime, ...rest } = original;
+
+        const newId = await ctx.db.insert("customers", {
+            ...rest,
+            no: newNo,
+            name: newName,
+            status: "접수",
+        });
+
+        return newId;
+    }
+});
