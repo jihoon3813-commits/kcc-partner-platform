@@ -605,7 +605,7 @@ function AdminCustomersContent() {
                                                 const dynStatus = settingStatuses?.find((s: any) => s.name === customer['진행구분']);
                                                 return (
                                                     <span
-                                                        className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${!dynStatus ? (customer['진행구분']?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
+                                                        className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm whitespace-nowrap ${!dynStatus ? (customer['진행구분']?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
                                                             customer['진행구분']?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
                                                                 customer['진행구분']?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
                                                                     customer['진행구분']?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
@@ -625,7 +625,7 @@ function AdminCustomersContent() {
                                                 const dynLabel = settingLabels?.find((l: any) => l.name === customer['라벨']);
                                                 return (
                                                     <span
-                                                        className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest ${!dynLabel ? (customer['라벨'] === '완료' ? 'bg-[#107c41]' :
+                                                        className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest whitespace-nowrap ${!dynLabel ? (customer['라벨'] === '완료' ? 'bg-[#107c41]' :
                                                             customer['라벨'] === '체크' ? 'bg-[#D4AF37]' :
                                                                 customer['라벨'] === '보류' ? 'bg-slate-500' :
                                                                     'bg-blue-600') : ''
@@ -638,11 +638,11 @@ function AdminCustomersContent() {
                                             })()}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter">
-                                                {customer['신청일'] || '-'}
+                                            <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter whitespace-nowrap">
+                                                {customer['신청일'] ? String(customer['신청일']).substring(0, 10) : '-'}
                                             </span>
-                                            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">No.{customer['No.']}</span>
-                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{customer['채널']}</span>
+                                            {customer['No.'] && <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg whitespace-nowrap">No.{customer['No.']}</span>}
+                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['채널']}</span>
                                         </div>
                                     </div>
 
