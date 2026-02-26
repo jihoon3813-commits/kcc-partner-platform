@@ -23,13 +23,17 @@ export default function NoticePage() {
     const printRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = async () => {
-        // Save to history before printing
-        await addNoticeMutation({
-            dongUnit,
-            constructDate,
-            duration,
-            contact
-        });
+        try {
+            // Save to history before printing - don't await to avoid blocking if slow
+            addNoticeMutation({
+                dongUnit,
+                constructDate,
+                duration,
+                contact
+            });
+        } catch (e) {
+            console.error("Failed to save notice history", e);
+        }
         window.print();
     };
 
@@ -181,7 +185,7 @@ export default function NoticePage() {
 
                     {/* Preview Section */}
                     <div className="flex justify-center bg-gray-200/30 rounded-[2rem] p-4 lg:p-10 border-4 border-dashed border-gray-100 overflow-x-auto no-print">
-                        <div ref={printRef} className="notice-print-area shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] scale-[0.5] sm:scale-[0.7] md:scale-75 origin-top lg:scale-100 mb-[-300px] sm:mb-[-150px] lg:mb-0">
+                        <div ref={printRef} className="notice-print-area shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] scale-[0.5] sm:scale-[0.6] md:scale-[0.7] lg:scale-95 origin-top lg:mb-0">
                             {/* The actual Notice Design */}
                             <div className="notice-container">
                                 {/* Diamond Pattern Background */}
@@ -193,7 +197,7 @@ export default function NoticePage() {
                                     <div className="notice-arch-frame">
                                         {/* Icon at top */}
                                         <div className="notice-top-icon-circle">
-                                            <Home className="w-14 h-14 text-white" strokeWidth={2.5} />
+                                            <Home className="w-12 h-12 text-white" strokeWidth={2.5} />
                                         </div>
 
                                         <div className="notice-inner-content">
@@ -289,11 +293,11 @@ export default function NoticePage() {
 
                                     <h3 className="text-lg font-black text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{n.dongUnit}</h3>
                                     <div className="space-y-2 mt-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-504 font-semibold p-2 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 font-semibold p-2 bg-gray-50 rounded-lg">
                                             <Calendar className="w-4 h-4 text-gray-400" />
                                             {n.constructDate} <span className="text-[10px] text-gray-300 mx-1">|</span> {n.duration}
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-504 font-semibold p-2 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 font-semibold p-2 bg-gray-50 rounded-lg">
                                             <Phone className="w-4 h-4 text-gray-400" />
                                             {n.contact}
                                         </div>
@@ -318,26 +322,36 @@ export default function NoticePage() {
             <style jsx>{`
                 @media print {
                     .no-print { display: none !important; }
-                    body { background: white !important; padding: 0 !important; margin: 0 !important; }
+                    body { 
+                        background: white !important; 
+                        margin: 0 !important; 
+                        padding: 0 !important;
+                    }
                     .notice-print-area { 
                         display: block !important;
-                        position: fixed !important;
+                        position: absolute !important;
                         top: 0 !important;
                         left: 0 !important;
                         width: 210mm !important;
                         height: 297mm !important;
-                        padding: 0 !important; 
-                        margin: 0 !important; 
                         transform: none !important; 
                         box-shadow: none !important;
                         z-index: 99999 !important;
                         background: #f1df91 !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
+                        visibility: visible !important;
+                    }
+                    /* Ensure parents don't hide the print area */
+                    main, aside, header, .max-w-6xl {
+                        display: block !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                    }
+                    .max-w-6xl > *:not(.flex:has(.notice-print-area)) {
+                        display: none !important;
                     }
                     .notice-container { 
-                        box-shadow: none !important; 
-                        border: none !important; 
                         background-color: #f1df91 !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
@@ -352,13 +366,14 @@ export default function NoticePage() {
                     overflow: hidden;
                     box-sizing: border-box;
                     flex-shrink: 0;
+                    margin: 0 auto;
                 }
 
                 .notice-container {
-                    width:100%;
+                    width: 100%;
                     height: 100%;
                     position: relative;
-                    background-color: #f1df91; /* Adjusted mustard */
+                    background-color: #f1df91;
                     display: flex;
                     flex-direction: column;
                     padding: 40px;
@@ -375,6 +390,7 @@ export default function NoticePage() {
                         linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%, #000);
                     background-size: 40px 40px;
                     background-position: 0 0, 20px 20px;
+                    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
                     mask-image: linear-gradient(to bottom, black 60%, transparent);
                 }
 
@@ -384,6 +400,7 @@ export default function NoticePage() {
                     opacity: 0.25;
                     background-image: radial-gradient(circle, #8b7325 1.2px, transparent 1.2px);
                     background-size: 20px 20px;
+                    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent);
                     mask-image: linear-gradient(to bottom, black 70%, transparent);
                 }
 
@@ -395,35 +412,35 @@ export default function NoticePage() {
                     flex-direction: column;
                     align-items: center;
                     justify-content: flex-start;
-                    padding-top: 20px;
+                    padding-top: 10px;
                 }
 
                 .notice-arch-frame {
-                    width: 94%;
-                    max-width: 720px;
-                    background-color: #fefcf5; /* Inner off-white */
-                    border: 6px solid #000;
-                    border-radius: 360px 360px 60px 60px;
+                    width: 92%;
+                    max-width: 680px;
+                    background-color: #fefcf5;
+                    border: 5px solid #000;
+                    border-radius: 340px 340px 50px 50px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding: 0 40px 80px 40px;
-                    margin-top: 80px;
+                    padding: 0 35px 50px 35px;
+                    margin-top: 60px;
                     position: relative;
-                    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.12);
+                    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.1);
                 }
 
                 .notice-top-icon-circle {
                     position: absolute;
-                    top: -70px;
-                    width: 140px;
-                    height: 140px;
+                    top: -60px;
+                    width: 120px;
+                    height: 120px;
                     background: #000;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    border: 6px solid #fefcf5;
+                    border: 5px solid #fefcf5;
                 }
 
                 .notice-inner-content {
@@ -431,34 +448,34 @@ export default function NoticePage() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding-top: 110px;
+                    padding-top: 80px;
                 }
 
                 .notice-title {
-                    font-size: 110px;
+                    font-size: 84px;
                     font-weight: 900;
                     color: #000;
-                    line-height: 0.95;
-                    letter-spacing: -4px;
-                    margin-bottom: 70px;
+                    line-height: 1;
+                    letter-spacing: -3px;
+                    margin-bottom: 50px;
                     text-align: center;
                     word-break: keep-all;
                 }
 
                 .notice-dong-unit {
                     background: #ebd88b;
-                    border-radius: 70px;
-                    padding: 24px 90px;
-                    font-size: 58px;
+                    border-radius: 60px;
+                    padding: 18px 70px;
+                    font-size: 44px;
                     font-weight: 900;
                     color: #000;
-                    margin-bottom: 60px;
-                    box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
+                    margin-bottom: 40px;
+                    box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
                 }
 
                 .notice-divider-container {
-                    width: 90%;
-                    margin-bottom: 60px;
+                    width: 85%;
+                    margin-bottom: 40px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -466,30 +483,30 @@ export default function NoticePage() {
 
                 .notice-divider {
                     width: 100%;
-                    height: 4px;
+                    height: 3.5px;
                     background: #000;
                 }
 
                 .notice-date-text {
-                    font-size: 38px;
-                    font-weight: 900;
+                    font-size: 32px;
+                    font-weight: 800;
                     color: #000;
-                    padding: 20px 0;
-                    letter-spacing: -1px;
+                    padding: 15px 0;
+                    letter-spacing: -0.5px;
                 }
 
                 .notice-message {
-                    font-size: 28px;
-                    line-height: 1.5;
+                    font-size: 22px;
+                    line-height: 1.6;
                     color: #111;
                     text-align: center;
                     font-weight: 700;
-                    margin-top: 20px;
+                    margin-top: 10px;
                     word-break: keep-all;
                 }
 
                 .notice-footer {
-                    margin-top: 90px;
+                    margin-top: 50px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -497,20 +514,20 @@ export default function NoticePage() {
                 }
 
                 .notice-footer-logo {
-                    height: 52px;
-                    margin-bottom: 24px;
+                    height: 44px;
+                    margin-bottom: 18px;
                 }
 
                 .notice-trademark {
-                    font-size: 18px;
+                    font-size: 15px;
                     font-weight: 700;
                     color: #222;
-                    margin-bottom: 10px;
+                    margin-bottom: 6px;
                     text-align: center;
                 }
 
                 .notice-contact {
-                    font-size: 20px;
+                    font-size: 16px;
                     font-weight: 900;
                     color: #000;
                     letter-spacing: 0.5px;
