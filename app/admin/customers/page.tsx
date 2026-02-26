@@ -721,10 +721,10 @@ function AdminCustomersContent() {
                             {/* 3. 우측 컨트롤 & 일정 */}
                             <div className="lg:w-48 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex gap-2 justify-end lg:justify-start items-center">
-                                    <BadgeLink href={customer['가견적 링크']} color="blue" label="K(가)" />
-                                    <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="K(최)" />
-                                    <BadgeLink href={customer['고객견적서(가)']} color="orange" label="고(가)" />
-                                    <BadgeLink href={customer['고객견적서(최종)']} color="green" label="고(최)" />
+                                    <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" />
+                                    <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종" />
+                                    <BadgeLink href={customer['고객견적서(가)']} color="orange" label="조회" />
+                                    <BadgeLink href={customer['고객견적서(최종)']} color="green" label="내관" />
 
                                     <div className="w-[1px] h-6 bg-gray-100 mx-0.5 hidden lg:block"></div>
                                     <button

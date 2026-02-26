@@ -429,10 +429,10 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                 견적서 링크
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                {renderLinkButtons('KCC (가)', '가견적 링크', 'bg-blue-50 text-blue-600 border-blue-100')}
-                                {renderLinkButtons('KCC (최종)', '최종 견적 링크', 'bg-indigo-50 text-indigo-600 border-indigo-100')}
-                                {renderLinkButtons('고객 (가)', '고객견적서(가)', 'bg-orange-50 text-orange-600 border-orange-100')}
-                                {renderLinkButtons('고객 (최종)', '고객견적서(최종)', 'bg-green-50 text-green-600 border-green-100')}
+                                {renderLinkButtons('가견적', '가견적 링크', 'bg-blue-50 text-blue-600 border-blue-100')}
+                                {renderLinkButtons('최종견적', '최종 견적 링크', 'bg-indigo-50 text-indigo-600 border-indigo-100')}
+                                {renderLinkButtons('견적조회', '고객견적서(가)', 'bg-orange-50 text-orange-600 border-orange-100')}
+                                {renderLinkButtons('내관도', '고객견적서(최종)', 'bg-green-50 text-green-600 border-green-100')}
                             </div>
                         </div>
 

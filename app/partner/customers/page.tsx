@@ -479,10 +479,10 @@ function PartnerCustomersContent() {
                                 {/* 3. 견적 및 링크 (Right Side with Flex Column) */}
                                 <div className="lg:w-48 shrink-0 flex flex-col justify-center gap-3 lg:pl-6 border-l lg:border-gray-50">
                                     <div className="flex gap-2 justify-center lg:justify-end">
-                                        <BadgeLink href={customer['가견적 링크']} color="blue" label="K(가)" />
-                                        <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="K(최)" />
-                                        <BadgeLink href={customer['고객견적서(가)']} color="orange" label="고(가)" />
-                                        <BadgeLink href={customer['고객견적서(최종)']} color="green" label="고(최)" />
+                                        <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" />
+                                        <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종" />
+                                        <BadgeLink href={customer['고객견적서(가)']} color="orange" label="조회" />
+                                        <BadgeLink href={customer['고객견적서(최종)']} color="green" label="내관" />
                                     </div>
 
                                     {/* Estimate Amounts */}
