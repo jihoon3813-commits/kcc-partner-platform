@@ -311,15 +311,21 @@ function AdminCustomersContent() {
                             '진행구분': 'status',
                             '진행현황(상세)_최근': 'progress_detail',
                             '신청일': 'created_at',
+                            '접수일': 'created_at',
+                            '등록일': 'created_at',
                             '채널': 'channel',
                             '고객명': 'name',
                             '연락처': 'contact',
                             '주소': 'address',
                             'KCC 피드백': 'feedback',
                             '가견적 링크': 'link_pre_kcc',
+                            '가견적': 'link_pre_kcc',
                             '최종 견적 링크': 'link_final_kcc',
+                            '최종견적': 'link_final_kcc',
                             '고객견적서(가)': 'link_pre_cust',
+                            '견적조회': 'link_pre_cust',
                             '고객견적서(최종)': 'link_final_cust',
+                            '내관도': 'link_final_cust',
                             '실측일자': 'measure_date',
                             '시공일자': 'construct_date',
                             '가견적 금액': 'price_pre',
@@ -360,13 +366,13 @@ function AdminCustomersContent() {
 
     const downloadSampleCsv = () => {
         const headers = [
-            'No.', '고객명', '연락처', '주소', '라벨', '진행구분', '채널',
+            'No.', '접수일', '고객명', '연락처', '주소', '라벨', '진행구분', '채널',
             '진행현황(상세)_최근', 'KCC 피드백', '가견적 링크', '최종 견적 링크',
-            '고객견적서(가)', '고객견적서(최종)', '실측일자', '시공일자',
+            '견적조회', '내관도', '실측일자', '시공일자',
             '가견적 금액', '최종견적 금액'
         ];
         const sampleData = [
-            '1', '홍길동', '010-1234-5678', '서울특별시 강남구 테헤란로 123', '일반', '접수', '네이버블로그',
+            '1', '2024-05-01', '홍길동', '010-1234-5678', '서울특별시 강남구 테헤란로 123', '일반', '접수', '네이버블로그',
             '상담 진행 중입니다.', '특이사항 없음', 'http://link.to/pre', 'http://link.to/final',
             '', '', '2024-05-20', '2024-06-01', '1500000', '1450000'
         ];
