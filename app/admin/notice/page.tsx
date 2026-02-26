@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Printer, Home, Phone, Calendar, Info, Trash2, History, Plus, FileText, ChevronRight, Save, CheckCircle2 } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -20,8 +21,11 @@ export default function NoticePage() {
     // UI state
     const [activeTab, setActiveTab] = useState<'generate' | 'history'>('generate');
     const [isSaved, setIsSaved] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
-    const printRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleSave = async () => {
         try {
@@ -268,7 +272,7 @@ export default function NoticePage() {
                         {/* Screen Preview with scale logic */}
                         <div className="flex justify-center bg-gray-200/30 rounded-[2rem] p-4 lg:p-10 border-4 border-dashed border-gray-100 overflow-x-auto">
                             <div className="shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] scale-[0.5] sm:scale-[0.6] md:scale-[0.7] lg:scale-95 origin-top mb-[-400px] sm:mb-[-200px] lg:mb-0">
-                                <div className="notice-print-area">
+                                <div className="notice-view-container">
                                     <NoticeContent dong={dongUnit} date={constructDate} dur={duration} phone={contact} />
                                 </div>
                             </div>
@@ -350,72 +354,61 @@ export default function NoticePage() {
                 )}
             </div>
 
-            {/* 2. PRINT ONLY AREA (HIDDEN ON SCREEN) */}
-            <div id="print-takeover" className="print-only-container">
-                <NoticeContent dong={dongUnit} date={constructDate} dur={duration} phone={contact} />
-            </div>
+            {/* 2. PRINT ONLY AREA (PORTALED TO BODY) */}
+            {isMounted && createPortal(
+                <div id="print-takeover">
+                    <NoticeContent dong={dongUnit} date={constructDate} dur={duration} phone={contact} />
+                </div>,
+                document.body
+            )}
 
             <style jsx global>{`
-                /* Hide everything except our print takeover div when printing */
+                /* Print Takeover logic: Hide all direct children of body EXCEPT ours */
                 @media print {
-                    body > *:not(#print-takeover):not(script):not(style) {
+                    body > *:not(#print-takeover) {
                         display: none !important;
                     }
-                    div:has(> #print-takeover) {
-                        display: block !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        border: none !important;
-                    }
-                    /* Reset Next.js layout wrappers if they are parents */
-                    html, body, main {
-                        background: white !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        width: 100% !important;
-                        height: 100% !important;
+                    /* Ensure parents don't hide the content */
+                    html, body {
+                        visibility: visible !important;
                         overflow: visible !important;
-                        display: block !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
                     }
-                    .print-only-container {
+                    #print-takeover {
                         display: block !important;
-                        position: absolute !important;
-                        left: 0 !important;
-                        top: 0 !important;
                         width: 210mm !important;
                         height: 297mm !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
+                        position: absolute !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        z-index: 9999999 !important;
+                    }
+                    /* Background Colors & Patterns Force */
+                    .notice-container {
                         background-color: #f1df91 !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
-                        z-index: 9999999 !important;
                     }
                     @page {
                         margin: 0 !important;
                         size: A4 portrait !important;
                     }
                 }
+                
+                /* Hide takeover on screen */
                 @media screen {
-                    .print-only-container {
-                        display: none !important;
+                    #print-takeover {
+                        display: none;
                     }
                 }
-            `}</style>
 
-            <style jsx>{`
-                .notice-print-area {
+                /* Notice Design Components Shared System */
+                .notice-container {
                     width: 210mm;
                     height: 297mm;
-                    background: white;
-                    overflow: hidden;
-                    box-sizing: border-box;
-                    flex-shrink: 0;
-                }
-
-                :global(.notice-container) {
-                    width: 100%;
-                    height: 100%;
                     position: relative;
                     background-color: #f1df91;
                     display: flex;
@@ -423,9 +416,10 @@ export default function NoticePage() {
                     padding: 40px;
                     box-sizing: border-box;
                     font-family: 'Pretendard', 'Inter', 'Noto Sans KR', sans-serif;
+                    overflow: hidden;
                 }
 
-                :global(.notice-bg-pattern) {
+                .notice-bg-pattern {
                     position: absolute;
                     inset: 0;
                     opacity: 0.12;
@@ -438,7 +432,7 @@ export default function NoticePage() {
                     mask-image: linear-gradient(to bottom, black 60%, transparent);
                 }
 
-                :global(.notice-bg-pattern-2) {
+                .notice-bg-pattern-2 {
                     position: absolute;
                     inset: 0;
                     opacity: 0.25;
@@ -448,7 +442,7 @@ export default function NoticePage() {
                     mask-image: linear-gradient(to bottom, black 70%, transparent);
                 }
 
-                :global(.notice-content-wrapper) {
+                .notice-content-wrapper {
                     position: relative;
                     z-index: 10;
                     flex: 1;
@@ -459,7 +453,7 @@ export default function NoticePage() {
                     padding-top: 10px;
                 }
 
-                :global(.notice-arch-frame) {
+                .notice-arch-frame {
                     width: 92%;
                     max-width: 680px;
                     background-color: #fefcf5;
@@ -474,7 +468,7 @@ export default function NoticePage() {
                     box-shadow: 0 30px 60px -20px rgba(0,0,0,0.1);
                 }
 
-                :global(.notice-top-icon-circle) {
+                .notice-top-icon-circle {
                     position: absolute;
                     top: -60px;
                     width: 120px;
@@ -487,7 +481,7 @@ export default function NoticePage() {
                     border: 5px solid #fefcf5;
                 }
 
-                :global(.notice-inner-content) {
+                .notice-inner-content {
                     width: 100%;
                     display: flex;
                     flex-direction: column;
@@ -495,7 +489,7 @@ export default function NoticePage() {
                     padding-top: 80px;
                 }
 
-                :global(.notice-title) {
+                .notice-title {
                     font-size: 84px;
                     font-weight: 900;
                     color: #000;
@@ -506,7 +500,7 @@ export default function NoticePage() {
                     word-break: keep-all;
                 }
 
-                :global(.notice-dong-unit) {
+                .notice-dong-unit {
                     background: #ebd88b;
                     border-radius: 60px;
                     padding: 18px 70px;
@@ -517,7 +511,7 @@ export default function NoticePage() {
                     box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
                 }
 
-                :global(.notice-divider-container) {
+                .notice-divider-container {
                     width: 85%;
                     margin-bottom: 40px;
                     display: flex;
@@ -525,13 +519,13 @@ export default function NoticePage() {
                     align-items: center;
                 }
 
-                :global(.notice-divider) {
+                .notice-divider {
                     width: 100%;
                     height: 3.5px;
                     background: #000;
                 }
 
-                :global(.notice-date-text) {
+                .notice-date-text {
                     font-size: 32px;
                     font-weight: 800;
                     color: #000;
@@ -539,7 +533,7 @@ export default function NoticePage() {
                     letter-spacing: -0.5px;
                 }
 
-                :global(.notice-message) {
+                .notice-message {
                     font-size: 22px;
                     line-height: 1.6;
                     color: #111;
@@ -549,7 +543,7 @@ export default function NoticePage() {
                     word-break: keep-all;
                 }
 
-                :global(.notice-footer) {
+                .notice-footer {
                     margin-top: 50px;
                     display: flex;
                     flex-direction: column;
@@ -557,12 +551,12 @@ export default function NoticePage() {
                     width: 100%;
                 }
 
-                :global(.notice-footer-logo) {
+                .notice-footer-logo {
                     height: 44px;
                     margin-bottom: 18px;
                 }
 
-                :global(.notice-trademark) {
+                .notice-trademark {
                     font-size: 15px;
                     font-weight: 700;
                     color: #222;
@@ -570,7 +564,7 @@ export default function NoticePage() {
                     text-align: center;
                 }
 
-                :global(.notice-contact) {
+                .notice-contact {
                     font-size: 16px;
                     font-weight: 900;
                     color: #000;
