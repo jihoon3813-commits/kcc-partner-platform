@@ -1,10 +1,65 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, Home, Phone, Calendar, Info, Trash2, History, Plus, FileText, ChevronRight, Save, CheckCircle2 } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+
+// Shared design component to ensure consistency
+const NoticeContent = ({ dong, date, dur, phone }: { dong: string, date: string, dur: string, phone: string }) => (
+    <div className="notice-container">
+        <div className="notice-bg-pattern"></div>
+        <div className="notice-bg-pattern-2"></div>
+
+        <div className="notice-content-wrapper">
+            <div className="notice-arch-frame">
+                <div className="notice-top-icon-circle">
+                    <Home className="w-12 h-12 text-white" strokeWidth={2.5} />
+                </div>
+
+                <div className="notice-inner-content">
+                    <h1 className="notice-title">
+                        인테리어<br />공사안내
+                    </h1>
+
+                    <div className="notice-dong-unit">
+                        {dong}
+                    </div>
+
+                    <div className="notice-divider-container">
+                        <div className="notice-divider"></div>
+                        <div className="notice-date-text">
+                            {date} ({dur})
+                        </div>
+                        <div className="notice-divider"></div>
+                    </div>
+
+                    <div className="notice-message">
+                        위 기간 동안 내부 인테리어 공사(창호 교체)<br />
+                        를 진행함에 따라 소음 등 불편함이 있을 수 있으니,<br />
+                        입주민 여러분의 너른 양해를 부탁드립니다.<br />
+                        감사합니다.
+                    </div>
+
+                    <div className="notice-footer">
+                        <img
+                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                            alt="KCC HomeCC"
+                            className="notice-footer-logo"
+                        />
+                        <div className="notice-trademark">
+                            거주지 창호 교체는 완성창 전문 기업 KCC 홈씨씨가 잘합니다.
+                        </div>
+                        <div className="notice-contact">
+                            (문의 : {phone})
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
 
 export default function NoticePage() {
     // Convex hooks
@@ -13,10 +68,10 @@ export default function NoticePage() {
     const deleteNoticeMutation = useMutation(api.notices.deleteNotice);
 
     // Form state
-    const [dongUnit, setDongUnit] = useState('106동 1505호');
-    const [constructDate, setConstructDate] = useState('2026.01.30');
+    const [dongUnit, setDongUnit] = useState('OOO동 OOO호');
+    const [constructDate, setConstructDate] = useState('2026.00.00');
     const [duration, setDuration] = useState('1일간');
-    const [contact, setContact] = useState('1588-0883');
+    const [contact, setContact] = useState('010-4605-7977');
 
     // UI state
     const [activeTab, setActiveTab] = useState<'generate' | 'history'>('generate');
@@ -61,61 +116,6 @@ export default function NoticePage() {
             await deleteNoticeMutation({ id });
         }
     };
-
-    // Shared design component to ensure consistency
-    const NoticeContent = ({ dong, date, dur, phone }: { dong: string, date: string, dur: string, phone: string }) => (
-        <div className="notice-container">
-            <div className="notice-bg-pattern"></div>
-            <div className="notice-bg-pattern-2"></div>
-
-            <div className="notice-content-wrapper">
-                <div className="notice-arch-frame">
-                    <div className="notice-top-icon-circle">
-                        <Home className="w-12 h-12 text-white" strokeWidth={2.5} />
-                    </div>
-
-                    <div className="notice-inner-content">
-                        <h1 className="notice-title">
-                            인테리어<br />공사안내
-                        </h1>
-
-                        <div className="notice-dong-unit">
-                            {dong}
-                        </div>
-
-                        <div className="notice-divider-container">
-                            <div className="notice-divider"></div>
-                            <div className="notice-date-text">
-                                {date} ({dur})
-                            </div>
-                            <div className="notice-divider"></div>
-                        </div>
-
-                        <div className="notice-message">
-                            위 기간 동안 내부 인테리어 공사(창호 교체)<br />
-                            를 진행함에 따라 소음 등 불편함이 있을 수 있으니,<br />
-                            입주민 여러분의 너른 양해를 부탁드립니다.<br />
-                            감사합니다.
-                        </div>
-
-                        <div className="notice-footer">
-                            <img
-                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
-                                alt="KCC HomeCC"
-                                className="notice-footer-logo"
-                            />
-                            <div className="notice-trademark">
-                                거주지 창호 교체는 완성창 전문 기업 KCC 홈씨씨가 잘합니다.
-                            </div>
-                            <div className="notice-contact">
-                                (문의 : {phone})
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
@@ -263,7 +263,7 @@ export default function NoticePage() {
                                 <div className="text-sm text-blue-800 leading-relaxed font-bold">
                                     배경 디자인과 이미지가 포함된 PDF를 저장하려면?<br />
                                     <span className="text-xs font-medium text-blue-600 tracking-tight block mt-1 underline decoration-blue-200">
-                                        인쇄 설정 더보기 &gt; '배경 그래픽' 체크박스를 반드시 선택해 주세요.
+                                        인쇄 설정 더보기 &gt; &apos;배경 그래픽&apos; 체크박스를 반드시 선택해 주세요.
                                     </span>
                                 </div>
                             </div>
