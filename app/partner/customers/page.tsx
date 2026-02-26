@@ -325,26 +325,9 @@ function PartnerCustomersContent() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* Legend 1: Labels */}
-                    <div className="flex items-center gap-2 opacity-80 mr-4">
-                        <span className="text-[10px] font-bold text-gray-400">라벨:</span>
-                        <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                            <span className="text-[10px] font-black text-gray-400">일반</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>
-                            <span className="text-[10px] font-black text-gray-400">체크</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#107c41]"></div>
-                            <span className="text-[10px] font-black text-gray-400">완료</span>
-                        </div>
-                    </div>
-
-                    {/* Legend 2: Status Bar */}
-                    <div className="flex items-center gap-2 opacity-80 border-l pl-4 border-gray-50">
-                        <span className="text-[10px] font-bold text-gray-400">선:</span>
+                    {/* Legend: Status Bar */}
+                    <div className="flex items-center gap-2 opacity-80">
+                        <span className="text-[10px] font-bold text-gray-400">범례:</span>
                         <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded-md border border-red-100">
                             <div className="w-1 h-3 bg-red-500 rounded-full"></div>
                             <span className="text-[10px] font-black">정보수정</span>
