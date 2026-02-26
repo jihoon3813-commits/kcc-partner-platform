@@ -19,6 +19,12 @@ export default function SettingsPage() {
     const deleteStatus = useMutation(api.settings.deleteStatus);
     const updateStatusOrders = useMutation(api.settings.updateStatusOrders);
 
+    const authors = useQuery(api.settings.getAuthors) || [];
+    const addAuthor = useMutation(api.settings.addAuthor);
+    const updateAuthor = useMutation(api.settings.updateAuthor);
+    const deleteAuthor = useMutation(api.settings.deleteAuthor);
+    const updateAuthorOrders = useMutation(api.settings.updateAuthorOrders);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const syncFromCustomers = useMutation((api as any).settings.syncFromCustomers);
 
@@ -27,6 +33,9 @@ export default function SettingsPage() {
 
     const [newStatusName, setNewStatusName] = useState('');
     const [newStatusColor, setNewStatusColor] = useState('#10B981');
+
+    const [newAuthorName, setNewAuthorName] = useState('');
+    const [newAuthorType, setNewAuthorType] = useState<'progress' | 'feedback'>('progress');
 
     const handleAddLabel = async () => {
         if (!newLabelName.trim()) return;
@@ -40,6 +49,12 @@ export default function SettingsPage() {
         setNewStatusName('');
     };
 
+    const handleAddAuthor = async () => {
+        if (!newAuthorName.trim()) return;
+        await addAuthor({ name: newAuthorName, type: newAuthorType });
+        setNewAuthorName('');
+    };
+
     const handleSync = async () => {
         if (confirm('현재 고객 데이터에서 라벨과 진행구분 목록을 불러오시겠습니까? 기존 목록에 없는 항목만 새로 추가됩니다.')) {
             await syncFromCustomers();
@@ -47,7 +62,7 @@ export default function SettingsPage() {
         }
     };
 
-    const moveItem = async (type: 'label' | 'status', index: number, direction: -1 | 1) => {
+    const moveItem = async (type: 'label' | 'status' | 'author', index: number, direction: -1 | 1) => {
         if (type === 'label') {
             if (index + direction < 0 || index + direction >= labels.length) return;
             const newOrder = [...labels];
@@ -57,7 +72,7 @@ export default function SettingsPage() {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await updateLabelOrders({ orders: newOrder.map((l, i) => ({ id: l._id as any, order: i })) });
-        } else {
+        } else if (type === 'status') {
             if (index + direction < 0 || index + direction >= statuses.length) return;
             const newOrder = [...statuses];
             const temp = newOrder[index];
@@ -66,6 +81,13 @@ export default function SettingsPage() {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await updateStatusOrders({ orders: newOrder.map((s, i) => ({ id: s._id as any, order: i })) });
+        } else {
+            if (index + direction < 0 || index + direction >= authors.length) return;
+            const newOrder = [...authors];
+            const temp = newOrder[index];
+            newOrder[index] = newOrder[index + direction];
+            newOrder[index + direction] = temp;
+            await updateAuthorOrders({ orders: newOrder.map((a, i) => ({ id: a._id as any, order: i })) });
         }
     };
 
@@ -224,6 +246,69 @@ export default function SettingsPage() {
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* Authors Management */}
+            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
+                <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">작성자/담당자 설정</h2>
+                    <p className="text-xs text-gray-500">진행현황 및 피드백 로그를 남기는 담당자 목록을 관리합니다.</p>
+                </div>
+
+                <div className="flex gap-2 max-w-2xl">
+                    <input
+                        type="text"
+                        placeholder="새 담당자 이름"
+                        className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
+                        value={newAuthorName}
+                        onChange={(e) => setNewAuthorName(e.target.value)}
+                    />
+                    <select
+                        className="w-32 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                        value={newAuthorType}
+                        onChange={(e) => setNewAuthorType(e.target.value as any)}
+                    >
+                        <option value="progress">진행현황</option>
+                        <option value="feedback">피드백</option>
+                    </select>
+                    <button
+                        onClick={handleAddAuthor}
+                        className="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors flex items-center gap-1 shrink-0"
+                    >
+                        <Plus className="w-4 h-4" /> 담당자 추가
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {authors.map((author: any, index: number) => (
+                        <div key={author._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 transition-all hover:border-gray-200">
+                            <div className="flex flex-col gap-1">
+                                <button onClick={() => moveItem('author', index, -1)} className="text-gray-400 hover:text-gray-900"><GripVertical className="w-4 h-4" /></button>
+                            </div>
+                            <div className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${author.type === 'progress' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                {author.type === 'progress' ? '진행' : '피드백'}
+                            </div>
+                            <input
+                                type="text"
+                                className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none"
+                                defaultValue={author.name}
+                                onBlur={(e) => {
+                                    if (e.target.value !== author.name) {
+                                        updateAuthor({ id: author._id as any, name: e.target.value, type: author.type });
+                                    }
+                                }}
+                            />
+                            <button
+                                onClick={() => {
+                                    if (confirm(`${author.name} 담당자를 삭제하시겠습니까?`)) deleteAuthor({ id: author._id as any });
+                                }}
+                                className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

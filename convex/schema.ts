@@ -80,4 +80,10 @@ export default defineSchema({
         storageId: v.optional(v.string()), // For Convex Storage
         thumbnailStorageId: v.optional(v.string()),
     }),
+
+    authors: defineTable({
+        name: v.string(),
+        type: v.string(), // 'progress' | 'feedback'
+        order: v.optional(v.number()),
+    }).index("by_type", ["type"]).index("by_order", ["order"]),
 });

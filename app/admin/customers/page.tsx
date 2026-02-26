@@ -61,6 +61,9 @@ function AdminCustomersContent() {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(50);
 
+    // Sorting State
+    const [sortOption, setSortOption] = useState<'updated' | 'no_asc' | 'no_desc'>('updated');
+
     const batchCreate = useMutation(api.customers.batchCreate);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -88,72 +91,67 @@ function AdminCustomersContent() {
         }
     };
 
+    // Initial mapping of customers with normalized No. parsing
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers) return [];
-        // Map Convex data to legacy interface
-        const mapped = convexCustomers.map(c => ({
-            'id': c._id,
-            'No.': c.no || '-',
-            '신청일': c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '',
-            '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
-            '고객명': c.name || '',
-            '연락처': c.contact || '',
-            '주소': c.address || '',
-            '진행구분': c.status || '접수',
-            '라벨': c.label || '일반',
-            '채널': c.channel || '',
-            'KCC 피드백': c.feedback || '',
-            '진행현황(상세)_최근': c.progress_detail || '',
-            '가견적 링크': c.link_pre_kcc || '',
-            '최종 견적 링크': c.link_final_kcc || '',
-            '고객견적서(가)': c.link_pre_cust || '',
-            '고객견적서(최종)': c.link_final_cust || '',
-            '실측일자': c.measure_date || '',
-            '시공일자': c.construct_date || '',
-            '가견적 금액': c.price_pre || 0,
-            '최종견적 금액': c.price_final || 0,
-            '_creationTime': c._creationTime,
-            'updatedAt': c.updatedAt,
-        }));
-
-        return mapped.sort((a, b) => {
-            const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
-            const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
-
-            if (timeB !== timeA) {
-                return timeB - timeA;
-            }
-
-            const noA = String(a['No.'] || '').trim();
-            const noB = String(b['No.'] || '').trim();
-
-            // Check if No is genuinely empty or a placeholder
-            const isAEmpty = !noA || noA === '-' || noA === 'No.-' || noA.startsWith('NS_');
-            const isBEmpty = !noB || noB === '-' || noB === 'No.-' || noB.startsWith('NS_');
-
-            if (isAEmpty && !isBEmpty) return -1;
-            if (!isAEmpty && isBEmpty) return 1;
-
-            // Extract base number and suffix
-            const parseNo = (noStr: string) => {
-                const parts = noStr.split('-');
-                const base = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
-                const suffix = parts.length > 1 ? parseInt(parts[1].replace(/[^0-9]/g, ''), 10) : 0;
-                return { base: isNaN(base) ? 0 : base, suffix: isNaN(suffix) ? 0 : suffix };
+        return [...convexCustomers].map(c => {
+            return {
+                ...c,
+                'id': c._id,
+                'No.': c.no || '-',
+                '신청일': c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '',
+                '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
+                '고객명': c.name || '',
+                '연락처': c.contact || '',
+                '주소': c.address || '',
+                '진행구분': c.status || '접수',
+                '라벨': c.label || '일반',
+                '채널': c.channel || '',
+                'KCC 피드백': c.feedback || '',
+                '진행현황(상세)_최근': c.progress_detail || '',
+                '가견적 링크': c.link_pre_kcc || '',
+                '최종 견적 링크': c.link_final_kcc || '',
+                '고객견적서(가)': c.link_pre_cust || '',
+                '고객견적서(최종)': c.link_final_cust || '',
+                '실측일자': c.measure_date || '',
+                '시공일자': c.construct_date || '',
+                '가견적 금액': c.price_pre || 0,
+                '최종견적 금액': c.price_final || 0,
             };
+        });
+    }, [convexCustomers]);
 
-            const numA = parseNo(noA);
-            const numB = parseNo(noB);
+    // Sorting helper
+    const sortedCustomers = useMemo(() => {
+        const parseNoStr = (noStr: string) => {
+            const parts = String(noStr).split('-');
+            const base = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
+            const suffix = parts.length > 1 ? parseInt(parts[1].replace(/[^0-9]/g, ''), 10) : 0;
+            return { base: isNaN(base) ? 0 : base, suffix: isNaN(suffix) ? 0 : suffix };
+        };
 
-            if (numA.base !== numB.base) {
-                return numB.base - numA.base;
-            }
-            if (numA.suffix !== numB.suffix) {
-                return numB.suffix - numA.suffix;
+        return [...allMappedCustomers].sort((a, b) => {
+            const noA = parseNoStr(a['No.'] as string);
+            const noB = parseNoStr(b['No.'] as string);
+
+            if (sortOption === 'updated') {
+                const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+                if (timeB !== timeA) return timeB - timeA;
+
+                // Fallback to No. descending if times are equal
+                if (noA.base !== noB.base) return noB.base - noA.base;
+                return noB.suffix - noA.suffix;
+            } else if (sortOption === 'no_asc') {
+                if (noA.base !== noB.base) return noA.base - noB.base;
+                return noA.suffix - noB.suffix;
+            } else if (sortOption === 'no_desc') {
+                if (noA.base !== noB.base) return noB.base - noA.base;
+                return noB.suffix - noA.suffix;
             }
             return 0;
         });
-    }, [convexCustomers]);
+    }, [allMappedCustomers, sortOption]);
 
     const loading = convexCustomers === undefined;
 
@@ -192,7 +190,7 @@ function AdminCustomersContent() {
             default: start = subMonths(now, 3);
         }
 
-        return allMappedCustomers.filter(c => {
+        return sortedCustomers.filter(c => {
             // Date Filter
             const dateStr = c['신청일'] || c['신청일시'];
             if (dateStr) {
@@ -227,7 +225,7 @@ function AdminCustomersContent() {
 
             return true;
         });
-    }, [allMappedCustomers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
+    }, [sortedCustomers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
 
     // Reset pagination when filters change
     useEffect(() => {
@@ -548,6 +546,18 @@ function AdminCustomersContent() {
                 <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
                     <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
                         <ListOrdered className="w-3 h-3 text-gray-400" />
+                        <select
+                            value={sortOption}
+                            onChange={(e) => setSortOption(e.target.value as any)}
+                            className="bg-transparent border-none text-[11px] font-black text-gray-500 outline-none cursor-pointer"
+                        >
+                            <option value="updated">최근 수정순</option>
+                            <option value="no_asc">고객번호 낮은순</option>
+                            <option value="no_desc">고객번호 높은순</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
                         <select
                             value={itemsPerPage}
                             onChange={(e) => {

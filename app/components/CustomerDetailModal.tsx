@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -45,16 +45,16 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     const [formData, setFormData] = useState<Partial<Customer>>({});
     const [loading, setLoading] = useState(false);
 
-    // Fetch dynamic settings from Convex
-    const convexLabels = useQuery(api.settings.getLabels) || [];
-    const convexStatuses = useQuery(api.settings.getStatuses) || [];
+    const convexLabels = useQuery(api.settings.getLabels);
+    const convexStatuses = useQuery(api.settings.getStatuses);
+    const convexAuthors = useQuery(api.settings.getAuthors);
 
-    const [settings, setSettings] = useState<Settings>({
-        labels: [],
-        statuses: [],
-        progressAuthors: ['오영진', '김지훈'],
-        feedbackAuthors: ['문창현']
-    });
+    const settings = useMemo(() => ({
+        labels: (convexLabels || []).map(l => l.name),
+        statuses: (convexStatuses || []).map(s => s.name),
+        progressAuthors: (convexAuthors || []).filter(a => a.type === 'progress').map(a => a.name),
+        feedbackAuthors: (convexAuthors || []).filter(a => a.type === 'feedback').map(a => a.name)
+    }), [convexLabels, convexStatuses, convexAuthors]);
 
     // 헤더 직접 수정 모드
     const [isHeaderEditing, setIsHeaderEditing] = useState(false);
@@ -84,8 +84,6 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
             setProgressLogs(pLogs);
             setFeedbackLogs(fLogs);
-
-            fetchSettings();
             setIsHeaderEditing(false); // 리셋
         }
     }, [isOpen, customer]);
@@ -114,10 +112,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         }
     }, [progressLogs, feedbackLogs, activeTab]);
 
-    const fetchSettings = async () => {
-        // We now use Convex useQuery for labels/statuses. 
-        // Authors are still hardcoded or could be fetched separately.
-    };
+
 
     const handleSaveLeftPanel = async () => {
         if (!customer?.id) return alert('고객 ID가 없습니다.');
@@ -374,7 +369,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         disabled={readOnly}
                                     >
                                         <option value="">선택 안함</option>
-                                        {convexLabels.map((l: any) => <option key={l._id} value={l.name}>{l.name}</option>)}
+                                        {(convexLabels || []).map((l: any) => <option key={l._id} value={l.name}>{l.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -386,7 +381,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         disabled={readOnly}
                                     >
                                         <option value="">상태 선택</option>
-                                        {convexStatuses.map((s: any) => <option key={s._id} value={s.name}>{s.name}</option>)}
+                                        {(convexStatuses || []).map((s: any) => <option key={s._id} value={s.name}>{s.name}</option>)}
                                     </select>
                                 </div>
                             </div>

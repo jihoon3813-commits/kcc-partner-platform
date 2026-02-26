@@ -145,3 +145,43 @@ export const updateStatusOrders = mutation({
         }
     },
 });
+
+// Authors (Managers)
+export const getAuthors = query({
+    handler: async (ctx) => {
+        const authors = await ctx.db.query("authors").collect();
+        return authors.sort((a, b) => (a.order || 0) - (b.order || 0));
+    },
+});
+
+export const addAuthor = mutation({
+    args: { name: v.string(), type: v.string() }, // type: 'progress' | 'feedback'
+    handler: async (ctx, args) => {
+        const existing = await ctx.db.query("authors").collect();
+        const order = existing.length;
+        return await ctx.db.insert("authors", { ...args, order });
+    },
+});
+
+export const updateAuthor = mutation({
+    args: { id: v.id("authors"), name: v.string(), type: v.string() },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.id, { name: args.name, type: args.type });
+    },
+});
+
+export const deleteAuthor = mutation({
+    args: { id: v.id("authors") },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.id);
+    },
+});
+
+export const updateAuthorOrders = mutation({
+    args: { orders: v.array(v.object({ id: v.id("authors"), order: v.number() })) },
+    handler: async (ctx, args) => {
+        for (const item of args.orders) {
+            await ctx.db.patch(item.id, { order: item.order });
+        }
+    },
+});
