@@ -477,7 +477,7 @@ function PartnerCustomersContent() {
                                 </div>
 
                                 {/* 3. 견적 및 링크 (Right Side with Flex Column) */}
-                                <div className="lg:w-48 shrink-0 flex flex-col justify-center gap-3 lg:pl-6 border-l lg:border-gray-50">
+                                <div className="lg:w-56 shrink-0 flex flex-col justify-center gap-3 lg:pl-6 border-l lg:border-gray-50">
                                     <div className="flex gap-2 justify-center lg:justify-end">
                                         <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" />
                                         <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종" />
@@ -542,7 +542,7 @@ function BadgeLink({ href, color, label }: { href: unknown, color: string, label
             target="_blank"
             rel="noreferrer"
             onClick={(e) => !isActive && e.preventDefault()}
-            className={`w-8 h-8 flex items-center justify-center rounded-xl border-2 text-[9px] font-black transition-all ${colorClasses[color]} ${isActive ? 'hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/10' : 'cursor-default opacity-40'}`}
+            className={`min-w-[32px] h-8 px-1.5 flex items-center justify-center rounded-xl border-2 text-[10px] whitespace-nowrap font-black transition-all ${colorClasses[color]} ${isActive ? 'hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/10' : 'cursor-default opacity-40'}`}
         >
             {label}
         </a>

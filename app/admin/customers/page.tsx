@@ -725,7 +725,7 @@ function AdminCustomersContent() {
                             </div>
 
                             {/* 3. 우측 컨트롤 & 일정 */}
-                            <div className="lg:w-48 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
+                            <div className="lg:w-56 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex gap-2 justify-end lg:justify-start items-center">
                                     <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" />
                                     <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종" />
@@ -861,7 +861,7 @@ function BadgeLink({ href, color, label }: { href: string | undefined, color: st
             target="_blank"
             rel="noreferrer"
             onClick={(e) => !href && e.preventDefault()}
-            className={`w-8 h-8 flex items-center justify-center rounded-xl border-2 text-[9px] font-black transition-all ${colorClasses[color]} ${href ? 'hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/10' : 'cursor-default opacity-40'}`}
+            className={`min-w-[32px] h-8 px-1.5 flex items-center justify-center rounded-xl border-2 text-[10px] whitespace-nowrap font-black transition-all ${colorClasses[color]} ${href ? 'hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/10' : 'cursor-default opacity-40'}`}
         >
             {label}
         </a>
