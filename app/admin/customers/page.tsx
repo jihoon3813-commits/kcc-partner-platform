@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy } from 'lucide-react';
+import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy, Download } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
 import DirectCustomerModal from '@/app/components/DirectCustomerModal';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
@@ -32,6 +32,7 @@ interface Customer {
     '가견적 금액'?: string | number;
     '최종견적 금액'?: string | number;
     _creationTime?: number; // Added for sorting
+    updatedAt?: number;
     [key: string]: string | number | boolean | undefined | null;
 }
 
@@ -67,6 +68,12 @@ function AdminCustomersContent() {
     const convexCustomers = useQuery(api.customers.listCustomers);
     const batchDelete = useMutation(api.customers.batchDelete);
     const duplicateCustomerMutation = useMutation(api.customers.duplicateCustomer);
+
+    // Fetch dynamic settings
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settingLabels = useQuery((api as any).settings.getLabels) || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settingStatuses = useQuery((api as any).settings.getStatuses) || [];
 
     const handleDuplicate = async (e: React.MouseEvent, customerId: string) => {
         e.stopPropagation();
@@ -106,10 +113,17 @@ function AdminCustomersContent() {
             '가견적 금액': c.price_pre || 0,
             '최종견적 금액': c.price_final || 0,
             '_creationTime': c._creationTime,
+            'updatedAt': c.updatedAt,
         }));
 
-        // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
         return mapped.sort((a, b) => {
+            const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
+            const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+
+            if (timeB !== timeA) {
+                return timeB - timeA;
+            }
+
             const noA = String(a['No.'] || '').trim();
             const noB = String(b['No.'] || '').trim();
 
@@ -119,7 +133,6 @@ function AdminCustomersContent() {
 
             if (isAEmpty && !isBEmpty) return -1;
             if (!isAEmpty && isBEmpty) return 1;
-            if (isAEmpty && isBEmpty) return (b._creationTime || 0) - (a._creationTime || 0);
 
             // Extract base number and suffix
             const parseNo = (noStr: string) => {
@@ -138,7 +151,7 @@ function AdminCustomersContent() {
             if (numA.suffix !== numB.suffix) {
                 return numB.suffix - numA.suffix;
             }
-            return (b._creationTime || 0) - (a._creationTime || 0);
+            return 0;
         });
     }, [convexCustomers]);
 
@@ -345,6 +358,35 @@ function AdminCustomersContent() {
         reader.readAsText(file, 'UTF-8');
     };
 
+    const downloadSampleCsv = () => {
+        const headers = [
+            'No.', '고객명', '연락처', '주소', '라벨', '진행구분', '채널',
+            '진행현황(상세)_최근', 'KCC 피드백', '가견적 링크', '최종 견적 링크',
+            '고객견적서(가)', '고객견적서(최종)', '실측일자', '시공일자',
+            '가견적 금액', '최종견적 금액'
+        ];
+        const sampleData = [
+            '1', '홍길동', '010-1234-5678', '서울특별시 강남구 테헤란로 123', '일반', '접수', '네이버블로그',
+            '상담 진행 중입니다.', '특이사항 없음', 'http://link.to/pre', 'http://link.to/final',
+            '', '', '2024-05-20', '2024-06-01', '1500000', '1450000'
+        ];
+
+        const csvContent = [
+            "\uFEFF" + headers.join(','), // UTF-8 BOM for Excel compatibility
+            sampleData.join(',')
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `customer_batch_sample_${format(new Date(), 'yyyyMMdd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="lg:px-4 lg:py-2 space-y-6">
             {/* Header & Main Controls */}
@@ -376,6 +418,15 @@ function AdminCustomersContent() {
                         )}
 
                         <div className="h-6 w-[1px] bg-gray-200 mx-2 hidden lg:block"></div>
+
+                        <button
+                            onClick={downloadSampleCsv}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all border border-gray-200"
+                            title="샘플 양식 다운로드"
+                        >
+                            <Download className="w-3.5 h-3.5" />
+                            양식 다운로드
+                        </button>
 
                         <label className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-100 cursor-pointer hover:bg-indigo-700 transition-all ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
                             <Upload className="w-3.5 h-3.5" />
@@ -504,9 +555,6 @@ function AdminCustomersContent() {
                             <option value={200}>200개씩 보기</option>
                         </select>
                     </div>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> 일반</span>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-yellow-500 rounded-full"></div> 체크</span>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-green-600 rounded-full"></div> 완료</span>
                 </div>
             </div>
 
@@ -535,11 +583,7 @@ function AdminCustomersContent() {
                             className="bg-white border border-gray-100 rounded-2xl p-3 lg:p-4 flex flex-col lg:flex-row gap-4 lg:gap-6 hover:shadow-2xl hover:border-blue-200 transition-all cursor-pointer group relative overflow-hidden"
                         >
                             {/* Accent Bar */}
-                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer['라벨'] === '체크' ? 'bg-yellow-500' :
-                                customer['라벨'] === '완료' ? 'bg-green-600' :
-                                    customer['라벨'] === '보류' ? 'bg-slate-400' :
-                                        'bg-blue-500'
-                                }`}></div>
+                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer.updatedAt ? 'bg-red-500' : 'bg-blue-500'}`}></div>
 
                             {/* Checkbox */}
                             <div className="shrink-0 flex items-center pr-2" onClick={(e) => toggleSelect(customer['id'] as string, e)}>
@@ -556,26 +600,42 @@ function AdminCustomersContent() {
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${customer['진행구분']?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
-                                                customer['진행구분']?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
-                                                    customer['진행구분']?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
-                                                        customer['진행구분']?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
-                                                            customer['진행구분']?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
-                                                                customer['진행구분']?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
-                                                                    customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') || customer['진행구분']?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
-                                                                        'bg-white text-blue-600 border-blue-600 shadow-blue-100'
-                                                }`}>
-                                                {customer['진행구분'] || '접수'}
-                                            </span>
-                                            {customer['라벨'] && (
-                                                <span className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest ${customer['라벨'] === '완료' ? 'bg-[#107c41]' :
-                                                    customer['라벨'] === '체크' ? 'bg-[#D4AF37]' :
-                                                        customer['라벨'] === '보류' ? 'bg-slate-500' :
-                                                            'bg-blue-600'
-                                                    }`}>
-                                                    {customer['라벨']}
-                                                </span>
-                                            )}
+                                            {(() => {
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                const dynStatus = settingStatuses?.find((s: any) => s.name === customer['진행구분']);
+                                                return (
+                                                    <span
+                                                        className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${!dynStatus ? (customer['진행구분']?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
+                                                            customer['진행구분']?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
+                                                                customer['진행구분']?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
+                                                                    customer['진행구분']?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
+                                                                        customer['진행구분']?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
+                                                                            customer['진행구분']?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
+                                                                                customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') || customer['진행구분']?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
+                                                                                    'bg-white text-blue-600 border-blue-600 shadow-blue-100') : ''
+                                                            }`}
+                                                        style={dynStatus ? { backgroundColor: `${dynStatus.color}20`, color: dynStatus.color, borderColor: `${dynStatus.color}40` } : undefined}
+                                                    >
+                                                        {customer['진행구분'] || '접수'}
+                                                    </span>
+                                                );
+                                            })()}
+                                            {customer['라벨'] && (() => {
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                const dynLabel = settingLabels?.find((l: any) => l.name === customer['라벨']);
+                                                return (
+                                                    <span
+                                                        className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest ${!dynLabel ? (customer['라벨'] === '완료' ? 'bg-[#107c41]' :
+                                                            customer['라벨'] === '체크' ? 'bg-[#D4AF37]' :
+                                                                customer['라벨'] === '보류' ? 'bg-slate-500' :
+                                                                    'bg-blue-600') : ''
+                                                            }`}
+                                                        style={dynLabel ? { backgroundColor: dynLabel.color } : undefined}
+                                                    >
+                                                        {customer['라벨']}
+                                                    </span>
+                                                );
+                                            })()}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter">

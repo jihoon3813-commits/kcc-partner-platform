@@ -22,7 +22,20 @@ export default defineSchema({
         link_pre_cust: v.optional(v.string()), // TEXT
         link_final_cust: v.optional(v.string()), // TEXT
         created_at: v.optional(v.string()), // Original application date
+        updatedAt: v.optional(v.number()), // For sorting modified customers to the top
     }).index("by_no", ["no"]).index("by_channel", ["channel"]),
+
+    customerLabels: defineTable({
+        name: v.string(),
+        color: v.string(), // Hex code or tailwind class
+        order: v.optional(v.number()),
+    }).index("by_order", ["order"]),
+
+    customerStatuses: defineTable({
+        name: v.string(),
+        color: v.string(), // Hex code or tailwind class
+        order: v.optional(v.number()),
+    }).index("by_order", ["order"]),
 
     partners: defineTable({
         uid: v.string(), // PRIMARY KEY

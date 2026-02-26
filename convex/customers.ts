@@ -108,7 +108,10 @@ export const updateCustomer = mutation({
         }),
     },
     handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, args.updates);
+        await ctx.db.patch(args.id, {
+            ...args.updates,
+            updatedAt: Date.now(),
+        });
     },
 });
 
@@ -251,13 +254,15 @@ export const duplicateCustomer = mutation({
         const newName = original.name ? `${original.name}(복사)` : "(복사)";
         // Extract internal fields to exclude for insertion
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { _id, _creationTime, ...rest } = original;
+        const { _id, _creationTime, updatedAt, ...rest } = original;
 
         const newId = await ctx.db.insert("customers", {
             ...rest,
             no: newNo,
             name: newName,
             status: "접수",
+            // We don't set updatedAt here so it uses _creationTime for sorting,
+            // appearing at the top as a new entry.
         });
 
         return newId;

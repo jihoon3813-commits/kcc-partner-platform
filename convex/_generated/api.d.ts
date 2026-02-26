@@ -14,6 +14,7 @@ import type * as init from "../init.js";
 import type * as partners from "../partners.js";
 import type * as products from "../products.js";
 import type * as resources from "../resources.js";
+import type * as settings from "../settings.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   partners: typeof partners;
   products: typeof products;
   resources: typeof resources;
+  settings: typeof settings;
 }>;
 
 /**

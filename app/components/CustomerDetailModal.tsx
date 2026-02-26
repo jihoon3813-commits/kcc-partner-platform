@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink } from 'lucide-react';
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 interface Customer {
@@ -43,8 +43,18 @@ interface CustomerDetailModalProps {
 export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdate, currentUser = 'Admin', readOnly = false }: CustomerDetailModalProps) {
     const [activeTab, setActiveTab] = useState('progress'); // progress, history, feedback
     const [formData, setFormData] = useState<Partial<Customer>>({});
-    const [settings, setSettings] = useState<Settings>({ labels: [], statuses: [], progressAuthors: [], feedbackAuthors: [] });
     const [loading, setLoading] = useState(false);
+
+    // Fetch dynamic settings from Convex
+    const convexLabels = useQuery(api.settings.getLabels) || [];
+    const convexStatuses = useQuery(api.settings.getStatuses) || [];
+
+    const [settings, setSettings] = useState<Settings>({
+        labels: [],
+        statuses: [],
+        progressAuthors: ['오영진', '김지훈'],
+        feedbackAuthors: ['문창현']
+    });
 
     // 헤더 직접 수정 모드
     const [isHeaderEditing, setIsHeaderEditing] = useState(false);
@@ -105,15 +115,8 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     }, [progressLogs, feedbackLogs, activeTab]);
 
     const fetchSettings = async () => {
-        try {
-            const res = await fetch('/api/data?action=read_settings');
-            const json = await res.json();
-            if (json.success) {
-                setSettings(json.data);
-            }
-        } catch (e) {
-            console.error("Failed to fetch settings", e);
-        }
+        // We now use Convex useQuery for labels/statuses. 
+        // Authors are still hardcoded or could be fetched separately.
     };
 
     const handleSaveLeftPanel = async () => {
@@ -371,7 +374,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         disabled={readOnly}
                                     >
                                         <option value="">선택 안함</option>
-                                        {settings.labels.map((l: string) => <option key={l} value={l}>{l}</option>)}
+                                        {convexLabels.map((l: any) => <option key={l._id} value={l.name}>{l.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -383,7 +386,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         disabled={readOnly}
                                     >
                                         <option value="">상태 선택</option>
-                                        {settings.statuses.map((s: string) => <option key={s} value={s}>{s}</option>)}
+                                        {convexStatuses.map((s: any) => <option key={s._id} value={s.name}>{s.name}</option>)}
                                     </select>
                                 </div>
                             </div>

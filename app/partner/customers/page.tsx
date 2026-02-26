@@ -23,6 +23,7 @@ interface Customer {
     'Timestamp'?: string;
     '라벨'?: string;
     '채널'?: string;
+    updatedAt?: number;
     '주소'?: string;
     'KCC 피드백'?: string;
     '진행현황(상세)_최근'?: string;
@@ -57,6 +58,12 @@ function PartnerCustomersContent() {
     // Convex Data
     const convexCustomers = useQuery(api.customers.listCustomers);
 
+    // Fetch dynamic settings
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settingLabels = useQuery((api as any).settings.getLabels) || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settingStatuses = useQuery((api as any).settings.getStatuses) || [];
+
     // Correctly process and map customers data using useMemo to avoid cascading renders
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers) return [];
@@ -81,7 +88,8 @@ function PartnerCustomersContent() {
             '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
             '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
             'id': c._id,
-            '_creationTime': c._creationTime
+            '_creationTime': c._creationTime,
+            'updatedAt': c.updatedAt
         }));
 
         // Filter for my customers
@@ -91,21 +99,26 @@ function PartnerCustomersContent() {
             return channel.includes(partnerName) || channel === partnerSession.id;
         });
 
-        // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
         return myCustomers.sort((a, b) => {
-            const noA = String(a['No.'] || '');
-            const noB = String(b['No.'] || '');
+            const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
+            const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+
+            if (timeB !== timeA) {
+                return timeB - timeA;
+            }
+
+            const noA = String(a['No.'] || '').trim();
+            const noB = String(b['No.'] || '').trim();
             const isAEmpty = !noA || noA.includes('-');
             const isBEmpty = !noB || noB.includes('-');
 
             if (isAEmpty && !isBEmpty) return -1;
             if (!isAEmpty && isBEmpty) return 1;
-            if (isAEmpty && isBEmpty) return (b._creationTime || 0) - (a._creationTime || 0);
 
             const nA = parseInt(noA.replace(/[^0-9]/g, ''), 10);
             const nB = parseInt(noB.replace(/[^0-9]/g, ''), 10);
             if (!isNaN(nA) && !isNaN(nB) && nA !== nB) return nB - nA;
-            return (b._creationTime || 0) - (a._creationTime || 0);
+            return 0;
         });
     }, [convexCustomers, partnerName, partnerSession]);
 
@@ -302,11 +315,7 @@ function PartnerCustomersContent() {
                     </button>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-400 border-t pt-4">
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-500 rounded-full"></div> 일반</span>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-yellow-500 rounded-full"></div> 체크</span>
-                    <span className="flex items-center gap-1"><div className="w-2 h-2 bg-green-600 rounded-full"></div> 완료</span>
-                </div>
+
             </div>
 
             {/* Stats Overview within List */}
@@ -344,37 +353,49 @@ function PartnerCustomersContent() {
                                 className="bg-white border border-gray-100 rounded-2xl p-3 lg:p-4 flex flex-col lg:flex-row gap-4 lg:gap-6 hover:shadow-2xl hover:border-blue-200 transition-all cursor-pointer group relative overflow-hidden"
                             >
                                 {/* Accent Bar */}
-                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer['라벨'] === '체크' ? 'bg-yellow-500' :
-                                    customer['라벨'] === '완료' ? 'bg-green-600' :
-                                        customer['라벨'] === '보류' ? 'bg-slate-400' :
-                                            'bg-blue-500'
-                                    }`}></div>
+                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer.updatedAt ? 'bg-red-500' : 'bg-blue-500'}`}></div>
 
                                 {/* 1. 기본 정보 & 상태 */}
                                 <div className="lg:w-[380px] shrink-0 border-b lg:border-b-0 lg:border-r border-gray-50 pb-3 lg:pb-0 lg:pr-6">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${String(customer['진행구분'])?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
-                                                    String(customer['진행구분'])?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
-                                                        String(customer['진행구분'])?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
-                                                            String(customer['진행구분'])?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
-                                                                String(customer['진행구분'])?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
-                                                                    String(customer['진행구분'])?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
-                                                                        String(customer['진행구분'])?.includes('거부') || String(customer['진행구분'])?.includes('부재') || String(customer['진행구분'])?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
-                                                                            'bg-white text-blue-600 border-blue-600 shadow-blue-100'
-                                                    }`}>
-                                                    {customer['진행구분'] || '접수'}
-                                                </span>
-                                                {customer['라벨'] && (
-                                                    <span className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest ${customer['라벨'] === '완료' ? 'bg-[#107c41]' :
-                                                        customer['라벨'] === '체크' ? 'bg-[#D4AF37]' :
-                                                            customer['라벨'] === '보류' ? 'bg-slate-500' :
-                                                                'bg-blue-600'
-                                                        }`}>
-                                                        {customer['라벨']}
-                                                    </span>
-                                                )}
+                                                {(() => {
+                                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                    const dynStatus = settingStatuses?.find((s: any) => s.name === customer['진행구분']);
+                                                    return (
+                                                        <span
+                                                            className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm ${!dynStatus ? (String(customer['진행구분'])?.includes('완료') ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-emerald-100' :
+                                                                String(customer['진행구분'])?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
+                                                                    String(customer['진행구분'])?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
+                                                                        String(customer['진행구분'])?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
+                                                                            String(customer['진행구분'])?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
+                                                                                String(customer['진행구분'])?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
+                                                                                    String(customer['진행구분'])?.includes('거부') || String(customer['진행구분'])?.includes('부재') || String(customer['진행구분'])?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
+                                                                                        'bg-white text-blue-600 border-blue-600 shadow-blue-100') : ''
+                                                                }`}
+                                                            style={dynStatus ? { backgroundColor: `${dynStatus.color}20`, color: dynStatus.color, borderColor: `${dynStatus.color}40` } : undefined}
+                                                        >
+                                                            {customer['진행구분'] || '접수'}
+                                                        </span>
+                                                    );
+                                                })()}
+                                                {customer['라벨'] && (() => {
+                                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                    const dynLabel = settingLabels?.find((l: any) => l.name === customer['라벨']);
+                                                    return (
+                                                        <span
+                                                            className={`text-[10px] font-black text-white px-2.5 py-1 rounded-lg tracking-widest ${!dynLabel ? (customer['라벨'] === '완료' ? 'bg-[#107c41]' :
+                                                                customer['라벨'] === '체크' ? 'bg-[#D4AF37]' :
+                                                                    customer['라벨'] === '보류' ? 'bg-slate-500' :
+                                                                        'bg-blue-600') : ''
+                                                                }`}
+                                                            style={dynLabel ? { backgroundColor: dynLabel.color } : undefined}
+                                                        >
+                                                            {customer['라벨']}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter">
