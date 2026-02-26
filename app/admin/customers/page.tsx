@@ -110,10 +110,12 @@ function AdminCustomersContent() {
 
         // Ensure sorting by No. descending, but those without No. (online entries) stay at the top
         return mapped.sort((a, b) => {
-            const noA = String(a['No.'] || '');
-            const noB = String(b['No.'] || '');
-            const isAEmpty = !noA || noA.includes('-');
-            const isBEmpty = !noB || noB.includes('-');
+            const noA = String(a['No.'] || '').trim();
+            const noB = String(b['No.'] || '').trim();
+
+            // Check if No is genuinely empty or a placeholder
+            const isAEmpty = !noA || noA === '-' || noA === 'No.-' || noA.startsWith('NS_');
+            const isBEmpty = !noB || noB === '-' || noB === 'No.-' || noB.startsWith('NS_');
 
             if (isAEmpty && !isBEmpty) return -1;
             if (!isAEmpty && isBEmpty) return 1;
