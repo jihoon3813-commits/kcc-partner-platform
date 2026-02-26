@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Printer, Home, Phone, Calendar, Info, Trash2, History, Plus, FileText, ChevronRight } from 'lucide-react';
+import { Printer, Home, Phone, Calendar, Info, Trash2, History, Plus, FileText, ChevronRight, Save, CheckCircle2 } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -19,21 +19,27 @@ export default function NoticePage() {
 
     // UI state
     const [activeTab, setActiveTab] = useState<'generate' | 'history'>('generate');
+    const [isSaved, setIsSaved] = useState(false);
 
     const printRef = useRef<HTMLDivElement>(null);
 
-    const handlePrint = async () => {
+    const handleSave = async () => {
         try {
-            // Save to history before printing
-            addNoticeMutation({
+            await addNoticeMutation({
                 dongUnit,
                 constructDate,
                 duration,
                 contact
             });
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2000);
         } catch (e) {
             console.error("Failed to save notice history", e);
+            alert("저장에 실패했습니다.");
         }
+    };
+
+    const handlePrint = () => {
         window.print();
     };
 
@@ -53,7 +59,7 @@ export default function NoticePage() {
     };
 
     // Shared design component to ensure consistency
-    const NoticeContent = () => (
+    const NoticeContent = ({ dong, date, dur, phone }: { dong: string, date: string, dur: string, phone: string }) => (
         <div className="notice-container">
             <div className="notice-bg-pattern"></div>
             <div className="notice-bg-pattern-2"></div>
@@ -70,13 +76,13 @@ export default function NoticePage() {
                         </h1>
 
                         <div className="notice-dong-unit">
-                            {dongUnit}
+                            {dong}
                         </div>
 
                         <div className="notice-divider-container">
                             <div className="notice-divider"></div>
                             <div className="notice-date-text">
-                                {constructDate} ({duration})
+                                {date} ({dur})
                             </div>
                             <div className="notice-divider"></div>
                         </div>
@@ -98,7 +104,7 @@ export default function NoticePage() {
                                 거주지 창호 교체는 완성창 전문 기업 KCC 홈씨씨가 잘합니다.
                             </div>
                             <div className="notice-contact">
-                                (문의 : {contact})
+                                (문의 : {phone})
                             </div>
                         </div>
                     </div>
@@ -155,13 +161,32 @@ export default function NoticePage() {
                                     </h2>
                                     <p className="text-sm text-gray-500 font-medium">안내문에 표시될 필수 정보를 작성해 주세요.</p>
                                 </div>
-                                <button
-                                    onClick={handlePrint}
-                                    className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-base hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95 group"
-                                >
-                                    <Printer className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                    인쇄 / PDF 다운로드
-                                </button>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaved}
+                                        className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black text-base transition-all active:scale-95 group ${isSaved ? 'bg-green-50 text-green-600 border-2 border-green-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-lg shadow-gray-200/50'}`}
+                                    >
+                                        {isSaved ? (
+                                            <>
+                                                <CheckCircle2 className="w-5 h-5" />
+                                                저장 완료
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                                내역 저장
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={handlePrint}
+                                        className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-base hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95 group"
+                                    >
+                                        <Printer className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                        인쇄 / PDF 다운로드
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -244,7 +269,7 @@ export default function NoticePage() {
                         <div className="flex justify-center bg-gray-200/30 rounded-[2rem] p-4 lg:p-10 border-4 border-dashed border-gray-100 overflow-x-auto">
                             <div className="shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] scale-[0.5] sm:scale-[0.6] md:scale-[0.7] lg:scale-95 origin-top mb-[-400px] sm:mb-[-200px] lg:mb-0">
                                 <div className="notice-print-area">
-                                    <NoticeContent />
+                                    <NoticeContent dong={dongUnit} date={constructDate} dur={duration} phone={contact} />
                                 </div>
                             </div>
                         </div>
@@ -327,7 +352,7 @@ export default function NoticePage() {
 
             {/* 2. PRINT ONLY AREA (HIDDEN ON SCREEN) */}
             <div id="print-takeover" className="print-only-container">
-                <NoticeContent />
+                <NoticeContent dong={dongUnit} date={constructDate} dur={duration} phone={contact} />
             </div>
 
             <style jsx global>{`
