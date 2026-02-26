@@ -86,4 +86,12 @@ export default defineSchema({
         type: v.string(), // 'progress' | 'feedback'
         order: v.optional(v.number()),
     }).index("by_type", ["type"]).index("by_order", ["order"]),
+
+    notices: defineTable({
+        dongUnit: v.string(),
+        constructDate: v.string(),
+        duration: v.string(),
+        contact: v.string(),
+        createdAt: v.number(),
+    }).index("by_created_at", ["createdAt"]),
 });

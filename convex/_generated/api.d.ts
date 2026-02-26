@@ -11,6 +11,7 @@
 import type * as admins from "../admins.js";
 import type * as customers from "../customers.js";
 import type * as init from "../init.js";
+import type * as notices from "../notices.js";
 import type * as partners from "../partners.js";
 import type * as products from "../products.js";
 import type * as resources from "../resources.js";
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   admins: typeof admins;
   customers: typeof customers;
   init: typeof init;
+  notices: typeof notices;
   partners: typeof partners;
   products: typeof products;
   resources: typeof resources;
