@@ -24,7 +24,7 @@ export default function NoticePage() {
 
     const handlePrint = async () => {
         try {
-            // Save to history before printing - don't await to avoid blocking if slow
+            // Save to history before printing
             addNoticeMutation({
                 dongUnit,
                 constructDate,
@@ -185,7 +185,7 @@ export default function NoticePage() {
 
                     {/* Preview Section */}
                     <div className="flex justify-center bg-gray-200/30 rounded-[2rem] p-4 lg:p-10 border-4 border-dashed border-gray-100 overflow-x-auto no-print">
-                        <div ref={printRef} className="notice-print-area shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] scale-[0.5] sm:scale-[0.6] md:scale-[0.7] lg:scale-95 origin-top lg:mb-0">
+                        <div id="notice-printable" ref={printRef} className="notice-print-area shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] scale-[0.5] sm:scale-[0.6] md:scale-[0.7] lg:scale-95 origin-top lg:mb-0">
                             {/* The actual Notice Design */}
                             <div className="notice-container">
                                 {/* Diamond Pattern Background */}
@@ -319,46 +319,49 @@ export default function NoticePage() {
                 </div>
             )}
 
-            <style jsx>{`
+            <style jsx global>{`
                 @media print {
-                    .no-print { display: none !important; }
-                    body { 
-                        background: white !important; 
-                        margin: 0 !important; 
-                        padding: 0 !important;
+                    /* Hide EVERYTHING in the entire app */
+                    body * {
+                        visibility: hidden !important;
                     }
-                    .notice-print-area { 
-                        display: block !important;
-                        position: absolute !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        width: 210mm !important;
-                        height: 297mm !important;
-                        transform: none !important; 
-                        box-shadow: none !important;
-                        z-index: 99999 !important;
-                        background: #f1df91 !important;
+                    /* Only show the notice container and its children */
+                    #notice-printable, #notice-printable * {
                         visibility: visible !important;
                     }
-                    /* Ensure parents don't hide the print area */
-                    main, aside, header, .max-w-6xl {
-                        display: block !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        border: none !important;
+                    #notice-printable {
+                        position: fixed !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        width: 210mm !important;
+                        height: 297mm !important;
+                        transform: none !important;
                         box-shadow: none !important;
-                    }
-                    .max-w-6xl > *:not(.flex:has(.notice-print-area)) {
-                        display: none !important;
-                    }
-                    .notice-container { 
-                        background-color: #f1df91 !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        border: none !important;
+                        background: #f1df91 !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    @page { margin: 0; size: A4 portrait; }
+                    /* Specifically ensure parent elements don't collapse or hide content */
+                    html, body, main, div {
+                        visibility: visible !important;
+                        overflow: visible !important;
+                        height: auto !important;
+                    }
+                    /* Re-hide navigation and layout stuff specifically */
+                    header, aside, .no-print {
+                        display: none !important;
+                    }
+                    @page {
+                        margin: 0;
+                        size: A4 portrait;
+                    }
                 }
+            `}</style>
 
+            <style jsx>{`
                 .notice-print-area {
                     width: 210mm;
                     height: 297mm;
