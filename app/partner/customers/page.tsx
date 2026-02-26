@@ -318,14 +318,48 @@ function PartnerCustomersContent() {
 
             </div>
 
-            {/* Stats Overview within List */}
-            {statusFilter && (
-                <div className="px-8 flex items-center gap-4">
-                    <div className="bg-blue-600 text-white px-5 py-2 rounded-2xl font-black text-xs uppercase tracking-widest italic animate-pulse">
-                        Filtering active: {statusFilter}
+            {/* Results Header & Legend */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+                <div className="flex items-center gap-4">
+                    <p className="text-sm font-bold text-gray-500">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    {/* Legend 1: Labels */}
+                    <div className="flex items-center gap-2 opacity-80 mr-4">
+                        <span className="text-[10px] font-bold text-gray-400">라벨:</span>
+                        <div className="flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                            <span className="text-[10px] font-black text-gray-400">일반</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>
+                            <span className="text-[10px] font-black text-gray-400">체크</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#107c41]"></div>
+                            <span className="text-[10px] font-black text-gray-400">완료</span>
+                        </div>
+                    </div>
+
+                    {/* Legend 2: Status Bar */}
+                    <div className="flex items-center gap-2 opacity-80 border-l pl-4 border-gray-50">
+                        <span className="text-[10px] font-bold text-gray-400">선:</span>
+                        <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded-md border border-red-100">
+                            <div className="w-1 h-3 bg-red-500 rounded-full"></div>
+                            <span className="text-[10px] font-black">정보수정</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md border border-blue-100">
+                            <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
+                            <span className="text-[10px] font-black">신규등록</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-gray-50 text-gray-400 rounded-md border border-gray-100">
+                            <div className="w-1 h-3 bg-gray-300 rounded-full"></div>
+                            <span className="text-[10px] font-black text-gray-400">상태유지</span>
+                        </div>
                     </div>
                 </div>
-            )}
+            </div>
 
             {/* List Body */}
             <div className="grid grid-cols-1 gap-4">
@@ -353,7 +387,19 @@ function PartnerCustomersContent() {
                                 className="bg-white border border-gray-100 rounded-2xl p-3 lg:p-4 flex flex-col lg:flex-row gap-4 lg:gap-6 hover:shadow-2xl hover:border-blue-200 transition-all cursor-pointer group relative overflow-hidden"
                             >
                                 {/* Accent Bar */}
-                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer.updatedAt ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+                                {(() => {
+                                    const now = Date.now();
+                                    const oneDay = 24 * 60 * 60 * 1000;
+                                    const isRecentUpdate = customer.updatedAt && (now - customer.updatedAt) <= oneDay;
+                                    const isRecentNew = (now - (customer._creationTime || 0)) <= oneDay;
+
+                                    return (
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isRecentUpdate ? 'bg-red-500' :
+                                            isRecentNew ? 'bg-blue-500' :
+                                                'bg-gray-300'
+                                            }`}></div>
+                                    );
+                                })()}
 
                                 {/* 1. 기본 정보 & 상태 */}
                                 <div className="lg:w-[380px] shrink-0 border-b lg:border-b-0 lg:border-r border-gray-50 pb-3 lg:pb-0 lg:pr-6">

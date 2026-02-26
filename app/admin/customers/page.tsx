@@ -555,6 +555,42 @@ function AdminCustomersContent() {
                             <option value={200}>200개씩 보기</option>
                         </select>
                     </div>
+
+                    <div className="flex items-center gap-4 ml-2 border-l pl-4 border-gray-100">
+                        {/* Legend 1: Labels */}
+                        <div className="flex items-center gap-2 opacity-80 mr-4">
+                            <span className="text-[10px] font-bold text-gray-400">라벨:</span>
+                            <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                <span className="text-[10px] font-black text-gray-400">일반</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"></div>
+                                <span className="text-[10px] font-black text-gray-400">체크</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#107c41]"></div>
+                                <span className="text-[10px] font-black text-gray-400">완료</span>
+                            </div>
+                        </div>
+
+                        {/* Legend 2: Status Bar */}
+                        <div className="flex items-center gap-2 opacity-80 border-l pl-4 border-gray-50">
+                            <span className="text-[10px] font-bold text-gray-400">선:</span>
+                            <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded-md border border-red-100">
+                                <div className="w-1 h-3 bg-red-500 rounded-full"></div>
+                                <span className="text-[10px] font-black">정보수정</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md border border-blue-100">
+                                <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
+                                <span className="text-[10px] font-black">신규등록</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 px-1.5 py-0.5 bg-gray-50 text-gray-400 rounded-md border border-gray-100">
+                                <div className="w-1 h-3 bg-gray-300 rounded-full"></div>
+                                <span className="text-[10px] font-black text-gray-400">상태유지</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -583,7 +619,19 @@ function AdminCustomersContent() {
                             className="bg-white border border-gray-100 rounded-2xl p-3 lg:p-4 flex flex-col lg:flex-row gap-4 lg:gap-6 hover:shadow-2xl hover:border-blue-200 transition-all cursor-pointer group relative overflow-hidden"
                         >
                             {/* Accent Bar */}
-                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer.updatedAt ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+                            {(() => {
+                                const now = Date.now();
+                                const oneDay = 24 * 60 * 60 * 1000;
+                                const isRecentUpdate = customer.updatedAt && (now - customer.updatedAt) <= oneDay;
+                                const isRecentNew = (now - (customer._creationTime || 0)) <= oneDay;
+
+                                return (
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isRecentUpdate ? 'bg-red-500' :
+                                        isRecentNew ? 'bg-blue-500' :
+                                            'bg-gray-300'
+                                        }`}></div>
+                                );
+                            })()}
 
                             {/* Checkbox */}
                             <div className="shrink-0 flex items-center pr-2" onClick={(e) => toggleSelect(customer['id'] as string, e)}>
@@ -735,53 +783,55 @@ function AdminCustomersContent() {
             </div>
 
             {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-4">
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-100 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-100 transition-all font-bold"
-                    >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
+            {
+                totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 pt-4">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-100 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-100 transition-all font-bold"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
 
-                    <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            let pageNum: number;
-                            if (totalPages <= 5) {
-                                pageNum = i + 1;
-                            } else if (currentPage <= 3) {
-                                pageNum = i + 1;
-                            } else if (currentPage >= totalPages - 2) {
-                                pageNum = totalPages - 4 + i;
-                            } else {
-                                pageNum = currentPage - 2 + i;
-                            }
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                let pageNum: number;
+                                if (totalPages <= 5) {
+                                    pageNum = i + 1;
+                                } else if (currentPage <= 3) {
+                                    pageNum = i + 1;
+                                } else if (currentPage >= totalPages - 2) {
+                                    pageNum = totalPages - 4 + i;
+                                } else {
+                                    pageNum = currentPage - 2 + i;
+                                }
 
-                            return (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => setCurrentPage(pageNum)}
-                                    className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${currentPage === pageNum
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
-                                        : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
-                                        }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={`w-10 h-10 rounded-xl text-sm font-black transition-all ${currentPage === pageNum
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
+                                            : 'bg-white text-gray-400 hover:text-gray-900 border border-gray-100'
+                                            }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-100 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-100 transition-all font-bold"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
-
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                        className="p-2 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 hover:border-blue-100 disabled:opacity-30 disabled:hover:text-gray-400 disabled:hover:border-gray-100 transition-all font-bold"
-                    >
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
-                </div>
-            )}
+                )
+            }
 
             {/* Detailed Popup */}
             <CustomerDetailModal
