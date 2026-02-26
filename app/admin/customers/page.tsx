@@ -165,9 +165,9 @@ function AdminCustomersContent() {
 
     // Derive unique values for filters
     const filterOptions = useMemo(() => {
-        const labels = Array.from(new Set(allMappedCustomers.map(c => c['라벨']).filter(Boolean)));
-        const statuses = Array.from(new Set(allMappedCustomers.map(c => c['진행구분']).filter(Boolean)));
-        const partners = Array.from(new Set(allMappedCustomers.map(c => c['채널']).filter(Boolean)));
+        const labels = Array.from(new Set(allMappedCustomers.map(c => c['라벨']).filter(Boolean))).sort();
+        const statuses = Array.from(new Set(allMappedCustomers.map(c => c['진행구분']).filter(Boolean))).sort();
+        const partners = Array.from(new Set(allMappedCustomers.map(c => c['채널']).filter(Boolean))).sort();
         return { labels, statuses, partners };
     }, [allMappedCustomers]);
 
