@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, Suspense, useCallback } from 'react';
+import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { Search, Filter, Users, RefreshCcw, MapPin, Calendar, ClipboardList } from 'lucide-react';
