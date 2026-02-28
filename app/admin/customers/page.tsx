@@ -295,7 +295,7 @@ function AdminCustomersContent() {
                 const rows = text.replace(/\r/g, '').split('\n').filter(row => row.trim());
                 if (rows.length < 2) return alert('등록할 데이터가 없습니다 (헤더 포함 최소 2줄 필요).');
 
-                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, '').replace(/^\uFEFF/, ''));
                 const data = rows.slice(1).map((row) => {
                     const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
                     const obj: Record<string, string | number> = {};
@@ -330,7 +330,8 @@ function AdminCustomersContent() {
                             '가견적 금액': 'price_pre',
                             '최종견적 금액': 'price_final'
                         };
-                        const field = mapping[header] || header;
+                        const field = mapping[header];
+                        if (!field) return; // Skip unknown fields to prevent Convex strict schema validation error
 
                         // Type conversion for numeric fields
                         if (field === 'price_pre' || field === 'price_final') {
