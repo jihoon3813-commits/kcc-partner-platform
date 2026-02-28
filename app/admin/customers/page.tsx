@@ -295,9 +295,28 @@ function AdminCustomersContent() {
                 const rows = text.replace(/\r/g, '').split('\n').filter(row => row.trim());
                 if (rows.length < 2) return alert('등록할 데이터가 없습니다 (헤더 포함 최소 2줄 필요).');
 
-                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, '').replace(/^\uFEFF/, ''));
+                const parseCsvLine = (line: string) => {
+                    const result = [];
+                    let cur = '';
+                    let inQuote = false;
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        if (char === '"') {
+                            inQuote = !inQuote;
+                        } else if (char === ',' && !inQuote) {
+                            result.push(cur.trim().replace(/^"|"$/g, ''));
+                            cur = '';
+                        } else {
+                            cur += char;
+                        }
+                    }
+                    result.push(cur.trim().replace(/^"|"$/g, ''));
+                    return result;
+                };
+
+                const headers = parseCsvLine(rows[0]).map(h => h.replace(/^\uFEFF/, ''));
                 const data = rows.slice(1).map((row) => {
-                    const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
+                    const values = parseCsvLine(row);
                     const obj: Record<string, string | number> = {};
                     headers.forEach((header, i) => {
                         const val = values[i];
@@ -341,7 +360,7 @@ function AdminCustomersContent() {
                             obj[field] = val;
                         }
                     });
-                    return obj as any; // Still using any for batchCreate as the schema is flexible
+                    return obj as any;
                 });
 
                 const result = await batchCreate({ customers: data });
