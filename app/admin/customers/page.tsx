@@ -663,7 +663,7 @@ function AdminCustomersContent() {
                                                             }`}
                                                         style={dynStatus ? { backgroundColor: `${dynStatus.color}20`, color: dynStatus.color, borderColor: `${dynStatus.color}40` } : undefined}
                                                     >
-                                                        {customer['진행구분'] || '접수'}
+                                                        {(customer['진행구분'] || customer.status) || '접수'}
                                                     </span>
                                                 );
                                             })()}
@@ -689,7 +689,7 @@ function AdminCustomersContent() {
                                                 {customer['신청일'] ? String(customer['신청일']).substring(0, 10) : '-'}
                                             </span>
                                             {customer['No.'] && <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg whitespace-nowrap">No.{customer['No.']}</span>}
-                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['유입채널']}</span>
+                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['유입채널'] || customer.channel}</span>
                                         </div>
                                     </div>
 
@@ -721,14 +721,14 @@ function AdminCustomersContent() {
                                 <div className="space-y-2">
                                     <div className="flex gap-2 items-start group/line">
                                         <span className={`shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-lg ${customer['KCC 피드백'] ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-gray-50 text-gray-300'}`}>피드백</span>
-                                        <p className={`text-[13px] line-clamp-2 ${customer['KCC 피드백'] ? 'text-gray-700 leading-relaxed' : 'text-gray-200 italic font-medium'}`}>
-                                            {customer['KCC 피드백'] || '등록된 피드백이 없습니다.'}
+                                        <p className={`text-[13px] line-clamp-2 ${(customer['KCC 피드백'] || customer.feedback) ? 'text-gray-700 leading-relaxed' : 'text-gray-200 italic font-medium'}`}>
+                                            {(customer['KCC 피드백'] || customer.feedback) || '등록된 피드백이 없습니다.'}
                                         </p>
                                     </div>
                                     <div className="flex gap-2 items-start group/line">
                                         <span className={`shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-lg ${customer['진행현황(상세)_최근'] ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-gray-50 text-gray-300'}`}>진행기록</span>
-                                        <p className={`text-[13px] line-clamp-2 ${customer['진행현황(상세)_최근'] ? 'text-gray-700 leading-relaxed' : 'text-gray-200 italic'}`}>
-                                            {customer['진행현황(상세)_최근'] || '최근 진행 기록이 없습니다.'}
+                                        <p className={`text-[13px] line-clamp-2 ${(customer['진행현황(상세)_최근'] || customer.progress_detail) ? 'text-gray-700 leading-relaxed' : 'text-gray-200 italic'}`}>
+                                            {(customer['진행현황(상세)_최근'] || customer.progress_detail) || '최근 진행 기록이 없습니다.'}
                                         </p>
                                     </div>
                                 </div>
