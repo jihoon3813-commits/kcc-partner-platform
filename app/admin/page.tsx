@@ -129,6 +129,7 @@ export default function AdminDashboard() {
             if (!dateStr) return true; // 날짜 필드가 아예 없으면 필터에서 제외하지 않음 (연동 체크용)
             try {
                 const itemDate = new Date(dateStr as string);
+                if (isNaN(itemDate.getTime())) return true;
                 return isWithinInterval(itemDate, { start, end });
             } catch {
                 return true;

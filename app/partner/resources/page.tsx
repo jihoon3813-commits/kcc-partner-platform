@@ -28,7 +28,7 @@ export default function PartnerResourcesPage() {
             type: (r.type || 'image') as 'image' | 'video' | 'file',
             title: r.title || '',
             description: r.description || '',
-            date: new Date(r._creationTime).toISOString(),
+            date: r._creationTime ? new Date(r._creationTime).toISOString() : '',
             downloadUrl: r.downloadUrl || '',
             thumbnail: r.thumbnail || ''
         }));

@@ -8,22 +8,24 @@ import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, 
 import Cookies from 'js-cookie';
 import PartnerInfoModal from "../components/PartnerInfoModal";
 
+interface PartnerInfo {
+    id: string;
+    name: string;
+    ceoName: string;
+    contact: string;
+    address: string;
+    businessNumber?: string;
+    accountNumber?: string;
+    email?: string;
+    status?: string;
+}
+
 export default function PartnerLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    interface PartnerInfo {
-        id: string;
-        name: string;
-        ceoName: string;
-        contact: string;
-        address: string;
-        businessNumber?: string;
-        accountNumber?: string;
-        email?: string;
-        status?: string;
-    }
+
 
     const pathname = usePathname();
     const router = useRouter();
