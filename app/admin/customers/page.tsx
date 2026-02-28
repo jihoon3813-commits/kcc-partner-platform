@@ -20,7 +20,7 @@ interface Customer {
     '주소': string;
     '진행구분': string;
     '라벨'?: string;
-    '채널': string;
+    '유입채널': string;
     'KCC 피드백'?: string;
     '진행현황(상세)_최근'?: string;
     '가견적 링크'?: string;
@@ -106,7 +106,7 @@ function AdminCustomersContent() {
                 '주소': c.address || '',
                 '진행구분': c.status || '접수',
                 '라벨': c.label || '일반',
-                '채널': c.channel || '',
+                '유입채널': c.channel || '',
                 'KCC 피드백': c.feedback || '',
                 '진행현황(상세)_최근': c.progress_detail || '',
                 '가견적 링크': c.link_pre_kcc || '',
@@ -167,7 +167,7 @@ function AdminCustomersContent() {
     const filterOptions = useMemo(() => {
         const labels = Array.from(new Set(allMappedCustomers.map(c => c['라벨']).filter(Boolean))).sort();
         const statuses = Array.from(new Set(allMappedCustomers.map(c => c['진행구분']).filter(Boolean))).sort();
-        const partners = Array.from(new Set(allMappedCustomers.map(c => c['채널']).filter(Boolean))).sort();
+        const partners = Array.from(new Set(allMappedCustomers.map(c => c['유입채널']).filter(Boolean))).sort();
         return { labels, statuses, partners };
     }, [allMappedCustomers]);
 
@@ -221,7 +221,7 @@ function AdminCustomersContent() {
             if (labelFilter && c['라벨'] !== labelFilter) return false;
 
             // Partner Filter
-            if (partnerFilter && c['채널'] !== partnerFilter) return false;
+            if (partnerFilter && c['유입채널'] !== partnerFilter) return false;
 
             return true;
         });
@@ -311,6 +311,7 @@ function AdminCustomersContent() {
                             '신청일': 'created_at',
                             '접수일': 'created_at',
                             '등록일': 'created_at',
+                            '유입채널': 'channel',
                             '채널': 'channel',
                             '고객명': 'name',
                             '연락처': 'contact',
@@ -339,8 +340,7 @@ function AdminCustomersContent() {
                             obj[field] = val;
                         }
                     });
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return obj as any;
+                    return obj as any; // Still using any for batchCreate as the schema is flexible
                 });
 
                 const result = await batchCreate({ customers: data });
@@ -364,7 +364,7 @@ function AdminCustomersContent() {
 
     const downloadSampleCsv = () => {
         const headers = [
-            'No.', '접수일', '고객명', '연락처', '주소', '라벨', '진행구분', '채널',
+            'No.', '접수일', '고객명', '연락처', '주소', '라벨', '진행구분', '유입채널',
             '진행현황(상세)_최근', 'KCC 피드백', '가견적 링크', '최종 견적 링크',
             '견적조회', '내관도', '실측일자', '시공일자',
             '가견적 금액', '최종견적 금액'
@@ -502,7 +502,6 @@ function AdminCustomersContent() {
                         </select>
                     </div>
 
-                    {/* Partner Filter */}
                     <div className="relative">
                         <TrendingUp className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <select
@@ -510,7 +509,7 @@ function AdminCustomersContent() {
                             value={partnerFilter}
                             onChange={(e) => setPartnerFilter(e.target.value)}
                         >
-                            <option value="">파트너 전체</option>
+                            <option value="">유입채널 전체</option>
                             {filterOptions.partners.filter((p): p is string => Boolean(p)).map((p, i) => <option key={i} value={p}>{p}</option>)}
                         </select>
                     </div>
@@ -548,7 +547,7 @@ function AdminCustomersContent() {
                         <ListOrdered className="w-3 h-3 text-gray-400" />
                         <select
                             value={sortOption}
-                            onChange={(e) => setSortOption(e.target.value as any)}
+                            onChange={(e) => setSortOption(e.target.value as 'updated' | 'no_asc' | 'no_desc')}
                             className="bg-transparent border-none text-[11px] font-black text-gray-500 outline-none cursor-pointer"
                         >
                             <option value="updated">최근 수정순</option>
@@ -689,7 +688,7 @@ function AdminCustomersContent() {
                                                 {customer['신청일'] ? String(customer['신청일']).substring(0, 10) : '-'}
                                             </span>
                                             {customer['No.'] && <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg whitespace-nowrap">No.{customer['No.']}</span>}
-                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['채널']}</span>
+                                            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['유입채널']}</span>
                                         </div>
                                     </div>
 
