@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink } from 'lucide-react';
+import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -40,7 +40,7 @@ interface CustomerDetailModalProps {
     readOnly?: boolean;
 }
 
-export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdate, currentUser = 'Admin', readOnly = false }: CustomerDetailModalProps) {
+export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdate, currentUser: _currentUser = 'Admin', readOnly = false }: CustomerDetailModalProps) {
     const [activeTab, setActiveTab] = useState('progress'); // progress, history, feedback
     const [formData, setFormData] = useState<Partial<Customer>>({});
     const [loading, setLoading] = useState(false);
@@ -148,6 +148,28 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         }
     };
 
+    const handleRegisterContract = async () => {
+        if (!customer?.id) return alert('고객 ID가 없습니다.');
+        if (!confirm('진행구분을 [계약등록]으로 변경하시겠습니까?')) return;
+        setLoading(true);
+        try {
+            await updateCustomerMutation({
+                id: customer.id,
+                updates: {
+                    status: '계약등록'
+                }
+            });
+            alert('계약등록 상태로 변경되었습니다.');
+            onUpdate();
+            onClose();
+        } catch (e: any) {
+            console.error('Update Error:', e);
+            alert('변경 실패: ' + (e.message || '오류 발생'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // 로그 추가
     const handleAddLog = () => {
         if (!newLogText.trim()) return;
@@ -213,6 +235,8 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
             setFormData({ ...formData, [key]: url });
         }
     };
+
+
 
     if (!isOpen || !customer) return null;
 
@@ -339,12 +363,24 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             </div>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="bg-slate-700/50 hover:bg-slate-600 text-slate-300 hover:text-white p-2 rounded-full transition-all ml-4"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {!readOnly && (
+                            <button
+                                onClick={handleRegisterContract}
+                                disabled={loading}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-1.5 ml-4"
+                            >
+                                <FileText className="w-4 h-4" />
+                                계약등록
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="bg-slate-700/50 hover:bg-slate-600 text-slate-300 hover:text-white p-2 rounded-full transition-all ml-2"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* 2. Main Content */}
@@ -431,49 +467,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             </div>
                         </div>
 
-                        {/* Estimate Amounts card */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
-                            <div className="flex items-center gap-2 text-gray-900 font-semibold text-sm border-b pb-2 mb-2">
-                                <Settings className="w-4 h-4 text-gray-500" />
-                                견적 금액
-                            </div>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-[10px] font-medium text-gray-400 mb-1">가견적 금액</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all text-right disabled:opacity-70 disabled:bg-gray-100"
-                                            value={(formData['가견적 금액'] !== undefined && formData['가견적 금액'] !== '') ? Number(formData['가견적 금액']).toLocaleString() : ''}
-                                            onChange={(e) => {
-                                                const val = e.target.value.replace(/[^0-9]/g, '');
-                                                setFormData({ ...formData, '가견적 금액': val ? Number(val) : '' });
-                                            }}
-                                            placeholder="0"
-                                            disabled={readOnly}
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">원</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-medium text-gray-400 mb-1">최종견적 금액</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition-all text-right disabled:opacity-70 disabled:bg-gray-100"
-                                            value={(formData['최종견적 금액'] !== undefined && formData['최종견적 금액'] !== '') ? Number(formData['최종견적 금액']).toLocaleString() : ''}
-                                            onChange={(e) => {
-                                                const val = e.target.value.replace(/[^0-9]/g, '');
-                                                setFormData({ ...formData, '최종견적 금액': val ? Number(val) : '' });
-                                            }}
-                                            placeholder="0"
-                                            disabled={readOnly}
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">원</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {!readOnly && (
                             <button

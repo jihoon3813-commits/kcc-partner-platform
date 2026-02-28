@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from 'next/image';
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, FolderDown } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, FolderDown, FileText } from "lucide-react";
 import Cookies from 'js-cookie';
 import PartnerInfoModal from "../components/PartnerInfoModal";
 
@@ -19,6 +19,13 @@ export default function PartnerLayout({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [partnerInfo, setPartnerInfo] = useState<any>(null);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const hasFetched = useRef(false);
 
     useEffect(() => {
         if (pathname === '/partner/login') return;
@@ -30,15 +37,13 @@ export default function PartnerLayout({
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fetchDeepInfo = async (basicInfo: any) => {
             // 더 상세한 정보를 가져오기 위해 API 호출 (필요시)
-            // 여기서는 세션 정보만으로 충분하다면 그대로 사용하지만,
-            // 수정모드에서는 DB의 최신값이 필요하므로 API 호출 권장
             try {
                 const res = await fetch(`/api/data?action=read_partner_config&partnerId=${basicInfo.id}`);
                 const json = await res.json();
                 if (json.success && json.partner) {
-                    // GAS에서 반환된 한글 키를 영문 키로 매핑
                     const p = json.partner;
                     setPartnerInfo({
                         id: p['아이디'],
@@ -61,16 +66,15 @@ export default function PartnerLayout({
 
         try {
             const parsed = JSON.parse(session);
-            // 초기 렌더링 시 세션정보로 즉시 세팅
-            if (!partnerInfo) {
-                setPartnerInfo(parsed);
+            if (!hasFetched.current) {
+                hasFetched.current = true;
                 fetchDeepInfo(parsed);
             }
         } catch {
             Cookies.remove('partner_session');
             router.replace('/partner/login');
         }
-    }, [router, partnerInfo, pathname]);
+    }, [router, pathname]);
 
     const handleLogout = () => {
         Cookies.remove('partner_session');
@@ -80,13 +84,21 @@ export default function PartnerLayout({
     const navItems = [
         { name: "대시보드", href: "/partner", icon: LayoutDashboard },
         { name: "고객 관리", href: "/partner/customers", icon: Users },
+        { name: "계약 관리", href: "/partner/contracts", icon: FileText },
         { name: "고객 직접 등록", href: "/partner/customers/create", icon: UserPlus }, // Added
         { name: "상품 관리 & 홍보", href: "/partner/products", icon: ShoppingBag },
         { name: "자료실", href: "/partner/resources", icon: FolderDown },
     ];
 
+    if (!mounted || (!partnerInfo && pathname !== '/partner/login')) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
     if (pathname === '/partner/login') return <>{children}</>;
-    if (!partnerInfo) return null; // 로딩 중
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -177,7 +189,7 @@ export default function PartnerLayout({
                         )}
                     </div>
                 </div>
-            </aside>
+            </aside >
 
             {/* Main Content */}
             <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-20"}`}>

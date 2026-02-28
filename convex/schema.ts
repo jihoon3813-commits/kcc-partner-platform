@@ -94,4 +94,98 @@ export default defineSchema({
         contact: v.string(),
         createdAt: v.number(),
     }).index("by_created_at", ["createdAt"]),
+
+    contracts: defineTable({
+        customerId: v.string(), // Reference to customer id
+        contractDate: v.optional(v.string()), // 계약등록일
+        applicationDate: v.optional(v.string()), // 신청일
+        contractStatus: v.optional(v.string()), // 계약상태 (계약등록/결제진행중/결제완료/공사완료/결제취소)
+
+        constructionDate: v.optional(v.string()), // 시공일
+        finalQuotePrice: v.optional(v.float64()), // 최종견적가
+        kccSupplyPrice: v.optional(v.float64()), // KCC공급가
+        kccDepositStatus: v.optional(v.string()), // KCC입금여부 (입금대기/입금완료/계약취소)
+        constructionContractStatus: v.optional(v.string()), // 시공계약서 (진행대기/발송완료/서명완료/계약취소)
+        paymentMethod: v.optional(v.string()), // 결제방법
+
+        // 현금/카드 결제 탭
+        paymentAmount1: v.optional(v.float64()), // 입금/결제금액(1차)
+        paymentDate1: v.optional(v.string()), // 입금/결제일(1차)
+        remainingBalance: v.optional(v.float64()), // 잔금
+        remainingBalanceDate: v.optional(v.string()), // 잔금 결제일
+
+        // 구독(할부) 결제 / 렌탈 패키지 결제
+        advancePayment: v.optional(v.float64()), // 선납금
+        hasInterest: v.optional(v.string()), // 이자유무
+        totalSubscriptionFee: v.optional(v.float64()), // 총구독료
+        subscriptionMonths: v.optional(v.number()), // 구독개월
+        monthlySubscriptionFee: v.optional(v.float64()), // 월구독료
+        installmentAgreementDate: v.optional(v.string()), // 할부약정일(모바일)
+        recordingAgreementDate: v.optional(v.string()), // 녹취약정일
+
+        appliances: v.optional(v.string()), // JSON string of PLUS 가전
+
+        createdAt: v.optional(v.number()),
+        updatedAt: v.optional(v.number()),
+    }).index("by_customer", ["customerId"]),
+
+    estimates: defineTable({
+        date: v.string(), // yyyy-MM-dd
+        branch: v.optional(v.string()), // 인천지점, 수원지점
+        statusType: v.string(), // 가견적, 책임견적, 최종견적
+        customerName: v.string(),
+        customerPhone: v.string(),
+        address: v.optional(v.string()),
+        totalSum: v.number(),
+        finalQuote: v.number(),
+        finalBenefit: v.number(),
+        discountRate: v.number(),
+        extraDiscount: v.number(),
+        marginAmount: v.number(),
+        marginRate: v.number(),
+        subs: v.object({
+            sub24: v.number(),
+            sub36: v.number(),
+            sub48: v.number(),
+            sub60: v.number()
+        }),
+        items: v.string(), // JSON array
+        pdfUrl: v.optional(v.string()),
+        remark: v.optional(v.string()),
+        createdAt: v.number(),
+    }).index("by_date", ["date"]),
+
+    rentalApplications: defineTable({
+        status: v.string(), // "접수", "심사중", "승인완료", "승인불가", "취소"
+        remarks: v.optional(v.string()), // 비고
+        documents: v.optional(v.string()), // JSON string of document url
+        customerName: v.string(), // 신청자명
+        phone: v.string(), // 연락처
+        birthDate: v.optional(v.string()), // 생년월일
+        address: v.optional(v.string()), // 주소
+        amount: v.number(), // 견적금액
+        months: v.number(), // 구독기간
+        transferDate: v.optional(v.string()), // 이체희망일
+        partnerName: v.optional(v.string()),
+        partnerId: v.optional(v.string()),
+        createdAt: v.number(),
+        updatedAt: v.optional(v.number()),
+    }).index("by_partner", ["partnerId"]),
+
+    installmentApplications: defineTable({
+        status: v.string(), // "접수", "심사중", "승인완료", "승인불가", "취소"
+        remarks: v.optional(v.string()), // 비고
+        documents: v.optional(v.string()), // JSON string of document url
+        customerName: v.string(), // 신청자명
+        phone: v.string(), // 연락처
+        birthDate: v.optional(v.string()), // 생년월일
+        address: v.optional(v.string()), // 주소
+        amount: v.number(), // 견적금액
+        months: v.number(), // 구독기간
+        transferDate: v.optional(v.string()), // 이체희망일
+        partnerName: v.optional(v.string()),
+        partnerId: v.optional(v.string()),
+        createdAt: v.number(),
+        updatedAt: v.optional(v.number()),
+    }).index("by_partner", ["partnerId"]),
 });
