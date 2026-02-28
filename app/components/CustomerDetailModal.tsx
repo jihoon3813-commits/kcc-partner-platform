@@ -126,7 +126,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                 id: customer.id,
                 updates: {
                     no: formData['No.'] as string,
-                    channel: formData['채널'] as string,
+                    channel: formData['유입채널'] as string,
                     label: formData['라벨'] as string,
                     status: formData['진행구분'] as string,
                     name: formData['고객명'] as string,
@@ -445,8 +445,8 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                     <input
                                         type="text"
                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all disabled:opacity-70 disabled:bg-gray-100 placeholder:text-gray-400"
-                                        value={(formData['채널'] as string) || ''}
-                                        onChange={(e) => setFormData({ ...formData, '채널': e.target.value })}
+                                        value={(formData['유입채널'] as string) || ''}
+                                        onChange={(e) => setFormData({ ...formData, '유입채널': e.target.value })}
                                         disabled={readOnly}
                                         placeholder="유입채널 입력"
                                     />
