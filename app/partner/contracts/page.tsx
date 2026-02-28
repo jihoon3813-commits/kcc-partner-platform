@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
 import Cookies from 'js-cookie';
-import { Search, FileText, RefreshCcw, MapPin } from 'lucide-react';
+import { Search, FileText, RefreshCcw, MapPin, Trash2 } from 'lucide-react';
 import ContractDetailModal, { Customer } from '@/app/components/ContractDetailModal';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 function PartnerContractsContent() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+    const deleteContractMutation = useMutation(api.contracts.deleteContract);
+    const updateCustomerMutation = useMutation(api.customers.updateCustomer);
 
     const [partnerSession, setPartnerSession] = useState<{ id: string; name: string } | null>(null);
     const [mounted, setMounted] = useState(false);
@@ -118,6 +121,23 @@ function PartnerContractsContent() {
         });
     }, [allMappedCustomers, searchTerm]);
 
+    const handleDelete = async (e: React.MouseEvent, customer: { id: string; '고객명': string }) => {
+        e.stopPropagation();
+        if (confirm(`'${customer['고객명']}' 고객의 계약 정보를 삭제하시겠습니까? (고객 상태가 '계약등록' 이전으로 돌아가며 리스트에서 제외됩니다)`)) {
+            try {
+                await deleteContractMutation({ customerId: customer.id });
+                await updateCustomerMutation({
+                    id: customer.id,
+                    updates: { status: '최종견적전달' }
+                });
+                alert('삭제되었습니다.');
+            } catch (err) {
+                console.error(err);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+    };
+
     if (!mounted) return null;
 
     return (
@@ -220,6 +240,17 @@ function PartnerContractsContent() {
                                             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                                             <span className="truncate" title={customer['주소']}>{customer['주소']?.replace(/\s*\[\d+\]$/, '')}</span>
                                         </div>
+                                    </div>
+
+                                    {/* Delete Button Container */}
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={(e) => handleDelete(e, customer)}
+                                            className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors shadow-sm"
+                                            title="계약서 리스트에서 삭제"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0 py-1 flex flex-col justify-between gap-1">

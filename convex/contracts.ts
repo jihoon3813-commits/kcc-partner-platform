@@ -93,3 +93,19 @@ export const updateContractStatus = mutation({
         }
     },
 });
+
+export const deleteContract = mutation({
+    args: { customerId: v.string() },
+    handler: async (ctx, args) => {
+        const existing = await ctx.db
+            .query("contracts")
+            .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
+            .first();
+
+        if (existing) {
+            await ctx.db.delete(existing._id);
+            return { success: true };
+        }
+        return { success: false, reason: "Not found" };
+    },
+});
