@@ -12,14 +12,56 @@ const externalClient = new ConvexHttpClient(EXTERNAL_CONVEX_URL);
 export interface Customer {
     id: string; // convex id
     no?: string | number;
+    'No.'?: string | number; // For compatibility
     name?: string;
+    '고객명'?: string; // For compatibility
     contact?: string;
+    '연락처'?: string; // For compatibility
     address?: string;
+    '주소'?: string; // For compatibility
     channel?: string;
+    '채널'?: string; // For compatibility
     created_at?: string;
+    '신청일'?: string; // For compatibility
     _creationTime?: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+}
+
+interface Appliance {
+    productName?: string;
+    modelName?: string;
+    deliveryDate?: string;
+    remark?: string;
+}
+
+interface ExternalQuoteResult {
+    finalBenefit?: number;
+    kccPrice?: number;
+    [key: string]: unknown;
+}
+
+interface ContractFormData {
+    customerId?: string;
+    contractStatus?: string;
+    contractDate?: string;
+    applicationDate?: string;
+    constructionDate?: string;
+    finalQuotePrice?: string | number;
+    kccSupplyPrice?: string | number;
+    kccDepositStatus?: string;
+    constructionContractStatus?: string;
+    paymentMethod?: string;
+    paymentAmount1?: string | number;
+    paymentDate1?: string;
+    remainingBalance?: string | number;
+    remainingBalanceDate?: string;
+    advancePayment?: string | number;
+    hasInterest?: string;
+    totalSubscriptionFee?: string | number;
+    subscriptionMonths?: string | number;
+    monthlySubscriptionFee?: string | number;
+    installmentAgreementDate?: string;
+    recordingAgreementDate?: string;
+    appliances?: string;
 }
 
 interface ContractDetailModalProps {
@@ -30,18 +72,14 @@ interface ContractDetailModalProps {
 }
 
 export default function ContractDetailModal({ isOpen, onClose, customer, userRole = 'admin' }: ContractDetailModalProps) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const existingContract = useQuery((api as any).contracts.getContractByCustomerId, customer?.id ? { customerId: customer.id } : "skip");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const saveContractMutation = useMutation((api as any).contracts.saveContract);
+    const existingContract = useQuery(api.contracts.getContractByCustomerId, customer?.id ? { customerId: customer.id } : "skip");
+    const saveContractMutation = useMutation(api.contracts.saveContract);
 
     const [loading, setLoading] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [formData, setFormData] = useState<any>({});
+    const [formData, setFormData] = useState<Partial<ContractFormData>>({});
 
     // PLUS 가전
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [appliances, setAppliances] = useState<any[]>([]);
+    const [appliances, setAppliances] = useState<Appliance[]>([]);
 
     useEffect(() => {
         if (isOpen && customer) {
@@ -74,8 +112,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
             const paid = Number(formData.paymentAmount1) || 0;
             const balance = finalQuote - paid;
             if (formData.remainingBalance !== balance) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setFormData((prev: any) => ({ ...prev, remainingBalance: balance }));
+                setFormData((prev) => ({ ...prev, remainingBalance: balance }));
             }
         }
     }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.paymentAmount1, formData.remainingBalance]);
@@ -134,25 +171,26 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
 
         setLoading(true);
         try {
-            const result: any = await externalClient.query("quotes:searchQuote" as any, {
+            // @ts-expect-error - externalClient.query expects a specific type that we are bypassing for external connection
+            const result = await externalClient.query("quotes:searchQuote", {
                 name: String(name),
                 phone: String(phone)
-            });
+            }) as ExternalQuoteResult | null;
 
             if (result) {
-                const updates: any = {};
+                const updates: Partial<ContractFormData> = {};
                 // 최종견적가는 최종혜택가(고객 실 부담금)을 가져옴
                 if (result.finalBenefit) updates.finalQuotePrice = Number(result.finalBenefit);
                 if (result.kccPrice) updates.kccSupplyPrice = Number(result.kccPrice);
 
-                setFormData((prev: any) => ({ ...prev, ...updates }));
+                setFormData((prev) => ({ ...prev, ...updates }));
                 alert('견적 시스템에서 데이터를 가져왔습니다.\n(최종혜택가 -> 최종견적가 연동됨)');
             } else {
                 alert('견적 시스템에서 해당 고객의 데이터를 찾을 수 없습니다.');
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error('Sync Error:', e);
-            alert('연동 실패: ' + (e.message || '오류 발생'));
+            alert('연동 실패: ' + (e instanceof Error ? e.message : '오류 발생'));
         } finally {
             setLoading(false);
         }
@@ -160,8 +198,8 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
 
     const isReadOnly = userRole === 'partner';
 
-    const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(formData.paymentMethod);
-    const isSubscription = ['현금+구독', '카드+구독', '구독(할부)'].includes(formData.paymentMethod);
+    const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(formData.paymentMethod || '');
+    const isSubscription = ['현금+구독', '카드+구독', '구독(할부)'].includes(formData.paymentMethod || '');
     const isRental = formData.paymentMethod === 'BSON';
 
     return (

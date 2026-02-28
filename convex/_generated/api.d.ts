@@ -9,11 +9,15 @@
  */
 
 import type * as admins from "../admins.js";
+import type * as contracts from "../contracts.js";
 import type * as customers from "../customers.js";
+import type * as estimates from "../estimates.js";
 import type * as init from "../init.js";
+import type * as installmentApplications from "../installmentApplications.js";
 import type * as notices from "../notices.js";
 import type * as partners from "../partners.js";
 import type * as products from "../products.js";
+import type * as rentalApplications from "../rentalApplications.js";
 import type * as resources from "../resources.js";
 import type * as settings from "../settings.js";
 
@@ -25,11 +29,15 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admins: typeof admins;
+  contracts: typeof contracts;
   customers: typeof customers;
+  estimates: typeof estimates;
   init: typeof init;
+  installmentApplications: typeof installmentApplications;
   notices: typeof notices;
   partners: typeof partners;
   products: typeof products;
+  rentalApplications: typeof rentalApplications;
   resources: typeof resources;
   settings: typeof settings;
 }>;

@@ -20,8 +20,7 @@ interface Customer {
     '고객견적서(최종)'?: string;
     '진행현황(상세)_최근'?: string;
     'KCC 피드백'?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined | null;
 }
 
 interface Settings {
@@ -40,7 +39,7 @@ interface CustomerDetailModalProps {
     readOnly?: boolean;
 }
 
-export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdate, currentUser: _currentUser = 'Admin', readOnly = false }: CustomerDetailModalProps) {
+export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdate, readOnly = false }: CustomerDetailModalProps) {
     const [activeTab, setActiveTab] = useState('progress'); // progress, history, feedback
     const [formData, setFormData] = useState<Partial<Customer>>({});
     const [loading, setLoading] = useState(false);
@@ -119,19 +118,20 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         setLoading(true);
         try {
             await updateCustomerMutation({
+                // @ts-expect-error - id format coming from external data vs convex internal type
                 id: customer.id,
                 updates: {
-                    label: formData['라벨'],
-                    status: formData['진행구분'],
-                    name: formData['고객명'],
-                    contact: formData['연락처'],
-                    address: formData['주소'],
-                    measure_date: formData['실측일자'],
-                    construct_date: formData['시공일자'],
-                    link_pre_kcc: formData['가견적 링크'],
-                    link_final_kcc: formData['최종 견적 링크'],
-                    link_pre_cust: formData['고객견적서(가)'],
-                    link_final_cust: formData['고객견적서(최종)'],
+                    label: formData['라벨'] as string,
+                    status: formData['진행구분'] as string,
+                    name: formData['고객명'] as string,
+                    contact: formData['연락처'] as string,
+                    address: formData['주소'] as string,
+                    measure_date: formData['실측일자'] as string,
+                    construct_date: formData['시공일자'] as string,
+                    link_pre_kcc: formData['가견적 링크'] as string,
+                    link_final_kcc: formData['최종 견적 링크'] as string,
+                    link_pre_cust: formData['고객견적서(가)'] as string,
+                    link_final_cust: formData['고객견적서(최종)'] as string,
                     price_pre: formData['가견적 금액'] ? Number(formData['가견적 금액']) : undefined,
                     price_final: formData['최종견적 금액'] ? Number(formData['최종견적 금액']) : undefined,
                 }
@@ -140,9 +140,9 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
             setIsHeaderEditing(false); // 헤더 수정모드 종료
             onUpdate();
             onClose();
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error('Update Error:', e);
-            alert('저장 실패: ' + (e.message || '오류 발생'));
+            alert('저장 실패: ' + (e instanceof Error ? e.message : '오류 발생'));
         } finally {
             setLoading(false);
         }
@@ -154,6 +154,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         setLoading(true);
         try {
             await updateCustomerMutation({
+                // @ts-expect-error - id format coming from external data vs convex internal type
                 id: customer.id,
                 updates: {
                     status: '계약등록'
@@ -162,9 +163,9 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
             alert('계약등록 상태로 변경되었습니다.');
             onUpdate();
             onClose();
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error('Update Error:', e);
-            alert('변경 실패: ' + (e.message || '오류 발생'));
+            alert('변경 실패: ' + (e instanceof Error ? e.message : '오류 발생'));
         } finally {
             setLoading(false);
         }
@@ -217,6 +218,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
         try {
             await updateCustomerMutation({
+                // @ts-expect-error - customer.id is string from external but validated as convex id here
                 id: customer.id,
                 updates: {
                     [fieldName]: fullText
@@ -253,7 +255,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     {hasLink ? (
                         <>
                             <a
-                                href={formData[key]}
+                                href={String(formData[key] || '')}
                                 target="_blank"
                                 rel="noreferrer"
                                 className={`flex-1 py-2 rounded border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm`}
@@ -263,7 +265,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             </a>
                             {!readOnly && (
                                 <button
-                                    onClick={() => handleEditLink(key, formData[key])}
+                                    onClick={() => handleEditLink(key, String(formData[key] || ''))}
                                     className={`px-2 rounded border text-xs font-medium bg-white hover:bg-gray-50 text-gray-500 shadow-sm transition-colors`}
                                 >
                                     <Edit2 className="w-3 h-3" />
@@ -405,7 +407,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         disabled={readOnly}
                                     >
                                         <option value="">선택 안함</option>
-                                        {(convexLabels || []).map((l: any) => <option key={l._id} value={l.name}>{l.name}</option>)}
+                                        {(convexLabels || []).map((l) => <option key={l._id} value={l.name}>{l.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -417,7 +419,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         disabled={readOnly}
                                     >
                                         <option value="">상태 선택</option>
-                                        {(convexStatuses || []).map((s: any) => <option key={s._id} value={s.name}>{s.name}</option>)}
+                                        {(convexStatuses || []).map((s) => <option key={s._id} value={s.name}>{s.name}</option>)}
                                     </select>
                                 </div>
                             </div>

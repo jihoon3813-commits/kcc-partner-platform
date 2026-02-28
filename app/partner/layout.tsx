@@ -13,16 +13,30 @@ export default function PartnerLayout({
 }: {
     children: React.ReactNode;
 }) {
+    interface PartnerInfo {
+        id: string;
+        name: string;
+        ceoName: string;
+        contact: string;
+        address: string;
+        businessNumber?: string;
+        accountNumber?: string;
+        email?: string;
+        status?: string;
+    }
+
     const pathname = usePathname();
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [partnerInfo, setPartnerInfo] = useState<any>(null);
+    const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        const timer = setTimeout(() => {
+            setMounted(true);
+        }, 0);
+        return () => clearTimeout(timer);
     }, []);
 
     const hasFetched = useRef(false);
@@ -37,8 +51,7 @@ export default function PartnerLayout({
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fetchDeepInfo = async (basicInfo: any) => {
+        const fetchDeepInfo = async (basicInfo: PartnerInfo) => {
             // 더 상세한 정보를 가져오기 위해 API 호출 (필요시)
             try {
                 const res = await fetch(`/api/data?action=read_partner_config&partnerId=${basicInfo.id}`);
@@ -46,11 +59,11 @@ export default function PartnerLayout({
                 if (json.success && json.partner) {
                     const p = json.partner;
                     setPartnerInfo({
-                        id: p['아이디'],
-                        name: p['업체명'],
-                        ceoName: p['대표명'],
-                        contact: p['연락처'],
-                        address: p['주소'],
+                        id: String(p['아이디'] || ''),
+                        name: String(p['업체명'] || ''),
+                        ceoName: String(p['대표명'] || ''),
+                        contact: String(p['연락처'] || ''),
+                        address: String(p['주소'] || ''),
                         businessNumber: p['사업자번호'],
                         accountNumber: p['계좌번호'],
                         email: p['이메일'],
@@ -179,9 +192,9 @@ export default function PartnerLayout({
                 <div className="p-4 border-t bg-gray-50/50">
                     <div className={`flex items-center gap-3 ${!sidebarOpen && "justify-center"}`}>
                         <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                            {partnerInfo.name ? partnerInfo.name.substring(0, 1) : '?'}
+                            {partnerInfo?.name ? partnerInfo.name.substring(0, 1) : '?'}
                         </div>
-                        {sidebarOpen && (
+                        {sidebarOpen && partnerInfo && (
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">{partnerInfo.name}</p>
                                 <p className="text-xs text-gray-500 truncate">{partnerInfo.id}</p>
@@ -197,11 +210,11 @@ export default function PartnerLayout({
                     <h2 className="font-semibold text-lg text-gray-800">파트너 전용 페이지</h2>
                     <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
-                            <p className="text-sm font-medium">{partnerInfo.name}</p>
+                            <p className="text-sm font-medium">{partnerInfo?.name}</p>
                             <p className="text-xs text-gray-500">인증된 파트너</p>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">
-                            {partnerInfo.name ? partnerInfo.name.substring(0, 2) : '?'}
+                            {partnerInfo?.name ? partnerInfo.name.substring(0, 2) : '?'}
                         </div>
                     </div>
                 </header>
