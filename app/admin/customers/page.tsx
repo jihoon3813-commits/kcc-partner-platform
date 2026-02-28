@@ -291,35 +291,63 @@ function AdminCustomersContent() {
         reader.onload = async (event) => {
             try {
                 const text = event.target?.result as string;
-                // Clean data: replace \r\n with \n and filter empty lines
-                const rows = text.replace(/\r/g, '').split('\n').filter(row => row.trim());
-                if (rows.length < 2) return alert('등록할 데이터가 없습니다 (헤더 포함 최소 2줄 필요).');
 
-                const parseCsvLine = (line: string) => {
-                    const result = [];
-                    let cur = '';
+                // Robust CSV Parser: Handles multi-line cells, escaped quotes, and commas within quotes
+                const parseCsv = (csvText: string) => {
+                    const rows = [];
+                    let row: string[] = [];
+                    let cell = '';
                     let inQuote = false;
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
+
+                    for (let i = 0; i < csvText.length; i++) {
+                        const char = csvText[i];
+                        const nextChar = csvText[i + 1];
+
                         if (char === '"') {
-                            inQuote = !inQuote;
+                            if (inQuote && nextChar === '"') {
+                                // Escaped quote: "" -> "
+                                cell += '"';
+                                i++; // Skip the next quote
+                            } else {
+                                inQuote = !inQuote;
+                            }
                         } else if (char === ',' && !inQuote) {
-                            result.push(cur.trim().replace(/^"|"$/g, ''));
-                            cur = '';
+                            row.push(cell.trim());
+                            cell = '';
+                        } else if ((char === '\n' || char === '\r') && !inQuote) {
+                            if (char === '\r' && nextChar === '\n') {
+                                i++; // Handle CRLF
+                            }
+                            row.push(cell.trim());
+                            if (row.some(v => v !== '')) { // Only add non-empty rows
+                                rows.push(row);
+                            }
+                            row = [];
+                            cell = '';
                         } else {
-                            cur += char;
+                            cell += char;
                         }
                     }
-                    result.push(cur.trim().replace(/^"|"$/g, ''));
-                    return result;
+
+                    // Add the last cell and row
+                    if (cell !== '' || row.length > 0) {
+                        row.push(cell.trim());
+                        if (row.some(v => v !== '')) {
+                            rows.push(row);
+                        }
+                    }
+
+                    return rows;
                 };
 
-                const headers = parseCsvLine(rows[0]).map(h => h.replace(/^\uFEFF/, ''));
-                const data = rows.slice(1).map((row) => {
-                    const values = parseCsvLine(row);
+                const allRows = parseCsv(text);
+                if (allRows.length < 2) return alert('등록할 데이터가 없습니다 (헤더 포함 최소 2줄 필요).');
+
+                const headers = allRows[0].map(h => h.replace(/^\uFEFF/, ''));
+                const data = allRows.slice(1).map((rowValues) => {
                     const obj: Record<string, string | number> = {};
                     headers.forEach((header, i) => {
-                        const val = values[i];
+                        const val = rowValues[i];
                         if (val === undefined || val === '') return;
 
                         const mapping: Record<string, string> = {
@@ -350,9 +378,8 @@ function AdminCustomersContent() {
                             '최종견적 금액': 'price_final'
                         };
                         const field = mapping[header];
-                        if (!field) return; // Skip unknown fields to prevent Convex strict schema validation error
+                        if (!field) return;
 
-                        // Type conversion for numeric fields
                         if (field === 'price_pre' || field === 'price_final') {
                             const num = parseFloat(val.replace(/[^0-9.-]/g, ''));
                             obj[field] = isNaN(num) ? 0 : num;
@@ -376,9 +403,6 @@ function AdminCustomersContent() {
             }
         };
 
-        // Try UTF-8 first, fallback to EUC-KR if needed (or just use reader handle based on user feedback)
-        // For simplicity, let's try reading as a Blob to detect encoding or just stick to one for now.
-        // Most modern Excel exports use UTF-8 now, but legacy is EUC-KR.
         reader.readAsText(file, 'UTF-8');
     };
 
