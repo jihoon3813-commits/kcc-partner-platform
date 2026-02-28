@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import Cookies from 'js-cookie';
 import { Search, FileText, RefreshCcw, MapPin } from 'lucide-react';
 import ContractDetailModal, { Customer } from '@/app/components/ContractDetailModal';
@@ -10,14 +10,21 @@ import { api } from '@/convex/_generated/api';
 function PartnerContractsContent() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-    const partnerSession = useMemo(() => {
-        const session = Cookies.get('partner_session');
-        if (!session) return null;
-        try {
-            return JSON.parse(session);
-        } catch {
-            return null;
-        }
+    const [partnerSession, setPartnerSession] = useState<{ id: string; name: string } | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setMounted(true);
+            const session = Cookies.get('partner_session');
+            if (session) {
+                try {
+                    setPartnerSession(JSON.parse(session));
+                } catch {
+                    // skip
+                }
+            }
+        }, 0);
     }, []);
 
     const partnerName = partnerSession?.name || '';
@@ -111,8 +118,10 @@ function PartnerContractsContent() {
         });
     }, [allMappedCustomers, searchTerm]);
 
+    if (!mounted) return null;
+
     return (
-        <div className="lg:px-4 lg:py-6 space-y-8 pb-32">
+        <div className="lg:px-4 lg:py-6 space-y-8 pb-10">
             <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div>
