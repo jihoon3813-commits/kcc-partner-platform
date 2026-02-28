@@ -88,6 +88,8 @@ export const updateCustomer = mutation({
     args: {
         id: v.id("customers"),
         updates: v.object({
+            no: v.optional(v.string()),
+            channel: v.optional(v.string()),
             label: v.optional(v.string()),
             status: v.optional(v.string()),
             name: v.optional(v.string()),

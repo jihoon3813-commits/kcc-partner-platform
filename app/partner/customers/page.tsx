@@ -41,16 +41,22 @@ function PartnerCustomersContent() {
     const searchParams = useSearchParams();
     const routerStatus = searchParams.get('status');
 
+    const [partnerSession, setPartnerSession] = useState<{ id: string; name: string } | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [mounted, setMounted] = useState(false);
 
-    const partnerSession = useMemo(() => {
-        const session = Cookies.get('partner_session');
-        if (!session) return null;
-        try {
-            return JSON.parse(session);
-        } catch {
-            return null;
-        }
+    useEffect(() => {
+        setTimeout(() => {
+            setMounted(true);
+            const session = Cookies.get('partner_session');
+            if (session) {
+                try {
+                    setPartnerSession(JSON.parse(session));
+                } catch (e) {
+                    console.error("Session parse error", e);
+                }
+            }
+        }, 0);
     }, []);
 
     const partnerName = partnerSession?.name || '';
@@ -135,8 +141,15 @@ function PartnerCustomersContent() {
 
     // Date Filters
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
-    const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
-    const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
+
+    useEffect(() => {
+        setTimeout(() => {
+            setCustomStartDate(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
+            setCustomEndDate(format(new Date(), 'yyyy-MM-dd'));
+        }, 0);
+    }, []);
 
     // statusFilter is already initialized with routerStatus above
 
@@ -515,14 +528,16 @@ function PartnerCustomersContent() {
                 )}
             </div>
 
-            <CustomerDetailModal
-                isOpen={!!selectedCustomer}
-                onClose={() => setSelectedCustomer(null)}
-                customer={selectedCustomer}
-                onUpdate={fetchData}
-                currentUser={partnerName}
-                readOnly={true}
-            />
+            {mounted && (
+                <CustomerDetailModal
+                    isOpen={!!selectedCustomer}
+                    onClose={() => setSelectedCustomer(null)}
+                    customer={selectedCustomer}
+                    onUpdate={fetchData}
+                    currentUser={partnerName}
+                    readOnly={false}
+                />
+            )}
         </div>
     );
 }

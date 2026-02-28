@@ -72,36 +72,40 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
     useEffect(() => {
         if (isOpen && customer) {
-            const initialData = { ...customer };
-            if (initialData['주소']) {
-                initialData['주소'] = String(initialData['주소']).replace(/\s*\[\d+\]$/, '');
-            }
-            setFormData(initialData);
+            setTimeout(() => {
+                const initialData = { ...customer };
+                if (initialData['주소']) {
+                    initialData['주소'] = String(initialData['주소']).replace(/\s*\[\d+\]$/, '');
+                }
+                setFormData(initialData);
 
-            const pLogs = customer['진행현황(상세)_최근'] ? String(customer['진행현황(상세)_최근']).split('\n').filter(Boolean) : [];
-            const fLogs = customer['KCC 피드백'] ? String(customer['KCC 피드백']).split('\n').filter(Boolean) : [];
+                const pLogs = customer['진행현황(상세)_최근'] ? String(customer['진행현황(상세)_최근']).split('\n').filter(Boolean) : [];
+                const fLogs = customer['KCC 피드백'] ? String(customer['KCC 피드백']).split('\n').filter(Boolean) : [];
 
-            setProgressLogs(pLogs);
-            setFeedbackLogs(fLogs);
-            setIsHeaderEditing(false); // 리셋
+                setProgressLogs(pLogs);
+                setFeedbackLogs(fLogs);
+                setIsHeaderEditing(false); // 리셋
+            }, 0);
         }
     }, [isOpen, customer]);
 
     // 탭 변경 시 해당 탭의 기본 작성자로 자동 변경
     useEffect(() => {
-        if (activeTab === 'progress') {
-            if (settings.progressAuthors && settings.progressAuthors.length > 0) {
-                setSelectedAuthor(settings.progressAuthors[0]);
-            } else {
-                setSelectedAuthor('');
+        setTimeout(() => {
+            if (activeTab === 'progress') {
+                if (settings.progressAuthors && settings.progressAuthors.length > 0) {
+                    setSelectedAuthor(settings.progressAuthors[0]);
+                } else {
+                    setSelectedAuthor('');
+                }
+            } else if (activeTab === 'feedback') {
+                if (settings.feedbackAuthors && settings.feedbackAuthors.length > 0) {
+                    setSelectedAuthor(settings.feedbackAuthors[0]);
+                } else {
+                    setSelectedAuthor('');
+                }
             }
-        } else if (activeTab === 'feedback') {
-            if (settings.feedbackAuthors && settings.feedbackAuthors.length > 0) {
-                setSelectedAuthor(settings.feedbackAuthors[0]);
-            } else {
-                setSelectedAuthor('');
-            }
-        }
+        }, 0);
     }, [activeTab, settings]);
 
     // 로그 추가 시 스크롤 하단으로
@@ -121,6 +125,8 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                 // @ts-expect-error - id format coming from external data vs convex internal type
                 id: customer.id,
                 updates: {
+                    no: formData['No.'] as string,
+                    channel: formData['채널'] as string,
                     label: formData['라벨'] as string,
                     status: formData['진행구분'] as string,
                     name: formData['고객명'] as string,
@@ -306,7 +312,19 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             )}
 
                             <div className="flex items-center gap-2 bg-slate-700/50 rounded-lg px-2 py-1 border border-slate-600">
-                                <span className="text-xs text-slate-300 font-medium">No. {customer['No.']}</span>
+                                {isHeaderEditing ? (
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase">No.</span>
+                                        <input
+                                            type="text"
+                                            className="bg-slate-700 border-none text-white rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-1 w-20"
+                                            value={formData['No.'] || ''}
+                                            onChange={(e) => setFormData({ ...formData, 'No.': e.target.value })}
+                                        />
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-slate-300 font-medium">No. {formData['No.']}</span>
+                                )}
                             </div>
 
                             {!readOnly && (
@@ -421,6 +439,17 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         <option value="">상태 선택</option>
                                         {(convexStatuses || []).map((s) => <option key={s._id} value={s.name}>{s.name}</option>)}
                                     </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">유입채널</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all disabled:opacity-70 disabled:bg-gray-100 placeholder:text-gray-400"
+                                        value={(formData['채널'] as string) || ''}
+                                        onChange={(e) => setFormData({ ...formData, '채널': e.target.value })}
+                                        disabled={readOnly}
+                                        placeholder="유입채널 입력"
+                                    />
                                 </div>
                             </div>
                         </div>

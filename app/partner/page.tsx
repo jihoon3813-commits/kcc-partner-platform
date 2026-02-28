@@ -36,8 +36,17 @@ export default function PartnerDashboard() {
 
     // Filters
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
-    const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
-    const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setMounted(true);
+            setCustomStartDate(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
+            setCustomEndDate(format(new Date(), 'yyyy-MM-dd'));
+        }, 0);
+    }, []);
 
     // Convex Data
     const convexCustomers = useQuery(api.customers.listCustomers);
@@ -458,14 +467,16 @@ export default function PartnerDashboard() {
                 </div>
             </div>
 
-            <CustomerDetailModal
-                isOpen={!!selectedCustomer}
-                onClose={() => setSelectedCustomer(null)}
-                customer={selectedCustomer}
-                currentUser={partnerInfo?.name || ''}
-                onUpdate={fetchData}
-                readOnly={true}
-            />
+            {mounted && (
+                <CustomerDetailModal
+                    isOpen={!!selectedCustomer}
+                    onClose={() => setSelectedCustomer(null)}
+                    customer={selectedCustomer}
+                    currentUser={partnerInfo?.name || ''}
+                    onUpdate={fetchData}
+                    readOnly={false}
+                />
+            )}
         </div>
     );
 }
