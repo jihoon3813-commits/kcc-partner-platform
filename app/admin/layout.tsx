@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UserCheck, LogOut, ShoppingBag, Home, FolderDown, Menu, X, Settings, Printer, FileText, Calculator } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, LogOut, ShoppingBag, Home, FolderDown, Menu, X, Settings, Printer, FileText, Calculator, Ruler } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 export default function AdminLayout({
@@ -19,7 +19,7 @@ export default function AdminLayout({
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        setTimeout(() => setMounted(true), 0);
     }, []);
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export default function AdminLayout({
 
         try {
             const parsed = JSON.parse(session);
-            setAdminInfo(parsed);
+            setTimeout(() => setAdminInfo(parsed), 0);
 
             // Redirect TM role from dashboard to customers
             if (parsed.role === 'tm' && pathname === '/admin') {
@@ -47,8 +47,8 @@ export default function AdminLayout({
 
     // Close mobile menu on route change
     useEffect(() => {
-        if (isMobileMenuOpen) setIsMobileMenuOpen(false);
-    }, [pathname]);
+        if (isMobileMenuOpen) setTimeout(() => setIsMobileMenuOpen(false), 0);
+    }, [pathname, isMobileMenuOpen]);
 
     const handleLogout = () => {
         Cookies.remove('admin_session');
@@ -124,6 +124,7 @@ export default function AdminLayout({
                         { href: '/admin/products', icon: ShoppingBag, label: '상품 관리', roles: ['admin'] },
                         { href: '/admin/resources', icon: FolderDown, label: '자료실 관리', roles: ['admin'] },
                         { href: '/admin/notice', icon: Printer, label: '공사안내문 출력', roles: ['admin'] },
+                        { href: 'https://kcc-scan-a4-new.vercel.app/admin', icon: Ruler, label: '셀프 실측관리', roles: ['admin'], external: true },
                         { href: '/admin/settings', icon: Settings, label: '설정 (진행/라벨)', roles: ['admin'] },
                     ].filter(item => item.roles.includes(adminInfo.role)).map((item) => (
                         <Link
