@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Users, TrendingUp, Calendar, Filter, ClipboardList, CheckCircle2, Clock, XCircle, AlertCircle, Search, FileText, RefreshCcw, Award, ArrowRight } from 'lucide-react';
+import { Users, TrendingUp, Calendar, Filter, ClipboardList, CheckCircle2, Clock, XCircle, AlertCircle, Search, FileText, RefreshCcw, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
@@ -24,7 +24,7 @@ interface Customer {
     'Timestamp'?: string;
     '주소'?: string;
     '채널'?: string;
-    [key: string]: unknown;
+    [key: string]: string | number | boolean | undefined | null;
 }
 
 export default function PartnerDashboard() {
@@ -49,7 +49,9 @@ export default function PartnerDashboard() {
             return;
         }
         const myInfo = JSON.parse(session);
-        setPartnerInfo(myInfo);
+        setTimeout(() => {
+            setPartnerInfo(myInfo);
+        }, 0);
 
         if (convexCustomers) {
             const mapped = convexCustomers.map(c => ({
@@ -99,8 +101,10 @@ export default function PartnerDashboard() {
                 return b._creationTime - a._creationTime;
             });
 
-            setAllCustomers(sorted);
-            setLoading(false);
+            setTimeout(() => {
+                setAllCustomers(sorted);
+                setLoading(false);
+            }, 0);
         }
     }, [convexCustomers, router]);
 

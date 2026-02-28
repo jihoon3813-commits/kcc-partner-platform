@@ -19,8 +19,7 @@ interface Partner {
     '등록일'?: string;
     '신청일시'?: string;
     'Timestamp'?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined | null;
 }
 
 interface Customer {
@@ -33,8 +32,7 @@ interface Customer {
     '신청일'?: string;
     '신청일시'?: string;
     'Timestamp'?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined | null;
 }
 
 export default function AdminDashboard() {
@@ -51,7 +49,6 @@ export default function AdminDashboard() {
 
     // Loading State
     const loading = convexCustomers === undefined || convexPartners === undefined;
-    const [connError, setConnError] = useState<string | null>(null);
 
     // Map Convex Data to Legacy Structure
     const allData = useMemo(() => {
@@ -296,11 +293,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    {connError && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
-                            <AlertCircle className="w-4 h-4" /> {connError}
-                        </div>
-                    )}
+
                     <div className="flex bg-gray-100 p-1 rounded-xl">
                         {(['currentMonth', '3months', '6months', '1year', 'custom'] as const).map((type) => (
                             <button
