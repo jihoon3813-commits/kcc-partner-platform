@@ -22,7 +22,7 @@ interface Customer {
     '신청일시'?: string;
     'Timestamp'?: string;
     '라벨'?: string;
-    '채널'?: string;
+    '유입채널'?: string;
     updatedAt?: number;
     '주소'?: string;
     'KCC 피드백'?: string;
@@ -77,7 +77,7 @@ function PartnerCustomersContent() {
             'No.': c.no || '',
             '라벨': c.label || '일반',
             '진행구분': c.status || '접수',
-            '채널': c.channel || '',
+            '유입채널': c.channel || '',
             '고객명': c.name || '',
             '연락처': c.contact || '',
             '주소': c.address || '',
@@ -101,7 +101,7 @@ function PartnerCustomersContent() {
         // Filter for my customers
         const myCustomers = mapped.filter(c => {
             if (!partnerSession) return false;
-            const channel = String(c['채널'] || '');
+            const channel = String(c['유입채널'] || '');
             return channel.includes(partnerName) || channel === partnerSession.id;
         });
 
@@ -446,7 +446,7 @@ function PartnerCustomersContent() {
                                                     {customer['신청일'] ? String(customer['신청일']).substring(0, 10) : '-'}
                                                 </span>
                                                 {customer['No.'] && <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg whitespace-nowrap">No.{customer['No.']}</span>}
-                                                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['채널']}</span>
+                                                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['유입채널']}</span>
                                             </div>
                                         </div>
 

@@ -121,7 +121,7 @@ function PartnerContractsContent() {
         });
     }, [allMappedCustomers, searchTerm]);
 
-    const handleDelete = async (e: React.MouseEvent, customer: { id: string; '고객명': string }) => {
+    const handleDelete = async (e: React.MouseEvent, customer: { id: any; '고객명': string }) => {
         e.stopPropagation();
         if (confirm(`'${customer['고객명']}' 고객의 계약 정보를 삭제하시겠습니까? (고객 상태가 '계약등록' 이전으로 돌아가며 리스트에서 제외됩니다)`)) {
             try {
