@@ -171,7 +171,7 @@ export default function AdminLayout({
                             </p>
                         </div>
                         <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-sm font-black text-white shadow-lg shadow-blue-500/20 ring-4 ring-blue-50">
-                            {adminInfo.name.substring(0, 1)}
+                            {adminInfo?.name ? adminInfo.name.substring(0, 1) : '?'}
                         </div>
                     </div>
                 </header>

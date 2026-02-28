@@ -104,7 +104,7 @@ export default function PartnerLayout({
         { name: "상품 관리 & 홍보", href: "/partner/products", icon: ShoppingBag },
         { name: "자료실", href: "/partner/resources", icon: FolderDown },
         { name: "공사안내문 출력", href: "/partner/notice", icon: Printer },
-        { name: "셀프 실측관리", href: "https://kcc-scan-a4-new.vercel.app/admin", icon: Ruler },
+        { name: "셀프 실측관리", href: "https://kcc-scan-a4-new.vercel.app/admin", icon: Ruler, external: true },
     ];
 
     if (!mounted || (!partnerInfo && pathname !== '/partner/login')) {
@@ -160,6 +160,7 @@ export default function PartnerLayout({
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                target={item.external ? "_blank" : undefined}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors
                     ${isActive
                                         ? "bg-[hsl(var(--primary))] text-white shadow-sm"

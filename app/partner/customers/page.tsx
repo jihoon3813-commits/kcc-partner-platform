@@ -92,7 +92,7 @@ function PartnerCustomersContent() {
             '가견적 금액': c.price_pre || 0,
             '최종견적 금액': c.price_final || 0,
             '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
-            '신청일시': c._creationTime ? new Date(c._creationTime).toLocaleString() : '',
+            '신청일시': c._creationTime ? new Date(c._creationTime).toISOString() : '',
             'id': c._id,
             '_creationTime': c._creationTime,
             'updatedAt': c.updatedAt
@@ -184,7 +184,9 @@ function PartnerCustomersContent() {
             if (dateStr) {
                 try {
                     const itemDate = new Date(dateStr as string);
-                    if (!isWithinInterval(itemDate, { start, end })) return false;
+                    if (!isNaN(itemDate.getTime()) && !isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                        if (!isWithinInterval(itemDate, { start, end })) return false;
+                    }
                 } catch { /* skip */ }
             }
 
