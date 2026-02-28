@@ -657,7 +657,7 @@ function AdminCustomersContent() {
                                                                     customer['진행구분']?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
                                                                         customer['진행구분']?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
                                                                             customer['진행구분']?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
-                                                                                customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') || customer['진행구분']?.includes('취소') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
+                                                                                customer['진행구분']?.includes('거부') || customer['진행구분']?.includes('부재') || customer['진행구분']?.includes('취소') || customer['진행구분']?.includes('등록해제') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
                                                                                     'bg-white text-blue-600 border-blue-600 shadow-blue-100') : ''
                                                             }`}
                                                         style={dynStatus ? { backgroundColor: `${dynStatus.color}20`, color: dynStatus.color, borderColor: `${dynStatus.color}40` } : undefined}

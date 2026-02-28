@@ -2,13 +2,16 @@
 
 import { useState, useMemo, Suspense } from 'react';
 
-import { Search, FileText, RefreshCcw, MapPin } from 'lucide-react';
+import { Search, FileText, RefreshCcw, MapPin, Trash2 } from 'lucide-react';
 import ContractDetailModal, { Customer } from '@/app/components/ContractDetailModal';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 function AdminContractsContent() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+    const deleteContractMutation = useMutation(api.contracts.deleteContract);
+    const updateCustomerMutation = useMutation(api.customers.updateCustomer);
 
     // Convex Data
     const convexCustomers = useQuery(api.customers.listCustomers);
@@ -36,7 +39,7 @@ function AdminContractsContent() {
                 'No.': c.no || '',
                 '라벨': c.label || '일반',
                 '진행구분': c.status || '접수',
-                '채널': c.channel || '',
+                '유입채널': c.channel || '',
                 '고객명': c.name || '',
                 '연락처': c.contact || '',
                 '주소': c.address || '',
@@ -94,6 +97,23 @@ function AdminContractsContent() {
             return searchMatch;
         });
     }, [allMappedCustomers, searchTerm]);
+
+    const handleDelete = async (e: React.MouseEvent, customer: { id: any; '고객명': string }) => {
+        e.stopPropagation();
+        if (confirm(`'${customer['고객명']}' 고객의 계약 정보를 등록해제 하시겠습니까? (고객 상태가 '등록해제'로 변경되며 리스트에서 제외됩니다)`)) {
+            try {
+                await deleteContractMutation({ customerId: customer.id });
+                await updateCustomerMutation({
+                    id: customer.id,
+                    updates: { status: '등록해제' }
+                });
+                alert('등록해제 되었습니다.');
+            } catch (err) {
+                console.error(err);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+    };
 
     return (
         <div className="lg:px-4 lg:py-6 space-y-8 pb-32">
@@ -183,7 +203,7 @@ function AdminContractsContent() {
                                                     {customer['신청일'] ? String(customer['신청일']).substring(0, 10) : '-'}
                                                 </span>
                                                 <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg whitespace-nowrap">No.{customer['No.']}</span>
-                                                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['채널']}</span>
+                                                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['유입채널']}</span>
                                             </div>
                                         </div>
 
@@ -196,6 +216,17 @@ function AdminContractsContent() {
                                             <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                                             <span className="truncate" title={customer['주소']}>{customer['주소']?.replace(/\s*\[\d+\]$/, '')}</span>
                                         </div>
+                                    </div>
+
+                                    {/* Deregister Button Container */}
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={(e) => handleDelete(e, customer)}
+                                            className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors shadow-sm"
+                                            title="계약 등록해제"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0 py-1 flex flex-col justify-between gap-1">

@@ -123,14 +123,14 @@ function PartnerContractsContent() {
 
     const handleDelete = async (e: React.MouseEvent, customer: { id: any; '고객명': string }) => {
         e.stopPropagation();
-        if (confirm(`'${customer['고객명']}' 고객의 계약 정보를 삭제하시겠습니까? (고객 상태가 '계약등록' 이전으로 돌아가며 리스트에서 제외됩니다)`)) {
+        if (confirm(`'${customer['고객명']}' 고객의 계약 정보를 등록해제 하시겠습니까? (고객 상태가 '등록해제'로 변경되며 리스트에서 제외됩니다)`)) {
             try {
                 await deleteContractMutation({ customerId: customer.id });
                 await updateCustomerMutation({
                     id: customer.id,
-                    updates: { status: '최종견적전달' }
+                    updates: { status: '등록해제' }
                 });
-                alert('삭제되었습니다.');
+                alert('등록해제 되었습니다.');
             } catch (err) {
                 console.error(err);
                 alert('삭제 중 오류가 발생했습니다.');
@@ -247,7 +247,7 @@ function PartnerContractsContent() {
                                         <button
                                             onClick={(e) => handleDelete(e, customer)}
                                             className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors shadow-sm"
-                                            title="계약서 리스트에서 삭제"
+                                            title="계약 등록해제"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
