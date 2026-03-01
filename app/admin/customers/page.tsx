@@ -713,10 +713,17 @@ function AdminCustomersContent() {
                             {(() => {
                                 const now = Date.now();
                                 const oneDay = 24 * 60 * 60 * 1000;
-                                if (customer.updatedAt === 1) return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-300"></div>;
+                                // Priority 1: Normalized/Reset state (Sentinel 1) or OLD data -> Gray
+                                if (customer.updatedAt === 1 || (!customer.updatedAt && (now - (customer._creationTime || 0)) > oneDay)) {
+                                    return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-300"></div>;
+                                }
+
+                                // Priority 2: Manual Update (updatedAt > 1) -> Red
                                 if (customer.updatedAt && customer.updatedAt > 1 && (now - customer.updatedAt) <= oneDay) {
                                     return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>;
                                 }
+
+                                // Priority 3: Genuine New Registration (no updatedAt AND within 24h) -> Blue
                                 if (!customer.updatedAt && (now - (customer._creationTime || 0)) <= oneDay) {
                                     return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>;
                                 }
