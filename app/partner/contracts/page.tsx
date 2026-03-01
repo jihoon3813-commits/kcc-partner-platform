@@ -81,7 +81,7 @@ function PartnerContractsContent() {
                 'No.': c.no || '',
                 '라벨': c.label || '일반',
                 '진행구분': c.status || '접수', // 고객관리의 진행구분
-                '채널': c.channel || '',
+                '유입채널': c.channel || '',
                 '고객명': c.name || '',
                 '연락처': c.contact || '',
                 '주소': c.address || '',
@@ -116,7 +116,7 @@ function PartnerContractsContent() {
 
         const myCustomers = mapped.filter(c => {
             if (!partnerSession) return false;
-            const channel = String(c['채널'] || '');
+            const channel = String(c['유입채널'] || '');
             return channel.includes(partnerName) || channel === partnerSession.id;
         });
 

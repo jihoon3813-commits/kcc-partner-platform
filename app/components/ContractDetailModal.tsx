@@ -258,7 +258,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">유입채널(지점)</label>
-                                <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-600 font-medium">{customer.channel || customer['채널'] || '-'}</div>
+                                <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-600 font-medium">{customer.channel || String((customer as unknown as Record<string, unknown>)['유입채널'] || (customer as unknown as Record<string, unknown>)['채널'] || '-')}</div>
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">고객명</label>
