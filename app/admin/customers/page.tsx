@@ -291,17 +291,18 @@ function AdminCustomersContent() {
         setIsNormalizing(true);
         try {
             let hasMore = true;
-            let currentTimestamp: number | undefined = undefined;
+            let lastNo: string | undefined = undefined;
             const batchSize = 500;
+            const timestamp = Date.now();
             let totalProcessed = 0;
 
             while (hasMore) {
-                const result = (await normalizeSorting({ batchSize, timestamp: currentTimestamp })) as { success: boolean; count: number; hasMore: boolean; timestamp: number };
+                const result = (await normalizeSorting({ batchSize, timestamp, lastNo })) as { success: boolean; count: number; hasMore: boolean; lastNo?: string };
                 if (!result.success) throw new Error('배치 처리 중 응답 오류');
 
                 totalProcessed += result.count;
                 hasMore = result.hasMore;
-                currentTimestamp = result.timestamp;
+                lastNo = result.lastNo;
 
                 if (totalProcessed > 5000) break; // Maximum guard
             }

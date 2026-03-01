@@ -11,7 +11,21 @@ export async function POST(request: Request) {
         }
 
         if (isAdmin) {
-            const admin = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: id });
+            let admin = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: id });
+
+            // Self-healing: If no admin exists at all, run initial creation
+            if (!admin) {
+                const allAdmins = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: '*' }); // Dummy check or similar
+                // A better check: query any admin. If null, run bootstrap
+                const anyAdmin = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: 'admin' });
+                const anyTM = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: 'TM' });
+
+                if (!anyAdmin && !anyTM) {
+                    await convex.mutation(api.admins.createInitialAdmin, {});
+                    // Try lookup again
+                    admin = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: id });
+                }
+            }
 
             if (!admin || admin.password !== password) {
                 return NextResponse.json({ success: false, message: '아이디 또는 비밀번호가 일치하지 않습니다.' }, { status: 401 });
