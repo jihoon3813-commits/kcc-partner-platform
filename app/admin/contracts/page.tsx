@@ -94,6 +94,7 @@ function AdminContractsContent() {
                 advancePayment: contract?.advancePayment,
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
+                contractDate: contract?.contractDate || '',
                 alerts: alerts
             };
         });
@@ -113,11 +114,19 @@ function AdminContractsContent() {
     const sortedCustomers = useMemo(() => {
         return [...allMappedCustomers].sort((a, b) => {
             if (sortOption === 'reg_desc') {
+                const dateA = a.contractDate || '';
+                const dateB = b.contractDate || '';
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+
                 const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
                 const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
+                const dateA = a.contractDate || '';
+                const dateB = b.contractDate || '';
+                if (dateA !== dateB) return dateA.localeCompare(dateB);
+
                 const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
                 const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
                 return timeA - timeB;
@@ -275,8 +284,8 @@ function AdminContractsContent() {
                                 value={sortOption}
                                 onChange={(e) => setSortOption(e.target.value as any)}
                             >
-                                <option value="reg_desc">등록일 최신순(시스템)</option>
-                                <option value="reg_asc">등록일 오래된순(시스템)</option>
+                                <option value="reg_desc">계약등록일 최신순</option>
+                                <option value="reg_asc">계약등록일 오래된순</option>
                                 <option value="reception_desc">접수일 최신순(엑셀)</option>
                                 <option value="reception_asc">접수일 오래된순(엑셀)</option>
                                 <option value="no_desc">고객번호 큰순</option>
