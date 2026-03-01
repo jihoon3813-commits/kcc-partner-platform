@@ -58,6 +58,7 @@ function AdminContractsContent() {
             if (isCashOrCard && !isCanceled && remaining !== 0 && !contract?.remainingBalanceDate) alerts.push("입금/결제 완료 체크");
             if (isSubscription && !isCanceled && !contract?.installmentAgreementDate && !contract?.recordingAgreementDate) alerts.push("할부/녹취 약정 완료 체크");
             if (isRental && !isCanceled && !contract?.recordingAgreementDate) alerts.push("렌탈 녹취약정 완료 체크");
+            if (!isCanceled && contract?.constructionContractStatus !== '서명완료') alerts.push("시공계약서 서명 확인");
 
             return {
                 'No.': c.no || '',
@@ -261,6 +262,7 @@ function AdminContractsContent() {
                             <option value="입금/결제 완료 체크">입금/결제 체크 필요</option>
                             <option value="할부/녹취 약정 완료 체크">할부/녹취 약정 체크 필요</option>
                             <option value="렌탈 녹취약정 완료 체크">렌탈 녹취약정 체크 필요</option>
+                            <option value="시공계약서 서명 확인">시공계약서 서명 확인 필요</option>
                         </select>
                     </div>
 
