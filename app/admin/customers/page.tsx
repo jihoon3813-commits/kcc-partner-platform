@@ -292,9 +292,9 @@ function AdminCustomersContent() {
             if (result.success) {
                 alert('정렬 순서가 고객번호순으로 초기화되었습니다.');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert('정렬 초기화 중 오류가 발생했습니다.');
+            alert(`정렬 초기화 중 오류가 발생했습니다: ${err.message || err.toString()}`);
         }
     };
 
