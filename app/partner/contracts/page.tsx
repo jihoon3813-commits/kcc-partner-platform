@@ -73,7 +73,7 @@ function PartnerContractsContent() {
             // Alerts logic
             const alerts = [];
             if (contract?.kccDepositStatus !== '입금완료') alerts.push("KCC입금 확인");
-            if (isCashOrCard && !isCanceled && remaining !== 0) alerts.push("입금/결제 완료 체크");
+            if (isCashOrCard && !isCanceled && remaining !== 0 && !contract?.remainingBalanceDate) alerts.push("입금/결제 완료 체크");
             if (isSubscription && !isCanceled && !contract?.installmentAgreementDate && !contract?.recordingAgreementDate) alerts.push("할부/녹취 약정 완료 체크");
             if (isRental && !isCanceled && !contract?.recordingAgreementDate) alerts.push("렌탈 녹취약정 완료 체크");
 
@@ -107,6 +107,7 @@ function PartnerContractsContent() {
                 paymentMethod: contract?.paymentMethod,
                 paymentAmount1: contract?.paymentAmount1,
                 remainingBalance: contract?.remainingBalance,
+                remainingBalanceDate: contract?.remainingBalanceDate,
                 advancePayment: contract?.advancePayment,
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
