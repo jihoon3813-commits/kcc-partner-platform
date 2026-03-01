@@ -713,15 +713,14 @@ function AdminCustomersContent() {
                             {(() => {
                                 const now = Date.now();
                                 const oneDay = 24 * 60 * 60 * 1000;
-                                const isRecentUpdate = customer.updatedAt && (now - customer.updatedAt) <= oneDay;
-                                const isRecentNew = (now - (customer._creationTime || 0)) <= oneDay;
-
-                                return (
-                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer.updatedAt && customer.updatedAt > 1 && (now - customer.updatedAt) <= oneDay ? 'bg-red-500' :
-                                        !customer.updatedAt && (now - (customer._creationTime || 0)) <= oneDay ? 'bg-blue-500' :
-                                            'bg-gray-300'
-                                        }`}></div>
-                                );
+                                if (customer.updatedAt === 1) return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-300"></div>;
+                                if (customer.updatedAt && customer.updatedAt > 1 && (now - customer.updatedAt) <= oneDay) {
+                                    return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>;
+                                }
+                                if (!customer.updatedAt && (now - (customer._creationTime || 0)) <= oneDay) {
+                                    return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>;
+                                }
+                                return <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-300"></div>;
                             })()}
 
                             {/* Checkbox */}
