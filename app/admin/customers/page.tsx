@@ -66,6 +66,7 @@ function AdminCustomersContent() {
 
     const batchCreate = useMutation(api.customers.batchCreate);
     const [isUploading, setIsUploading] = useState(false);
+    const [isNormalizing, setIsNormalizing] = useState(false);
 
     // Convex Data Fetching
     const convexCustomers = useQuery(api.customers.listCustomers);
@@ -287,14 +288,30 @@ function AdminCustomersContent() {
     const handleNormalizeSorting = async () => {
         if (!confirm('현재 모든 고객의 정렬 순서를 "고객번호순"으로 동기화하시겠습니까? (이후 수정된 고객은 다시 상단으로 올라옵니다.)')) return;
 
+        setIsNormalizing(true);
         try {
-            const result = await normalizeSorting();
-            if (result.success) {
-                alert('정렬 순서가 고객번호순으로 초기화되었습니다.');
+            let hasMore = true;
+            let currentTimestamp: number | undefined = undefined;
+            const batchSize = 500;
+            let totalProcessed = 0;
+
+            while (hasMore) {
+                const result = await normalizeSorting({ batchSize, timestamp: currentTimestamp });
+                if (!result.success) throw new Error('배치 처리 중 응답 오류');
+
+                totalProcessed += result.count;
+                hasMore = result.hasMore;
+                currentTimestamp = result.timestamp;
+
+                if (totalProcessed > 5000) break; // Maximum guard
             }
+
+            alert(`총 ${totalProcessed}명의 고객 정렬 순서가 고객번호순으로 초기화되었습니다.`);
         } catch (err: any) {
             console.error(err);
             alert(`정렬 초기화 중 오류가 발생했습니다: ${err.message || err.toString()}`);
+        } finally {
+            setIsNormalizing(false);
         }
     };
 
@@ -604,11 +621,16 @@ function AdminCustomersContent() {
 
                     <button
                         onClick={handleNormalizeSorting}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-black border border-blue-100 hover:bg-blue-100 transition-all"
+                        disabled={isNormalizing}
+                        className={`flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-black border border-blue-100 hover:bg-blue-100 transition-all ${isNormalizing ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title="최초 업로드 데이터 등의 정렬이 꼬였을 때 고객번호순으로 정렬을 일괄 초기화합니다."
                     >
-                        <ListOrdered className="w-3.5 h-3.5" />
-                        정렬 번호순 초기화
+                        {isNormalizing ? (
+                            <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                            <ListOrdered className="w-3.5 h-3.5" />
+                        )}
+                        {isNormalizing ? '정렬 동기화 중...' : '정렬 번호순 초기화'}
                     </button>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold text-gray-400">

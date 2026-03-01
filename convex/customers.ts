@@ -275,12 +275,26 @@ export const duplicateCustomer = mutation({
 });
 
 export const normalizeSorting = mutation({
-    handler: async (ctx) => {
-        const customers = await ctx.db.query("customers").collect();
-        const now = Date.now();
-        for (const customer of customers) {
+    args: {
+        timestamp: v.optional(v.number()),
+        batchSize: v.number(),
+    },
+    handler: async (ctx, args) => {
+        const now = args.timestamp ?? Date.now();
+        // Since we don't have an index on updatedAt, we query and filter.
+        // For ~1000-2000 records, this scan is acceptable in Convex.
+        const toUpdate = await ctx.db.query("customers")
+            .filter(q => q.neq(q.field("updatedAt"), now))
+            .take(args.batchSize);
+
+        for (const customer of toUpdate) {
             await ctx.db.patch(customer._id, { updatedAt: now });
         }
-        return { success: true, count: customers.length };
+        return {
+            success: true,
+            count: toUpdate.length,
+            hasMore: toUpdate.length === args.batchSize,
+            timestamp: now
+        };
     },
 });
