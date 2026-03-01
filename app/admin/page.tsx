@@ -126,13 +126,13 @@ export default function AdminDashboard() {
         const filterByDate = (item: Customer | Partner) => {
             // 다양한 날짜 식별자 지원 (등록일 추가)
             const dateStr = item['신청일'] || item['신청일시'] || item['Timestamp'] || item['등록일'];
-            if (!dateStr) return true; // 날짜 필드가 아예 없으면 필터에서 제외하지 않음 (연동 체크용)
+            if (!dateStr) return false; // 날짜 필드가 없으면 제외 (고객관리 페이지와 동일)
             try {
                 const itemDate = new Date(dateStr as string);
-                if (isNaN(itemDate.getTime())) return true;
+                if (isNaN(itemDate.getTime())) return false; // 유효하지 않은 날짜 제외
                 return isWithinInterval(itemDate, { start, end });
             } catch {
-                return true;
+                return false;
             }
         };
 
