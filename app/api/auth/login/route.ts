@@ -15,12 +15,10 @@ export async function POST(request: Request) {
 
             // Self-healing: If no admin exists at all, run initial creation
             if (!admin) {
-                const allAdmins = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: '*' }); // Dummy check or similar
-                // A better check: query any admin. If null, run bootstrap
+                // Just try to find one of the default admins to see if table is empty
                 const anyAdmin = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: 'admin' });
-                const anyTM = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: 'TM' });
 
-                if (!anyAdmin && !anyTM) {
+                if (!anyAdmin) {
                     await convex.mutation(api.admins.createInitialAdmin, {});
                     // Try lookup again
                     admin = await convex.query(api.admins.getAdminByUidCaseInsensitive, { uid: id });
@@ -62,8 +60,11 @@ export async function POST(request: Request) {
             });
         }
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
-        return NextResponse.json({ success: false, message: '로그인 처리 중 오류 발생' }, { status: 500 });
+        return NextResponse.json({
+            success: false,
+            message: `로그인 처리 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}`
+        }, { status: 500 });
     }
 }
