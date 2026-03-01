@@ -1,13 +1,19 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-export const getAdminByUid = query({
+export const getAdminByUidCaseInsensitive = query({
     args: { uid: v.string() },
     handler: async (ctx, args) => {
-        return await ctx.db
+        // First try exact match for performance
+        const exactMatch = await ctx.db
             .query("admins")
             .withIndex("by_uid", (q) => q.eq("uid", args.uid))
             .unique();
+        if (exactMatch) return exactMatch;
+
+        // If not found, try case-insensitive search (suitable for small number of admins)
+        const allAdmins = await ctx.db.query("admins").collect();
+        return allAdmins.find(admin => admin.uid.toLowerCase() === args.uid.toLowerCase()) || null;
     },
 });
 
