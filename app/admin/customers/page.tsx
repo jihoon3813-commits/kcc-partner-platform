@@ -292,18 +292,18 @@ function AdminCustomersContent() {
         setIsNormalizing(true);
         try {
             let hasMore = true;
-            let lastId: string | undefined = undefined;
+            let cursor: string | undefined = undefined;
             const batchSize = 100; // Reducing batch size for safer execution
             const timestamp = Date.now();
             let totalProcessed = 0;
 
             while (hasMore) {
-                const result = (await normalizeSorting({ batchSize, timestamp, lastId })) as { success: boolean; count: number; hasMore: boolean; lastId?: string };
+                const result = (await normalizeSorting({ batchSize, timestamp, cursor })) as { success: boolean; count: number; hasMore: boolean; cursor?: string };
                 if (!result.success) throw new Error('배치 처리 중 응답 오류');
 
                 totalProcessed += result.count;
                 hasMore = result.hasMore;
-                lastId = result.lastId;
+                cursor = result.cursor;
 
                 if (totalProcessed > 5000) break; // Maximum guard
             }

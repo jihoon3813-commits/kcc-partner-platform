@@ -276,31 +276,24 @@ export const duplicateCustomer = mutation({
 
 export const normalizeSorting = mutation({
     args: {
-        lastId: v.optional(v.string()),
+        cursor: v.optional(v.string()),
         batchSize: v.number(),
         timestamp: v.number(),
     },
     handler: async (ctx, args) => {
-        let query = ctx.db.query("customers").order("asc");
+        const result = await ctx.db.query("customers")
+            .order("asc")
+            .paginate({ cursor: args.cursor ?? null, numItems: args.batchSize });
 
-        if (args.lastId) {
-            const lastId = args.lastId as any;
-            query = query.filter(q => q.gt(q.field("_id"), lastId));
-        }
-
-        const toUpdate = await query.take(args.batchSize);
-
-        for (const customer of toUpdate) {
+        for (const customer of result.page) {
             await ctx.db.patch(customer._id, { updatedAt: 1 }); // Sentinel: Unified color to gray
         }
 
-        const nextLastId = toUpdate.length > 0 ? toUpdate[toUpdate.length - 1]._id : undefined;
-
         return {
             success: true,
-            count: toUpdate.length,
-            hasMore: toUpdate.length === args.batchSize,
-            lastId: nextLastId,
+            count: result.page.length,
+            hasMore: !result.isDone,
+            cursor: result.continueCursor,
         };
     },
 });
