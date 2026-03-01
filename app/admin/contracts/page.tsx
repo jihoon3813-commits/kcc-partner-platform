@@ -46,7 +46,7 @@ function AdminContractsContent() {
             const isCanceled = rawStatus === '결제취소';
             const finalQuote = Number(contract?.finalQuotePrice) || Number(c.price_final) || 0;
             const paid = Number(contract?.paymentAmount1) || 0;
-            const remaining = Number(contract?.remainingBalance) ?? (finalQuote - paid);
+            const remaining = (contract?.remainingBalance !== undefined) ? Number(contract?.remainingBalance) : (finalQuote - paid);
 
             const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(pm);
             const isSubscription = ['현금+구독', '카드+구독', '구독(할부)'].includes(pm);
