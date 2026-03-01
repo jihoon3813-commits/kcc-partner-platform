@@ -281,10 +281,10 @@ export const normalizeSorting = mutation({
         timestamp: v.number(),
     },
     handler: async (ctx, args) => {
-        let query = ctx.db.query("customers");
+        let query = ctx.db.query("customers").order("asc");
 
         if (args.lastId) {
-            const lastId = args.lastId;
+            const lastId = args.lastId as any;
             query = query.filter(q => q.gt(q.field("_id"), lastId));
         }
 
