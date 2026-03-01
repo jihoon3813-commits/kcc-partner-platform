@@ -80,6 +80,7 @@ export const createCustomer = mutation({
             no: finalNo,
             status: args.status ?? "접수",
             label: args.label ?? "일반",
+            updatedAt: Date.now(),
         });
     },
 });
@@ -144,6 +145,7 @@ export const batchCreate = mutation({
     handler: async (ctx, args) => {
         let currentMaxNo = -1;
 
+        const now = Date.now();
         for (const customer of args.customers) {
             let finalNo = customer.no;
             if (!finalNo) {
@@ -168,6 +170,7 @@ export const batchCreate = mutation({
                 no: finalNo,
                 status: customer.status || "접수",
                 label: customer.label || "일반",
+                updatedAt: now,
             });
         }
         return { success: true, count: args.customers.length };

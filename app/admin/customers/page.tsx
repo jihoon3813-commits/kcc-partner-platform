@@ -9,7 +9,7 @@ import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'custom';
+type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'all' | 'custom';
 
 interface Customer {
     'No.': string | number;
@@ -53,8 +53,8 @@ function AdminCustomersContent() {
     const [partnerFilter, setPartnerFilter] = useState('');
 
     // Date Filters
-    const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
-    const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
+    const [dateFilter, setDateFilter] = useState<DateFilterType>('6months');
+    const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 6), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
     // Pagination State
@@ -183,6 +183,7 @@ function AdminCustomersContent() {
             case '3months': start = subMonths(now, 3); break;
             case '6months': start = subMonths(now, 6); break;
             case '1year': start = subMonths(now, 12); break;
+            case 'all': start = new Date(0); break; // Epoch start for all
             case 'custom':
                 start = parseISO(customStartDate);
                 end = parseISO(customEndDate);
@@ -243,7 +244,7 @@ function AdminCustomersContent() {
         setStatusFilter('');
         setLabelFilter('');
         setPartnerFilter('');
-        setDateFilter('3months');
+        setDateFilter('6months');
         setSelectedIds(new Set());
     };
 
@@ -447,13 +448,13 @@ function AdminCustomersContent() {
 
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="flex bg-gray-100 p-1 rounded-xl">
-                            {(['currentMonth', '3months', '6months', 'custom'] as const).map((type) => (
+                            {(['currentMonth', '3months', '6months', '1year', 'all', 'custom'] as const).map((type) => (
                                 <button
                                     key={type}
                                     onClick={() => setDateFilter(type)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateFilter === type ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
-                                    {type === 'currentMonth' ? '당월' : type === '3months' ? '3개월' : type === '6months' ? '6개월' : '직접선택'}
+                                    {type === 'currentMonth' ? '당월' : type === '3months' ? '3개월' : type === '6months' ? '6개월' : type === '1year' ? '1년' : type === 'all' ? '총누적' : '직접선택'}
                                 </button>
                             ))}
                         </div>
