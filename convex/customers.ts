@@ -273,3 +273,14 @@ export const duplicateCustomer = mutation({
         return newId;
     }
 });
+
+export const normalizeSorting = mutation({
+    handler: async (ctx) => {
+        const customers = await ctx.db.query("customers").collect();
+        const now = Date.now();
+        for (const customer of customers) {
+            await ctx.db.patch(customer._id, { updatedAt: now });
+        }
+        return { success: true, count: customers.length };
+    },
+});

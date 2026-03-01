@@ -71,6 +71,7 @@ function AdminCustomersContent() {
     const convexCustomers = useQuery(api.customers.listCustomers);
     const batchDelete = useMutation(api.customers.batchDelete);
     const duplicateCustomerMutation = useMutation(api.customers.duplicateCustomer);
+    const normalizeSorting = useMutation(api.customers.normalizeSorting);
 
     // Fetch dynamic settings
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -280,6 +281,20 @@ function AdminCustomersContent() {
         } catch (err) {
             console.error(err);
             alert('삭제 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleNormalizeSorting = async () => {
+        if (!confirm('현재 모든 고객의 정렬 순서를 "고객번호순"으로 동기화하시겠습니까? (이후 수정된 고객은 다시 상단으로 올라옵니다.)')) return;
+
+        try {
+            const result = await normalizeSorting();
+            if (result.success) {
+                alert('정렬 순서가 고객번호순으로 초기화되었습니다.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('정렬 초기화 중 오류가 발생했습니다.');
         }
     };
 
@@ -586,6 +601,15 @@ function AdminCustomersContent() {
                             {selectedIds.size}명 삭제
                         </button>
                     )}
+
+                    <button
+                        onClick={handleNormalizeSorting}
+                        className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-black border border-blue-100 hover:bg-blue-100 transition-all"
+                        title="최초 업로드 데이터 등의 정렬이 꼬였을 때 고객번호순으로 정렬을 일괄 초기화합니다."
+                    >
+                        <ListOrdered className="w-3.5 h-3.5" />
+                        정렬 번호순 초기화
+                    </button>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
                     <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
