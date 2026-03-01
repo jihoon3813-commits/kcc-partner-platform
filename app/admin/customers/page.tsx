@@ -137,8 +137,8 @@ function AdminCustomersContent() {
             const noB = parseNoStr(b['No.'] as string);
 
             if (sortOption === 'updated') {
-                const timeA = a.updatedAt && a.updatedAt > 1 ? a.updatedAt : (a._creationTime || 0);
-                const timeB = b.updatedAt && b.updatedAt > 1 ? b.updatedAt : (b._creationTime || 0);
+                const timeA = a.updatedAt && a.updatedAt > 1 ? a.updatedAt : (a.updatedAt === 1 ? 0 : (a._creationTime || 0));
+                const timeB = b.updatedAt && b.updatedAt > 1 ? b.updatedAt : (b.updatedAt === 1 ? 0 : (b._creationTime || 0));
 
                 if (timeB !== timeA) return timeB - timeA;
 
