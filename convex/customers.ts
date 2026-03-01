@@ -7,6 +7,25 @@ export const listCustomers = query({
     },
 });
 
+export const deleteGarbageCustomers = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const customers = await ctx.db.query("customers").collect();
+        const garbage = customers.filter(c => {
+            const hasInvalidDate = !c.created_at || isNaN(new Date(c.created_at).getTime());
+            const isOld = !c.updatedAt || (c.updatedAt !== 1 && c.updatedAt < 1740000000000);
+            return hasInvalidDate || isOld;
+        });
+
+        let deletedCount = 0;
+        for (const g of garbage) {
+            await ctx.db.delete(g._id);
+            deletedCount++;
+        }
+        return { success: true, deletedCount };
+    }
+});
+
 export const getCustomersByChannel = query({
     args: { channel: v.string() },
     handler: async (ctx, args) => {
@@ -298,25 +317,3 @@ export const normalizeSorting = mutation({
     },
 });
 
-export const deleteGarbageCustomers = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const customers = await ctx.db.query("customers").collect();
-        const garbage = customers.filter(c => {
-            // 유효하지 않은 날짜 또는 날짜 정보 부재
-            const hasInvalidDate = !c.created_at || isNaN(new Date(c.created_at).getTime());
-            // 정규 업로드 데이터는 updatedAt이 1로 설정됨. 그렇지 않은 경우 중 오래된 데이터
-            const isOld = !c.updatedAt || (c.updatedAt !== 1 && c.updatedAt < 1740000000000);
-
-            return hasInvalidDate || isOld;
-        });
-
-        let deletedCount = 0;
-        for (const g of garbage) {
-            await ctx.db.delete(g._id);
-            deletedCount++;
-        }
-
-        return { success: true, deletedCount };
-    }
-});
