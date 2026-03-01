@@ -130,11 +130,6 @@ export default function AdminLoginPage() {
                                         checked={isTM}
                                         onChange={(e) => {
                                             setIsTM(e.target.checked);
-                                            if (e.target.checked) {
-                                                setFormData({ id: 'TM', password: '1234' });
-                                            } else {
-                                                setFormData({ id: '', password: '' });
-                                            }
                                         }}
                                         className="peer sr-only"
                                     />
