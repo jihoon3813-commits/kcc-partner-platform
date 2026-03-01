@@ -137,8 +137,9 @@ function AdminCustomersContent() {
             const noB = parseNoStr(b['No.'] as string);
 
             if (sortOption === 'updated') {
-                const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+                const timeA = a.updatedAt && a.updatedAt > 1 ? a.updatedAt : (a._creationTime || 0);
+                const timeB = b.updatedAt && b.updatedAt > 1 ? b.updatedAt : (b._creationTime || 0);
+
                 if (timeB !== timeA) return timeB - timeA;
 
                 // Fallback to No. descending if times are equal
@@ -716,8 +717,8 @@ function AdminCustomersContent() {
                                 const isRecentNew = (now - (customer._creationTime || 0)) <= oneDay;
 
                                 return (
-                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${isRecentUpdate ? 'bg-red-500' :
-                                        isRecentNew ? 'bg-blue-500' :
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${customer.updatedAt && customer.updatedAt > 1 && (now - customer.updatedAt) <= oneDay ? 'bg-red-500' :
+                                        !customer.updatedAt && (now - (customer._creationTime || 0)) <= oneDay ? 'bg-blue-500' :
                                             'bg-gray-300'
                                         }`}></div>
                                 );

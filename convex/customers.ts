@@ -80,7 +80,7 @@ export const createCustomer = mutation({
             no: finalNo,
             status: args.status ?? "접수",
             label: args.label ?? "일반",
-            updatedAt: Date.now(),
+            // We don't set updatedAt here to let it use _creationTime, showing as "New" (Blue) in UI.
         });
     },
 });
@@ -170,7 +170,7 @@ export const batchCreate = mutation({
                 no: finalNo,
                 status: customer.status || "접수",
                 label: customer.label || "일반",
-                updatedAt: now,
+                updatedAt: 1, // Sentinel: Unified color to gray
             });
         }
         return { success: true, count: args.customers.length };
@@ -291,7 +291,7 @@ export const normalizeSorting = mutation({
         const toUpdate = await query.take(args.batchSize);
 
         for (const customer of toUpdate) {
-            await ctx.db.patch(customer._id, { updatedAt: args.timestamp });
+            await ctx.db.patch(customer._id, { updatedAt: 1 }); // Sentinel: Unified color to gray
         }
 
         const nextLastId = toUpdate.length > 0 ? toUpdate[toUpdate.length - 1]._id : undefined;
