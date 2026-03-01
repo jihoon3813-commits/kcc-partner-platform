@@ -296,7 +296,7 @@ function AdminCustomersContent() {
             let totalProcessed = 0;
 
             while (hasMore) {
-                const result = await normalizeSorting({ batchSize, timestamp: currentTimestamp });
+                const result = (await normalizeSorting({ batchSize, timestamp: currentTimestamp })) as { success: boolean; count: number; hasMore: boolean; timestamp: number };
                 if (!result.success) throw new Error('배치 처리 중 응답 오류');
 
                 totalProcessed += result.count;
