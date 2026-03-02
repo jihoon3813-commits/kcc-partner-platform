@@ -613,8 +613,8 @@ function AdminCustomersContent() {
             </div>
 
             {/* List Header & Summary */}
-            <div className="flex items-center justify-between px-2">
-                <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between px-2 overflow-x-auto whitespace-nowrap gap-4 pb-2">
+                <div className="flex items-center gap-4 shrink-0">
                     <button
                         onClick={toggleSelectAll}
                         className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
@@ -626,7 +626,7 @@ function AdminCustomersContent() {
                         )}
                         전체선택
                     </button>
-                    <p className="text-sm font-bold text-gray-500">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+                    <p className="text-sm font-bold text-gray-500 whitespace-nowrap">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
 
                     {selectedIds.size > 0 && (
                         <button
@@ -652,7 +652,7 @@ function AdminCustomersContent() {
                         {isNormalizing ? '정렬 동기화 중...' : '정렬 번호순 초기화'}
                     </button>
                 </div>
-                <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
+                <div className="flex items-center gap-4 text-xs font-bold text-gray-400 shrink-0">
                     <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
                         <ListOrdered className="w-3 h-3 text-gray-400" />
                         <select

@@ -301,9 +301,9 @@ function PartnerContractsContent() {
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
-                <div className="flex items-center gap-4">
-                    <p className="text-sm font-bold text-gray-500">조회 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2 overflow-x-auto whitespace-nowrap pb-2">
+                <div className="flex items-center gap-4 shrink-0">
+                    <p className="text-sm font-bold text-gray-500 whitespace-nowrap">조회 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
                 </div>
             </div>
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from 'next/image';
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, FolderDown, FileText } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, FolderDown, FileText, X } from "lucide-react";
 import Cookies from 'js-cookie';
 import PartnerInfoModal from "../components/PartnerInfoModal";
 
@@ -117,35 +117,31 @@ export default function PartnerLayout({
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
+            {/* Mobile Menu Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 bg-white border-r transition-all duration-300 flex flex-col
-        ${sidebarOpen ? "w-64" : "w-20"}`}
+        ${sidebarOpen ? "w-64 translate-x-0 shadow-2xl lg:shadow-none" : "w-64 lg:w-20 -translate-x-full lg:translate-x-0"}`}
             >
-                <div className="h-16 flex items-center justify-between px-4 border-b">
-                    {sidebarOpen ? (
-                        <div className="relative h-8 w-32">
-                            <Image
-                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
-                                alt="Partner Logo"
-                                fill
-                                className="object-contain"
-                                unoptimized
-                            />
-                        </div>
-                    ) : (
-                        <div className="relative h-6 w-10 mx-auto">
-                            <Image
-                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
-                                alt="Partner LogoSmall"
-                                fill
-                                className="object-contain"
-                                unoptimized
-                            />
-                        </div>
-                    )}
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 hover:bg-gray-100 rounded-md lg:hidden">
-                        <Menu className="w-5 h-5" />
+                <div className="h-16 flex items-center justify-between px-4 border-b shrink-0">
+                    <div className={`relative ${sidebarOpen ? 'h-8 w-32' : 'h-6 w-10 mx-auto'}`}>
+                        <Image
+                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                            alt="Partner Logo"
+                            fill
+                            className="object-contain"
+                            unoptimized
+                        />
+                    </div>
+                    <button onClick={() => setSidebarOpen(false)} className="p-1 text-gray-400 hover:text-gray-600 lg:hidden">
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
@@ -207,9 +203,18 @@ export default function PartnerLayout({
             </aside >
 
             {/* Main Content */}
-            <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-20"}`}>
-                <header className="h-16 bg-white border-b shadow-sm sticky top-0 z-40 flex items-center justify-between px-6">
-                    <h2 className="font-semibold text-lg text-gray-800">파트너 전용 페이지</h2>
+            < main className={`flex-1 transition-all duration-300 flex flex-col min-h-screen min-w-0 ${sidebarOpen ? "lg:ml-64" : "lg:ml-20"}`
+            }>
+                <header className="h-16 bg-white border-b shadow-sm sticky top-0 z-30 flex items-center justify-between px-4 lg:px-6">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 -ml-2 text-gray-600 hover:bg-gray-50 rounded-xl lg:hidden transition-colors"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                        <h2 className="font-semibold text-lg text-gray-800">파트너 전용 페이지</h2>
+                    </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
                             <p className="text-sm font-medium">{partnerInfo?.name}</p>
@@ -224,7 +229,7 @@ export default function PartnerLayout({
                 <div className="py-2 px-4">
                     {children}
                 </div>
-            </main>
+            </main >
 
             <PartnerInfoModal
                 isOpen={isInfoModalOpen}
@@ -232,6 +237,6 @@ export default function PartnerLayout({
                 currentInfo={partnerInfo}
                 onUpdate={handleLogout} // 정보 수정 후 재로그인 유도
             />
-        </div>
+        </div >
     );
 }

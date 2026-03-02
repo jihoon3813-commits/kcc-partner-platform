@@ -47,8 +47,8 @@ export default function AdminLayout({
 
     // Close mobile menu on route change
     useEffect(() => {
-        if (isMobileMenuOpen) setTimeout(() => setIsMobileMenuOpen(false), 0);
-    }, [pathname, isMobileMenuOpen]);
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
 
     const handleLogout = () => {
         Cookies.remove('admin_session');

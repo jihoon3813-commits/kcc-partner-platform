@@ -235,8 +235,8 @@ function PartnerCustomersContent() {
                         <p className="text-sm text-gray-500 font-medium mt-1">{partnerName} 채널 고객 정보를 관리합니다.</p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex bg-gray-100 p-1 rounded-xl">
+                    <div className="flex items-center gap-4 text-xs font-bold text-gray-400 shrink-0">
+                        <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg">
                             {[
                                 { id: 'currentMonth', label: '이번달' },
                                 { id: '3months', label: '3개월' },
@@ -337,10 +337,10 @@ function PartnerCustomersContent() {
 
             </div>
 
-            {/* Results Header & Legend */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
-                <div className="flex items-center gap-4">
-                    <p className="text-sm font-bold text-gray-500">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
+            {/* List Header & Summary */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2 overflow-x-auto whitespace-nowrap pb-2">
+                <div className="flex items-center gap-4 shrink-0">
+                    <p className="text-sm font-bold text-gray-500 whitespace-nowrap">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
                 </div>
 
                 <div className="flex items-center gap-4">
