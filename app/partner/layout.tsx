@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from 'next/image';
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, FolderDown, FileText } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, ShoppingBag, UserPlus, FolderDown, FileText, CalendarDays } from "lucide-react";
 import Cookies from 'js-cookie';
 import PartnerInfoModal from "../components/PartnerInfoModal";
 
@@ -98,6 +98,7 @@ export default function PartnerLayout({
 
     const navItems = [
         { name: "대시보드", href: "/partner", icon: LayoutDashboard },
+        { name: "시공 캘린더", href: "/partner/calendar", icon: CalendarDays },
         { name: "고객 관리", href: "/partner/customers", icon: Users },
         { name: "계약 관리", href: "/partner/contracts", icon: FileText },
         { name: "고객 직접 등록", href: "/partner/customers/create", icon: UserPlus }, // Added
