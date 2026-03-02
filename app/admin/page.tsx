@@ -41,6 +41,7 @@ export default function AdminDashboard() {
     // Convex Queries
     const convexCustomers = useQuery(api.customers.listCustomers);
     const convexPartners = useQuery(api.partners.listPartners);
+    const dbStatuses = useQuery(api.settings.getStatuses);
 
     // Filters
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
@@ -48,7 +49,7 @@ export default function AdminDashboard() {
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
     // Loading State
-    const loading = convexCustomers === undefined || convexPartners === undefined;
+    const loading = convexCustomers === undefined || convexPartners === undefined || dbStatuses === undefined;
 
     // Map Convex Data to Legacy Structure
     const allData = useMemo(() => {
@@ -142,40 +143,43 @@ export default function AdminDashboard() {
         };
     }, [allData, dateFilter, customStartDate, customEndDate]);
 
-    // Customer status counts
+    // Customer status counts (dynamic)
     const customerStats = useMemo(() => {
         const stats: Record<string, number> = {
-            '전체': filteredData.customers.length,
-            '접수': 0,
-            '부재': 0,
-            '예약콜': 0,
-            '거부': 0,
-            '사이즈요청': 0,
-            '가견적요청': 0,
-            '가견적전달': 0,
-            '가견적불가': 0,
-            '실측요청': 0,
-            '실측진행': 0,
-            '실측취소': 0,
-            '최종견적요청': 0,
-            '최종견적전달': 0,
-            '최종고민중': 0,
-            '견적후취소': 0,
-            '계약진행': 0,
-            '결제완료': 0,
-            '공사완료': 0,
-            '재견적작업': 0,
-            '수정견적전달': 0
+            '전체': filteredData.customers.length
         };
+
+        // Initialize with dbStatuses
+        if (dbStatuses) {
+            dbStatuses.forEach((s: any) => {
+                stats[s.name] = 0;
+            });
+        }
 
         filteredData.customers.forEach(c => {
             const status = c['진행구분'] || '접수';
-            if (stats[status] !== undefined) {
-                stats[status]++;
+            if (stats[status] !== undefined || dbStatuses?.some((s: any) => s.name === status)) {
+                stats[status] = (stats[status] || 0) + 1;
+            } else if (status) {
+                // If it's a legacy status that doesn't exist in settings anymore
+                stats[status] = (stats[status] || 0) + 1;
             }
         });
         return stats;
-    }, [filteredData.customers]);
+    }, [filteredData.customers, dbStatuses]);
+
+    // Top 4 statuses based on customer count (excluding '전체')
+    const topStatuses = useMemo(() => {
+        if (!dbStatuses) return [];
+        return [...dbStatuses]
+            .map((s: any) => ({
+                name: s.name,
+                count: customerStats[s.name] || 0,
+                color: s.color
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 4);
+    }, [customerStats, dbStatuses]);
 
     // Partner stats
     const partnerStats = useMemo(() => {
@@ -184,66 +188,6 @@ export default function AdminDashboard() {
         const approved = total - pending;
         return { total, pending, approved };
     }, [filteredData.partners]);
-
-    // Customer status groups and their items
-    const statusGroups = useMemo(() => [
-        {
-            title: '상담단계',
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
-            items: [
-                { label: '접수', color: 'bg-orange-500', icon: <Clock className="w-3.5 h-3.5" />, status: '접수' },
-                { label: '부재', color: 'bg-gray-400', icon: <AlertCircle className="w-3.5 h-3.5" />, status: '부재' },
-                { label: '예약콜', color: 'bg-indigo-400', icon: <Calendar className="w-3.5 h-3.5" />, status: '예약콜' },
-                { label: '거부', color: 'bg-red-400', icon: <XCircle className="w-3.5 h-3.5" />, status: '거부' },
-            ]
-        },
-        {
-            title: '가견적단계',
-            color: 'text-purple-600',
-            bg: 'bg-purple-50',
-            items: [
-                { label: '가견적요청', color: 'bg-purple-500', icon: <FileText className="w-3.5 h-3.5" />, status: '가견적요청' },
-                { label: '가견적전달', color: 'bg-purple-600', icon: <FileText className="w-3.5 h-3.5" />, status: '가견적전달' },
-                { label: '가견적불가', color: 'bg-red-600', icon: <AlertCircle className="w-3.5 h-3.5" />, status: '가견적불가' },
-                { label: '사이즈요청', color: 'bg-yellow-500', icon: <Filter className="w-3.5 h-3.5" />, status: '사이즈요청' },
-                { label: '실측요청', color: 'bg-blue-400', icon: <Search className="w-3.5 h-3.5" />, status: '실측요청' },
-                { label: '실측진행', color: 'bg-blue-500', icon: <Search className="w-3.5 h-3.5" />, status: '실측진행' },
-                { label: '실측취소', color: 'bg-gray-500', icon: <XCircle className="w-3.5 h-3.5" />, status: '실측취소' },
-            ]
-        },
-        {
-            title: '최종견적단계',
-            color: 'text-teal-600',
-            bg: 'bg-teal-50',
-            items: [
-                { label: '최종견적요청', color: 'bg-teal-500', icon: <ClipboardList className="w-3.5 h-3.5" />, status: '최종견적요청' },
-                { label: '최종견적전달', color: 'bg-teal-600', icon: <ClipboardList className="w-3.5 h-3.5" />, status: '최종견적전달' },
-                { label: '수정견적전달', color: 'bg-orange-700', icon: <FileText className="w-3.5 h-3.5" />, status: '수정견적전달' },
-                { label: '재견적작업', color: 'bg-orange-600', icon: <RefreshCcw className="w-3.5 h-3.5" />, status: '재견적작업' },
-                { label: '견적후취소', color: 'bg-red-700', icon: <XCircle className="w-3.5 h-3.5" />, status: '견적후취소' },
-            ]
-        },
-        {
-            title: '계약단계',
-            color: 'text-emerald-600',
-            bg: 'bg-emerald-50',
-            items: [
-                { label: '최종고민중', color: 'bg-yellow-600', icon: <Clock className="w-3.5 h-3.5" />, status: '최종고민중' },
-                { label: '계약진행', color: 'bg-emerald-500', icon: <CheckCircle2 className="w-3.5 h-3.5" />, status: '계약진행' },
-                { label: '결제완료', color: 'bg-emerald-600', icon: <CheckCircle2 className="w-3.5 h-3.5" />, status: '결제완료' },
-                { label: '공사완료', color: 'bg-green-600', icon: <CheckCircle2 className="w-3.5 h-3.5" />, status: '공사완료' },
-            ]
-        }
-    ], []);
-
-    // Calculate group totals
-    const groupStats = useMemo(() => {
-        return statusGroups.map(group => {
-            const total = group.items.reduce((acc, item) => acc + (customerStats[item.status] || 0), 0);
-            return { title: group.title, total };
-        });
-    }, [customerStats, statusGroups]);
 
     return (
         <div className="space-y-12 relative">
@@ -332,7 +276,7 @@ export default function AdminDashboard() {
 
                 {/* Status Grid */}
                 <div className="grid grid-cols-1 gap-6">
-                    {/* Simple Top Stats (No icons, just numbers) */}
+                    {/* Top Stats Overview */}
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                         <button
                             onClick={() => router.push('/admin/customers')}
@@ -346,47 +290,55 @@ export default function AdminDashboard() {
                             </div>
                         </button>
 
-                        {statusGroups.map((group, idx) => (
+                        {/* Top 4 populated statuses */}
+                        {topStatuses.map((status, idx) => (
                             <div
                                 key={idx}
-                                className="bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-32"
+                                className="bg-white px-6 py-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group cursor-pointer hover:border-blue-100 transition-colors"
+                                onClick={() => router.push(`/admin/customers?status=${status.name}`)}
                             >
-                                <span className="text-sm font-bold text-gray-400">{group.title}</span>
-                                <div className={`text-5xl font-black tracking-tighter ${group.color} tabular-nums`}>
-                                    {groupStats[idx].total}
+                                <div className="absolute top-0 right-0 w-2 h-full opacity-20" style={{ backgroundColor: status.color }} />
+                                <span className="text-sm font-bold text-gray-500 truncate" title={status.name}>{status.name}</span>
+                                <div className="text-5xl font-black tracking-tighter text-gray-900 tabular-nums">
+                                    {status.count}
                                 </div>
+                            </div>
+                        ))}
+                        {/* Fill empty spots if less than 4 top statuses */}
+                        {Array.from({ length: Math.max(0, 4 - topStatuses.length) }).map((_, idx) => (
+                            <div key={`empty-${idx}`} className="bg-white/50 px-6 py-6 rounded-2xl border border-dashed border-gray-200 shadow-sm flex flex-col justify-center h-32 items-center text-gray-400 text-xs text-center">
+                                빈 상태
                             </div>
                         ))}
                     </div>
 
-                    {/* Cleaner Detailed Status List */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                        {statusGroups.map((group, gIdx) => (
-                            <div key={gIdx} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                                <div className="text-base font-black text-gray-900 mb-5 pb-3 border-b border-gray-100 flex justify-between items-center">
-                                    {group.title}
-                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${group.bg} ${group.color}`}>
-                                        {loading ? '-' : groupStats[gIdx].total}
+                    {/* Detailed Status List (Dynamic Grid) */}
+                    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+                            <h3 className="text-lg font-black text-gray-900">전체 진행현황</h3>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                                {dbStatuses?.length || 0}개 항목
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {dbStatuses?.map((s: any, idx: number) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => router.push(`/admin/customers?status=${s.name}`)}
+                                    className="flex items-center justify-between group hover:bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-100/50 hover:border-gray-200 transition-all text-left"
+                                >
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                                        <span className="text-sm text-gray-600 font-medium truncate group-hover:text-gray-900 transition-colors">
+                                            {s.name}
+                                        </span>
+                                    </div>
+                                    <span className={`text-sm font-black tabular-nums shrink-0 pl-2 ${customerStats[s.name] ? 'text-gray-900' : 'text-gray-300'}`}>
+                                        {loading ? '-' : customerStats[s.name] || 0}
                                     </span>
-                                </div>
-                                <div className="space-y-3">
-                                    {group.items.map((item, iIdx) => (
-                                        <button
-                                            key={iIdx}
-                                            onClick={() => router.push(`/admin/customers?status=${item.status}`)}
-                                            className="w-full flex items-center justify-between group hover:bg-gray-50 px-2.5 py-2 rounded-lg -mx-2.5 transition-colors"
-                                        >
-                                            <span className="text-sm text-gray-500 font-medium group-hover:text-gray-900 transition-colors">
-                                                {item.label}
-                                            </span>
-                                            <span className={`text-sm font-bold tabular-nums ${customerStats[item.status] ? 'text-gray-900' : 'text-gray-300'}`}>
-                                                {loading ? '-' : customerStats[item.status] || 0}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
