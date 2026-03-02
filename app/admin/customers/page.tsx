@@ -1000,9 +1000,14 @@ function BadgeLink({ href, color, label }: { href: string | undefined, color: st
         green: href ? 'bg-green-50 text-green-600 border-green-100 shadow-green-100' : 'bg-gray-50 text-gray-200 border-gray-50',
     };
 
+    let formattedHref = href;
+    if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
+        formattedHref = `http://${formattedHref}`;
+    }
+
     return (
         <a
-            href={href}
+            href={formattedHref}
             target="_blank"
             rel="noreferrer"
             onClick={(e) => !href && e.preventDefault()}

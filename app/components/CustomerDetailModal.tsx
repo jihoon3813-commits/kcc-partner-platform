@@ -254,6 +254,11 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     const renderLinkButtons = (label: string, key: string, colorClass: string) => {
         const hasLink = !!formData[key];
 
+        let formattedHref = String(formData[key] || '');
+        if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
+            formattedHref = `http://${formattedHref}`;
+        }
+
         return (
             <div className="space-y-1">
                 <span className="text-[10px] text-gray-400 font-medium">{label}</span>
@@ -261,7 +266,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     {hasLink ? (
                         <>
                             <a
-                                href={String(formData[key] || '')}
+                                href={formattedHref}
                                 target="_blank"
                                 rel="noreferrer"
                                 className={`flex-1 py-2 rounded border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm`}
