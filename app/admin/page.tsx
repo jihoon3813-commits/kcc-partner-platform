@@ -47,6 +47,7 @@ export default function AdminDashboard() {
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
     const [customStartDate, setCustomStartDate] = useState(format(subMonths(new Date(), 3), 'yyyy-MM-dd'));
     const [customEndDate, setCustomEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Loading State
     const loading = convexCustomers === undefined || convexPartners === undefined || dbStatuses === undefined;
@@ -212,8 +213,15 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-3">
                         대시보드
                         <div className="flex items-center gap-2">
-                            <button onClick={() => { }} className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${loading ? 'animate-spin' : ''}`} title="자동 동기화 중">
-                                <RefreshCcw className="w-5 h-5 text-gray-400" />
+                            <button
+                                className={`p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all ${isRefreshing ? 'animate-spin text-blue-500' : ''}`}
+                                onClick={() => {
+                                    setIsRefreshing(true);
+                                    setTimeout(() => window.location.reload(), 800);
+                                }}
+                                title="새로고침"
+                            >
+                                <RefreshCcw className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={async () => {
@@ -398,6 +406,17 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            {isRefreshing && (
+                <div className="fixed inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-blue-100 rounded-full animate-spin border-t-blue-600 shadow-xl shadow-blue-500/10"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <RefreshCcw className="w-6 h-6 text-blue-600 animate-pulse" />
+                        </div>
+                    </div>
+                    <p className="mt-4 text-blue-900 font-black text-lg tracking-tighter uppercase italic animate-pulse">Refreshing Page...</p>
+                </div>
+            )}
         </div>
     );
 }

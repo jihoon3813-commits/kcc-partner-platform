@@ -16,6 +16,7 @@ export default function AdminLogsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
@@ -75,10 +76,13 @@ export default function AdminLogsPage() {
                     <p className="text-gray-500">시스템 내 모든 주요 활동 기록을 모니터링합니다.</p>
                 </div>
                 <button
-                    onClick={fetchData}
-                    className="bg-white border px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 flex items-center gap-2"
+                    onClick={() => {
+                        setIsRefreshing(true);
+                        setTimeout(() => window.location.reload(), 800);
+                    }}
+                    className={`bg-white border px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 flex items-center gap-2 ${isRefreshing ? 'text-blue-500' : ''}`}
                 >
-                    <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> 새로고침
+                    <RefreshCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 새로고침
                 </button>
             </div>
 
@@ -189,6 +193,18 @@ export default function AdminLogsPage() {
                     </table>
                 </div>
             </div>
+
+            {isRefreshing && (
+                <div className="fixed inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-blue-100 rounded-full animate-spin border-t-blue-600 shadow-xl shadow-blue-500/10"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <RefreshCcw className="w-6 h-6 text-blue-600 animate-pulse" />
+                        </div>
+                    </div>
+                    <p className="mt-4 text-blue-900 font-black text-lg tracking-tighter uppercase italic animate-pulse">Refreshing Page...</p>
+                </div>
+            )}
         </div>
     );
 }

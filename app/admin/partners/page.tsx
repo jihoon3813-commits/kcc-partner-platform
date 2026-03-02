@@ -26,6 +26,7 @@ export default function PartnersPage() {
     const [partners, setPartners] = useState<Partner[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     // 폼 상태
     const [formData, setFormData] = useState({
@@ -285,10 +286,13 @@ export default function PartnersPage() {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={fetchData}
-                        className="bg-white border px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 flex items-center gap-2"
+                        onClick={() => {
+                            setIsRefreshing(true);
+                            setTimeout(() => window.location.reload(), 800);
+                        }}
+                        className={`bg-white border px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 flex items-center gap-2 ${isRefreshing ? 'text-blue-500' : ''}`}
                     >
-                        <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> 새로고침
+                        <RefreshCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} /> 새로고침
                     </button>
                     <button
                         onClick={() => {
@@ -608,6 +612,18 @@ export default function PartnersPage() {
                             <DaumPostcode onComplete={handleCompleteAddress} className="h-full" />
                         </div>
                     </div>
+                </div>
+            )}
+
+            {isRefreshing && (
+                <div className="fixed inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-blue-100 rounded-full animate-spin border-t-blue-600 shadow-xl shadow-blue-500/10"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <RefreshCcw className="w-6 h-6 text-blue-600 animate-pulse" />
+                        </div>
+                    </div>
+                    <p className="mt-4 text-blue-900 font-black text-lg tracking-tighter uppercase italic animate-pulse">Refreshing Page...</p>
                 </div>
             )}
         </div>

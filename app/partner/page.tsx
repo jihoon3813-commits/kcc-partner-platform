@@ -38,6 +38,7 @@ export default function PartnerDashboard() {
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {

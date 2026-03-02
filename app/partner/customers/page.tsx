@@ -43,6 +43,7 @@ function PartnerCustomersContent() {
 
     const [partnerSession, setPartnerSession] = useState<{ id: string; name: string } | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -272,8 +273,11 @@ function PartnerCustomersContent() {
                         )}
 
                         <button
-                            onClick={fetchData}
-                            className={`p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all ${loading ? 'animate-spin' : ''}`}
+                            className={`p-2.5 bg-gray-50 text-gray-400 rounded-xl hover:bg-gray-100 transition-all ${isRefreshing ? 'animate-spin text-blue-500' : ''}`}
+                            onClick={() => {
+                                setIsRefreshing(true);
+                                setTimeout(() => window.location.reload(), 800);
+                            }}
                             title="새로고침"
                         >
                             <RefreshCcw className="w-5 h-5" />
@@ -539,6 +543,18 @@ function PartnerCustomersContent() {
                     currentUser={partnerName}
                     readOnly={false}
                 />
+            )}
+
+            {isRefreshing && (
+                <div className="fixed inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-blue-100 rounded-full animate-spin border-t-blue-600 shadow-xl shadow-blue-500/10"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <RefreshCcw className="w-6 h-6 text-blue-600 animate-pulse" />
+                        </div>
+                    </div>
+                    <p className="mt-4 text-blue-900 font-black text-lg tracking-tighter uppercase italic animate-pulse">Refreshing Page...</p>
+                </div>
             )}
         </div>
     );
