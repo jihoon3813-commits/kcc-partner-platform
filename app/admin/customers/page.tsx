@@ -73,7 +73,6 @@ function AdminCustomersContent() {
     const batchDelete = useMutation(api.customers.batchDelete);
     const duplicateCustomerMutation = useMutation(api.customers.duplicateCustomer);
     const normalizeSorting = useMutation(api.customers.normalizeSorting);
-    const deleteGarbageCustomers = useMutation(api.customers.deleteGarbageCustomers);
 
     // Fetch dynamic settings
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -634,24 +633,6 @@ function AdminCustomersContent() {
                             <ListOrdered className="w-3.5 h-3.5" />
                         )}
                         {isNormalizing ? '정렬 동기화 중...' : '정렬 번호순 초기화'}
-                    </button>
-
-                    <button
-                        onClick={async () => {
-                            if (!confirm('날짜 정보가 없는 잔류 데이터(20건)를 영구 삭제하시겠습니까?')) return;
-                            try {
-                                const result = await deleteGarbageCustomers({});
-                                alert(`성공: ${result.deletedCount}명의 잔류 데이터가 삭제되었습니다.`);
-                                window.location.reload();
-                            } catch (err: any) {
-                                alert(`오류: ${err.message || err.toString()}`);
-                            }
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-lg text-xs font-black border border-orange-100 hover:bg-orange-100 transition-all"
-                        title="날짜 정보가 없는 유령 데이터를 정리합니다."
-                    >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        잔류 데이터(20건) 정리
                     </button>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
