@@ -508,15 +508,15 @@ function AdminCustomersContent() {
 
                         <button
                             onClick={downloadSampleCsv}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all border border-gray-200"
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-black hover:bg-gray-200 transition-all border border-gray-200 active:scale-95"
                             title="샘플 양식 다운로드"
                         >
-                            <Download className="w-3.5 h-3.5" />
+                            <Download className="w-4 h-4" />
                             양식 다운로드
                         </button>
 
-                        <label className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-100 cursor-pointer hover:bg-indigo-700 transition-all ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                            <Upload className="w-3.5 h-3.5" />
+                        <label className={`flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-black shadow-lg shadow-indigo-200 cursor-pointer hover:bg-indigo-700 transition-all active:scale-95 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <Upload className="w-4 h-4" />
                             {isUploading ? '등록 중...' : 'CSV 일괄 등록'}
                             <input type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
                         </label>
