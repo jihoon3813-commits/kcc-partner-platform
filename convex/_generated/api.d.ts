@@ -11,7 +11,6 @@
 import type * as admins from "../admins.js";
 import type * as contracts from "../contracts.js";
 import type * as customers from "../customers.js";
-import type * as debug from "../debug.js";
 import type * as estimates from "../estimates.js";
 import type * as init from "../init.js";
 import type * as installmentApplications from "../installmentApplications.js";
@@ -32,7 +31,6 @@ declare const fullApi: ApiFromModules<{
   admins: typeof admins;
   contracts: typeof contracts;
   customers: typeof customers;
-  debug: typeof debug;
   estimates: typeof estimates;
   init: typeof init;
   installmentApplications: typeof installmentApplications;
