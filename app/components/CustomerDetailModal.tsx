@@ -298,22 +298,22 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
-            <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden font-sans">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 sm:p-4 animate-in fade-in duration-200">
+            <div className="bg-gray-100 sm:rounded-xl shadow-2xl w-full max-w-6xl h-full sm:h-[85vh] flex flex-col overflow-hidden font-sans">
 
                 {/* 1. Header Area */}
-                <div className="bg-[#1e293b] text-white px-6 py-5 flex justify-between items-start shrink-0">
+                <div className="bg-[#1e293b] text-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row justify-between items-start gap-4 shrink-0">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1 min-h-[32px]">
                             {isHeaderEditing ? (
                                 <input
                                     type="text"
-                                    className="bg-slate-700 border-slate-600 text-white rounded px-2 py-1 font-bold text-xl outline-none focus:ring-1 w-48"
+                                    className="bg-slate-700 border-slate-600 text-white rounded px-2 py-1 font-bold text-xl outline-none focus:ring-1 w-full sm:w-48"
                                     value={formData['고객명'] || ''}
                                     onChange={(e) => setFormData({ ...formData, '고객명': e.target.value })}
                                 />
                             ) : (
-                                <h2 className="text-2xl font-bold tracking-tight">{formData['고객명']}</h2>
+                                <h2 className="text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap">{formData['고객명']}</h2>
                             )}
 
                             <div className="flex items-center gap-2 bg-slate-700/50 rounded-lg px-2 py-1 border border-slate-600">
@@ -356,23 +356,23 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             )}
                         </div>
 
-                        <div className="flex items-center gap-4 text-sm text-slate-400 font-light mt-2 h-6">
-                            <div className="flex items-center gap-1.5 flex-1 max-w-xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-400 font-light mt-1 sm:mt-2">
+                            <div className="flex items-center gap-1.5 shrink-0">
                                 <Phone className="w-3.5 h-3.5 shrink-0" />
                                 {isHeaderEditing ? (
                                     <input
                                         type="text"
-                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-xs outline-none focus:ring-1 w-full"
+                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-xs outline-none focus:ring-1 w-32"
                                         value={formData['연락처'] || ''}
                                         onChange={(e) => setFormData({ ...formData, '연락처': e.target.value })}
                                         placeholder="연락처"
                                     />
                                 ) : (
-                                    <span>{formData['연락처']}</span>
+                                    <span className="whitespace-nowrap">{formData['연락처']}</span>
                                 )}
                             </div>
-                            <div className="w-px h-3 bg-slate-600 shrink-0"></div>
-                            <div className="flex items-center gap-1.5 flex-1">
+                            <div className="hidden sm:block w-px h-3 bg-slate-600 shrink-0"></div>
+                            <div className="flex items-center gap-1.5 min-w-0">
                                 <MapPin className="w-3.5 h-3.5 shrink-0" />
                                 {isHeaderEditing ? (
                                     <input
@@ -383,7 +383,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         placeholder="주소"
                                     />
                                 ) : (
-                                    <span>{formData['주소']}</span>
+                                    <span className="truncate">{formData['주소']}</span>
                                 )}
                             </div>
                         </div>
@@ -409,10 +409,10 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                 </div>
 
                 {/* 2. Main Content */}
-                <div className="flex-1 flex overflow-hidden">
+                <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
 
                     {/* Left Sidebar */}
-                    <div className="w-96 bg-white border-r border-gray-200 overflow-y-auto p-5 shrink-0 flex flex-col gap-5">
+                    <div className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 lg:overflow-y-auto p-4 sm:p-5 shrink-0 flex flex-col gap-4 sm:gap-5">
 
                         {/* Status Card */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
@@ -517,7 +517,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     </div>
 
                     {/* Right Content Area (Logs) */}
-                    <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0">
+                    <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0 min-h-[400px] lg:min-h-0">
                         {/* Tabs */}
                         <div className="flex bg-white border-b border-gray-200 px-6">
                             {[
