@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy, Download } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
 import DirectCustomerModal from '@/app/components/DirectCustomerModal';
+import ExcelDownloadModal from '@/app/components/ExcelDownloadModal';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -42,6 +43,7 @@ function AdminCustomersContent() {
 
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isDirectModalOpen, setIsDirectModalOpen] = useState(false);
+    const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -521,10 +523,18 @@ function AdminCustomersContent() {
 
                         <button
                             onClick={() => setIsDirectModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-200 transition-all active:scale-95"
                         >
-                            <UserPlus className="w-3.5 h-3.5" />
-                            고객 직접등록
+                            <UserPlus className="w-4 h-4" />
+                            고객 직접 등록
+                        </button>
+
+                        <button
+                            onClick={() => setIsExcelModalOpen(true)}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                        >
+                            <Download className="w-4 h-4" />
+                            엑셀 다운로드
                         </button>
 
                         <button
@@ -943,6 +953,14 @@ function AdminCustomersContent() {
             <DirectCustomerModal
                 isOpen={isDirectModalOpen}
                 onClose={() => setIsDirectModalOpen(false)}
+            />
+
+            <ExcelDownloadModal
+                isOpen={isExcelModalOpen}
+                onClose={() => setIsExcelModalOpen(false)}
+                data={allMappedCustomers}
+                filename="고객관리리스트"
+                dateField="신청일"
             />
         </div>
     );

@@ -2,13 +2,15 @@
 
 import { useState, useMemo, Suspense } from 'react';
 
-import { Search, FileText, RefreshCcw, MapPin, Trash2, ListOrdered } from 'lucide-react';
+import { Search, FileText, RefreshCcw, MapPin, Trash2, ListOrdered, Download } from 'lucide-react';
 import ContractDetailModal, { Customer } from '@/app/components/ContractDetailModal';
+import ExcelDownloadModal from '@/app/components/ExcelDownloadModal';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
 function AdminContractsContent() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
     const deleteContractMutation = useMutation(api.contracts.deleteContract);
     const updateCustomerMutation = useMutation(api.customers.updateCustomer);
@@ -217,6 +219,14 @@ function AdminContractsContent() {
                         >
                             <RefreshCcw className="w-5 h-5" />
                         </button>
+
+                        <button
+                            onClick={() => setIsExcelModalOpen(true)}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                        >
+                            <Download className="w-4 h-4" />
+                            엑셀 다운로드
+                        </button>
                     </div>
                 </div>
 
@@ -420,6 +430,14 @@ function AdminContractsContent() {
                 isOpen={!!selectedCustomer}
                 onClose={() => setSelectedCustomer(null)}
                 customer={selectedCustomer}
+            />
+
+            <ExcelDownloadModal
+                isOpen={isExcelModalOpen}
+                onClose={() => setIsExcelModalOpen(false)}
+                data={allMappedCustomers}
+                filename="계약관리리스트"
+                dateField="contractDate"
             />
         </div>
     );
