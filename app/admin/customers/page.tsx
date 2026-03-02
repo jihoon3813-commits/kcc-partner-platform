@@ -119,6 +119,8 @@ function AdminCustomersContent() {
                 '시공일자': c.construct_date || '',
                 '가견적 금액': c.price_pre || 0,
                 '최종견적 금액': c.price_final || 0,
+                '_creationTime': c._creationTime,
+                'updatedAt': c.updatedAt,
             };
         });
     }, [convexCustomers]);
