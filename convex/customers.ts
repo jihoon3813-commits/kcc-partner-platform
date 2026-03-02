@@ -189,7 +189,7 @@ export const batchCreate = mutation({
                 no: finalNo,
                 status: customer.status || "접수",
                 label: customer.label || "일반",
-                updatedAt: 1, // Sentinel: Unified color to gray
+                // updatedAt을 생략하여 _creationTime만으로 최신 등록건 판단(분류기 파란색 띠 표시)
             });
         }
         return { success: true, count: args.customers.length };
