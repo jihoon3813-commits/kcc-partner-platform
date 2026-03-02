@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Plus, Trash2, GripVertical, Save, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Save, RefreshCw, ChevronUp, ChevronDown } from 'lucide-react';
+import { Reorder } from "framer-motion";
+import { useEffect } from 'react';
 
 export default function SettingsPage() {
     const labels = useQuery(api.settings.getLabels) || [];
@@ -37,6 +39,15 @@ export default function SettingsPage() {
     const [newAuthorName, setNewAuthorName] = useState('');
     const [newAuthorType, setNewAuthorType] = useState<'progress' | 'feedback'>('progress');
 
+    // Local states for smooth reordering
+    const [localLabels, setLocalLabels] = useState<any[]>([]);
+    const [localStatuses, setLocalStatuses] = useState<any[]>([]);
+    const [localAuthors, setLocalAuthors] = useState<any[]>([]);
+
+    useEffect(() => { if (labels.length > 0) setLocalLabels(labels); }, [labels]);
+    useEffect(() => { if (statuses.length > 0) setLocalStatuses(statuses); }, [statuses]);
+    useEffect(() => { if (authors.length > 0) setLocalAuthors(authors); }, [authors]);
+
     const handleAddLabel = async () => {
         if (!newLabelName.trim()) return;
         await addLabel({ name: newLabelName, color: newLabelColor });
@@ -62,32 +73,43 @@ export default function SettingsPage() {
         }
     };
 
+    const reorderLabels = async (newOrder: any[]) => {
+        setLocalLabels(newOrder);
+        await updateLabelOrders({ orders: newOrder.map((l, i) => ({ id: l._id, order: i })) });
+    };
+
+    const reorderStatuses = async (newOrder: any[]) => {
+        setLocalStatuses(newOrder);
+        await updateStatusOrders({ orders: newOrder.map((s, i) => ({ id: s._id, order: i })) });
+    };
+
+    const reorderAuthors = async (newOrder: any[]) => {
+        setLocalAuthors(newOrder);
+        await updateAuthorOrders({ orders: newOrder.map((a, i) => ({ id: a._id, order: i })) });
+    };
+
     const moveItem = async (type: 'label' | 'status' | 'author', index: number, direction: -1 | 1) => {
         if (type === 'label') {
-            if (index + direction < 0 || index + direction >= labels.length) return;
-            const newOrder = [...labels];
+            if (index + direction < 0 || index + direction >= localLabels.length) return;
+            const newOrder = [...localLabels];
             const temp = newOrder[index];
             newOrder[index] = newOrder[index + direction];
             newOrder[index + direction] = temp;
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await updateLabelOrders({ orders: newOrder.map((l, i) => ({ id: l._id as any, order: i })) });
+            reorderLabels(newOrder);
         } else if (type === 'status') {
-            if (index + direction < 0 || index + direction >= statuses.length) return;
-            const newOrder = [...statuses];
+            if (index + direction < 0 || index + direction >= localStatuses.length) return;
+            const newOrder = [...localStatuses];
             const temp = newOrder[index];
             newOrder[index] = newOrder[index + direction];
             newOrder[index + direction] = temp;
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await updateStatusOrders({ orders: newOrder.map((s, i) => ({ id: s._id as any, order: i })) });
+            reorderStatuses(newOrder);
         } else {
-            if (index + direction < 0 || index + direction >= authors.length) return;
-            const newOrder = [...authors];
+            if (index + direction < 0 || index + direction >= localAuthors.length) return;
+            const newOrder = [...localAuthors];
             const temp = newOrder[index];
             newOrder[index] = newOrder[index + direction];
             newOrder[index + direction] = temp;
-            await updateAuthorOrders({ orders: newOrder.map((a, i) => ({ id: a._id as any, order: i })) });
+            reorderAuthors(newOrder);
         }
     };
 
@@ -138,43 +160,52 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="space-y-2">
-                        {labels.map((label: any, index: number) => (
-                            <div key={label._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <div className="flex flex-col gap-1">
-                                    <button onClick={() => moveItem('label', index, -1)} className="text-gray-400 hover:text-gray-900"><GripVertical className="w-4 h-4" /></button>
-                                </div>
-                                <div className="w-4 h-4 rounded-full flex-shrink-0 border border-black/10" style={{ backgroundColor: label.color }}></div>
-                                <input
-                                    type="text"
-                                    className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none"
-                                    defaultValue={label.name}
-                                    onBlur={(e) => {
-                                        if (e.target.value !== label.name) {
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            updateLabel({ id: label._id as any, name: e.target.value, color: label.color });
-                                        }
-                                    }}
-                                />
-                                <input
-                                    type="color"
-                                    className="w-8 h-8 rounded shrink-0 p-0 cursor-pointer border-none"
-                                    defaultValue={label.color}
-                                    onBlur={(e) => {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        if (e.target.value !== label.color) updateLabel({ id: label._id as any, name: label.name, color: e.target.value });
-                                    }}
-                                />
-                                <button
-                                    onClick={() => {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        if (confirm('이 라벨을 삭제하시겠습니까?')) deleteLabel({ id: label._id as any });
-                                    }}
-                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        <Reorder.Group axis="y" values={localLabels} onReorder={reorderLabels} className="space-y-2">
+                            {localLabels.map((label: any, index: number) => (
+                                <Reorder.Item
+                                    key={label._id}
+                                    value={label}
+                                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 cursor-grab active:cursor-grabbing hover:border-blue-200 transition-colors shadow-sm"
                                 >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
+                                    <div className="flex flex-col gap-0.5 shrink-0">
+                                        <button onClick={() => moveItem('label', index, -1)} className="text-gray-300 hover:text-blue-600 transition-colors"><ChevronUp className="w-3.5 h-3.5" /></button>
+                                        <GripVertical className="w-4 h-4 text-gray-400 mx-auto" />
+                                        <button onClick={() => moveItem('label', index, 1)} className="text-gray-300 hover:text-blue-600 transition-colors"><ChevronDown className="w-3.5 h-3.5" /></button>
+                                    </div>
+                                    <div className="w-4 h-4 rounded-full flex-shrink-0 border border-black/10" style={{ backgroundColor: label.color }}></div>
+                                    <input
+                                        type="text"
+                                        className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none cursor-text"
+                                        defaultValue={label.name}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onBlur={(e) => {
+                                            if (e.target.value !== label.name) {
+                                                updateLabel({ id: label._id, name: e.target.value, color: label.color });
+                                            }
+                                        }}
+                                    />
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <input
+                                            type="color"
+                                            className="w-8 h-8 rounded shrink-0 p-0 cursor-pointer border-none bg-transparent"
+                                            defaultValue={label.color}
+                                            onBlur={(e) => {
+                                                if (e.target.value !== label.color) updateLabel({ id: label._id, name: label.name, color: e.target.value });
+                                            }}
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (confirm('이 라벨을 삭제하시겠습니까?')) deleteLabel({ id: label._id });
+                                        }}
+                                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </Reorder.Item>
+                            ))}
+                        </Reorder.Group>
                     </div>
                 </div>
 
@@ -208,43 +239,52 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="space-y-2">
-                        {statuses.map((status: any, index: number) => (
-                            <div key={status._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <div className="flex flex-col gap-1">
-                                    <button onClick={() => moveItem('status', index, -1)} className="text-gray-400 hover:text-gray-900"><GripVertical className="w-4 h-4" /></button>
-                                </div>
-                                <div className="w-4 h-4 rounded-full flex-shrink-0 border border-black/10" style={{ backgroundColor: status.color }}></div>
-                                <input
-                                    type="text"
-                                    className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none"
-                                    defaultValue={status.name}
-                                    onBlur={(e) => {
-                                        if (e.target.value !== status.name) {
-                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            updateStatus({ id: status._id as any, name: e.target.value, color: status.color });
-                                        }
-                                    }}
-                                />
-                                <input
-                                    type="color"
-                                    className="w-8 h-8 rounded shrink-0 p-0 cursor-pointer border-none"
-                                    defaultValue={status.color}
-                                    onBlur={(e) => {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        if (e.target.value !== status.color) updateStatus({ id: status._id as any, name: status.name, color: e.target.value });
-                                    }}
-                                />
-                                <button
-                                    onClick={() => {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        if (confirm('이 진행구분을 삭제하시겠습니까?')) deleteStatus({ id: status._id as any });
-                                    }}
-                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        <Reorder.Group axis="y" values={localStatuses} onReorder={reorderStatuses} className="space-y-2">
+                            {localStatuses.map((status: any, index: number) => (
+                                <Reorder.Item
+                                    key={status._id}
+                                    value={status}
+                                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 cursor-grab active:cursor-grabbing hover:border-blue-200 transition-colors shadow-sm"
                                 >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
+                                    <div className="flex flex-col gap-0.5 shrink-0">
+                                        <button onClick={() => moveItem('status', index, -1)} className="text-gray-300 hover:text-blue-600 transition-colors"><ChevronUp className="w-3.5 h-3.5" /></button>
+                                        <GripVertical className="w-4 h-4 text-gray-400 mx-auto" />
+                                        <button onClick={() => moveItem('status', index, 1)} className="text-gray-300 hover:text-blue-600 transition-colors"><ChevronDown className="w-3.5 h-3.5" /></button>
+                                    </div>
+                                    <div className="w-4 h-4 rounded-full flex-shrink-0 border border-black/10" style={{ backgroundColor: status.color }}></div>
+                                    <input
+                                        type="text"
+                                        className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none cursor-text"
+                                        defaultValue={status.name}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onBlur={(e) => {
+                                            if (e.target.value !== status.name) {
+                                                updateStatus({ id: status._id, name: e.target.value, color: status.color });
+                                            }
+                                        }}
+                                    />
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <input
+                                            type="color"
+                                            className="w-8 h-8 rounded shrink-0 p-0 cursor-pointer border-none bg-transparent"
+                                            defaultValue={status.color}
+                                            onBlur={(e) => {
+                                                if (e.target.value !== status.color) updateStatus({ id: status._id, name: status.name, color: e.target.value });
+                                            }}
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (confirm('이 진행구분을 삭제하시겠습니까?')) deleteStatus({ id: status._id });
+                                        }}
+                                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </Reorder.Item>
+                            ))}
+                        </Reorder.Group>
                     </div>
                 </div>
             </div>
@@ -280,36 +320,44 @@ export default function SettingsPage() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {authors.map((author: any, index: number) => (
-                        <div key={author._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 transition-all hover:border-gray-200">
-                            <div className="flex flex-col gap-1">
-                                <button onClick={() => moveItem('author', index, -1)} className="text-gray-400 hover:text-gray-900"><GripVertical className="w-4 h-4" /></button>
+                <Reorder.Group axis="y" values={localAuthors} onReorder={reorderAuthors} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {localAuthors.map((author: any, index: number) => (
+                        <Reorder.Item
+                            key={author._id}
+                            value={author}
+                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 transition-all hover:border-blue-200 cursor-grab active:cursor-grabbing shadow-sm"
+                        >
+                            <div className="flex flex-col gap-0.5 shrink-0">
+                                <button onClick={() => moveItem('author', index, -1)} className="text-gray-300 hover:text-blue-600 transition-colors"><ChevronUp className="w-3.5 h-3.5" /></button>
+                                <GripVertical className="w-4 h-4 text-gray-400 mx-auto" />
+                                <button onClick={() => moveItem('author', index, 1)} className="text-gray-300 hover:text-blue-600 transition-colors"><ChevronDown className="w-3.5 h-3.5" /></button>
                             </div>
                             <div className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${author.type === 'progress' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
                                 {author.type === 'progress' ? '진행' : '피드백'}
                             </div>
                             <input
                                 type="text"
-                                className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none"
+                                className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none cursor-text"
                                 defaultValue={author.name}
+                                onClick={(e) => e.stopPropagation()}
                                 onBlur={(e) => {
                                     if (e.target.value !== author.name) {
-                                        updateAuthor({ id: author._id as any, name: e.target.value, type: author.type });
+                                        updateAuthor({ id: author._id, name: e.target.value, type: author.type });
                                     }
                                 }}
                             />
                             <button
-                                onClick={() => {
-                                    if (confirm(`${author.name} 담당자를 삭제하시겠습니까?`)) deleteAuthor({ id: author._id as any });
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (confirm(`${author.name} 담당자를 삭제하시겠습니까?`)) deleteAuthor({ id: author._id });
                                 }}
                                 className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
-                        </div>
+                        </Reorder.Item>
                     ))}
-                </div>
+                </Reorder.Group>
             </div>
         </div>
     );
