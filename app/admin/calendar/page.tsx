@@ -9,31 +9,35 @@ import { CalendarDays } from "lucide-react";
 export default function AdminCalendarPage() {
     // Convex API에서 고객 목록 가져오기
     const convexCustomers = useQuery(api.customers.listCustomers);
+    const convexContracts = useQuery(api.contracts.getContracts);
 
     // 달력용 데이터 가공
     const calendarData = useMemo(() => {
-        if (!convexCustomers) return [];
+        if (!convexCustomers || !convexContracts) return [];
 
-        return convexCustomers.map(c => ({
-            ...c,
-            id: c._id, // Modal 연동 등을 위해 id 제공
-            'No.': c.no || '-',
-            '고객명': c.name || '',
-            '주소': c.address || '',
-            '시공일자': c.construct_date || '',
-            '진행구분': c.status || '접수',
-            '유입채널': c.channel || '',
-            '연락처': c.contact || '',
-            '신청일': c.created_at || '',
-            '라벨': c.label || '',
-            'KCC 피드백': c.feedback || '',
-            '진행현황(상세)_최근': c.progress_detail || '',
-            '실측일자': c.measure_date || '',
-            '가견적 금액': c.price_pre || 0,
-            '최종견적 금액': c.price_final || 0,
-            updatedAt: c.updatedAt
-        }));
-    }, [convexCustomers]);
+        return convexCustomers.map(c => {
+            const contract = convexContracts.find(con => con.customerId === c._id);
+            return {
+                ...c,
+                id: c._id, // Modal 연동 등을 위해 id 제공
+                'No.': c.no || '-',
+                '고객명': c.name || '',
+                '주소': c.address || '',
+                '시공일자': contract?.constructionDate || '',
+                '진행구분': c.status || '접수',
+                '유입채널': c.channel || '',
+                '연락처': c.contact || '',
+                '신청일': c.created_at || '',
+                '라벨': c.label || '',
+                'KCC 피드백': c.feedback || '',
+                '진행현황(상세)_최근': c.progress_detail || '',
+                '실측일자': c.measure_date || '',
+                '가견적 금액': c.price_pre || 0,
+                '최종견적 금액': c.price_final || 0,
+                updatedAt: c.updatedAt
+            };
+        });
+    }, [convexCustomers, convexContracts]);
 
     return (
         <div className="max-w-7xl mx-auto flex flex-col h-[calc(100vh-6rem)]">
@@ -52,7 +56,7 @@ export default function AdminCalendarPage() {
             </div>
 
             <div className="flex-1 min-h-0">
-                {convexCustomers === undefined ? (
+                {(convexCustomers === undefined || convexContracts === undefined) ? (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-100">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
                         <p className="text-gray-500 font-medium">일정 데이터를 불러오는 중...</p>
