@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText } from 'lucide-react';
+import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText, Star } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -184,9 +184,14 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         const type = activeTab === 'feedback' ? 'feedback' : 'progress';
 
         const today = new Date();
-        const dateStr = `[${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}]`;
-        const importantMark = isImportant ? '[중요] ' : '';
-        const logEntry = `${dateStr} ${selectedAuthor ? `[${selectedAuthor}]` : ''} ${importantMark}${newLogText}`;
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const hh = String(today.getHours()).padStart(2, '0');
+        const min = String(today.getMinutes()).padStart(2, '0');
+        const dateStr = `[${mm}-${dd} ${hh}:${min}]`;
+        const importantMark = isImportant ? '⭐ ' : '';
+        const authorMark = selectedAuthor ? `[${selectedAuthor}] ` : '';
+        const logEntry = `${dateStr} ${authorMark}${importantMark}${newLogText}`;
 
         let updatedLogs;
         if (type === 'progress') {
@@ -265,6 +270,35 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     if (!isOpen || !customer) return null;
 
     const currentLogs = activeTab === 'feedback' ? feedbackLogs : progressLogs;
+
+    const parseLog = (logText: string) => {
+        let dateStr = 'Today';
+        let content = logText.trim();
+        let isImportant = false;
+        let authorStr = '';
+
+        const dateMatch = content.match(/^(\[\d{2}-\d{2}(?:\s\d{2}:\d{2})?\])\s*/);
+        if (dateMatch) {
+            dateStr = dateMatch[1];
+            content = content.substring(dateMatch[0].length).trim();
+        }
+
+        const authorMatch = content.match(/^(\[.*?\])\s*/);
+        if (authorMatch && !authorMatch[0].includes('중요')) {
+            authorStr = authorMatch[1].replace(/\[|\]/g, '').trim();
+            content = content.substring(authorMatch[0].length).trim();
+        }
+
+        if (content.startsWith('[중요]')) {
+            isImportant = true;
+            content = content.substring(4).trim();
+        } else if (content.startsWith('⭐')) {
+            isImportant = true;
+            content = content.substring(1).trim();
+        }
+
+        return { dateStr, authorStr, isImportant, content };
+    };
 
     // 링크 렌더링 헬퍼
     const renderLinkButtons = (label: string, key: string, colorClass: string) => {
@@ -574,28 +608,35 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                     기록 없음
                                 </div>
                             ) : (
-                                currentLogs.map((log, idx) => (
-                                    <div key={idx} className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 flex gap-3 group">
-                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
-                                            <User className="w-5 h-5" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <div className="text-xs text-gray-400 mb-1 flex items-center gap-1">
-                                                    {log.startsWith('[') ? log.split(']')[0] + ']' : 'Today'}
-                                                </div>
-                                                {!readOnly && (
-                                                    <button onClick={() => handleDeleteLog(idx)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
-                                                )}
+                                currentLogs.map((log, idx) => {
+                                    const parsed = parseLog(log);
+                                    return (
+                                        <div key={idx} className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 flex gap-3 group">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
+                                                <User className="w-5 h-5" />
                                             </div>
-                                            <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
-                                                {log}
-                                            </p>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="text-xs text-gray-400 mb-1 flex items-center gap-1.5">
+                                                        <span>{parsed.dateStr}</span>
+                                                        {parsed.authorStr && <span className="font-medium text-gray-600">[{parsed.authorStr}]</span>}
+                                                    </div>
+                                                    {!readOnly && (
+                                                        <button onClick={() => handleDeleteLog(idx)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-gray-800 leading-relaxed w-full flex gap-1.5 items-start mt-0.5">
+                                                    {parsed.isImportant && (
+                                                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 shrink-0" />
+                                                    )}
+                                                    <p className="flex-1 min-w-0 whitespace-pre-wrap">{parsed.content}</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                             <div ref={scrollBottomRef} />
                         </div>

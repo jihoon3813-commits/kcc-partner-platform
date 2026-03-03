@@ -426,7 +426,7 @@ function PartnerCustomersContent() {
                                                                 String(customer['진행구분'])?.includes('접수') ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-100' :
                                                                     String(customer['진행구분'])?.includes('예약콜') ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-indigo-100' :
                                                                         String(customer['진행구분'])?.includes('실측요청') ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-100' :
-                                                                            String(customer['진행구분'])?.includes('가견적전달') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
+                                                                            String(customer['진행구분'])?.includes('가견적생성') ? 'bg-cyan-50 text-cyan-700 border-cyan-200 shadow-cyan-100' :
                                                                                 String(customer['진행구분'])?.includes('실측완료') ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-teal-100' :
                                                                                     String(customer['진행구분'])?.includes('거부') || String(customer['진행구분'])?.includes('부재') || String(customer['진행구분'])?.includes('취소') || String(customer['진행구분'])?.includes('등록해제') ? 'bg-gray-50 text-gray-500 border-gray-200 shadow-none' :
                                                                                         'bg-white text-blue-600 border-blue-600 shadow-blue-100') : ''

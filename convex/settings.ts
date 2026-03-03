@@ -17,9 +17,9 @@ export const syncFromCustomers = mutation({
         const defaultLabels = ['일반', '체크', '접수', '완료', '보류'];
         const defaultStatuses = [
             '접수', '부재', '예약콜', '거부',
-            '가견적요청', '가견적전달', '가견적불가', '사이즈요청',
+            '가견적요청', '가견적생성', '가견적불가', '사이즈요청',
             '실측요청', '실측진행', '실측취소',
-            '최종견적요청', '최종견적전달', '수정견적전달', '재견적작업', '견적후취소',
+            '최종견적요청', '최종견적생성', '수정견적전달', '재견적작업', '견적후취소',
             '최종고민중', '계약진행', '결제완료', '공사완료'
         ];
 
@@ -50,7 +50,7 @@ export const syncFromCustomers = mutation({
             else if (status.includes("부재") || status.includes("부재중")) color = "#94a3b8";
             else if (status.includes("예약콜")) color = "#4f46e5";
             else if (status.includes("실측요청")) color = "#f97316";
-            else if (status.includes("가견적전달")) color = "#06b6d4";
+            else if (status.includes("가견적생성")) color = "#06b6d4";
             else if (status.includes("실측완료")) color = "#14b8a6";
             else if (status.includes("거부") || status.includes("취소")) color = "#6b7280";
 
@@ -184,4 +184,40 @@ export const updateAuthorOrders = mutation({
             await ctx.db.patch(item.id, { order: item.order });
         }
     },
+});
+
+export const migrateStatusesData = mutation({
+    args: {},
+    handler: async (ctx) => {
+        let customerCount = 0;
+
+        // 1. Update customers table
+        const customers = await ctx.db.query("customers").collect();
+        for (const customer of customers) {
+            if (customer.status === "가견적전달") {
+                await ctx.db.patch(customer._id, { status: "가견적생성" });
+                customerCount++;
+            }
+            if (customer.status === "최종견적전달") {
+                await ctx.db.patch(customer._id, { status: "최종견적생성" });
+                customerCount++;
+            }
+        }
+
+        // 2. Update customerStatuses table mapping
+        let settingsCount = 0;
+        const existingStatuses = await ctx.db.query("customerStatuses").collect();
+        for (const s of existingStatuses) {
+            if (s.name === "가견적전달") {
+                await ctx.db.patch(s._id, { name: "가견적생성" });
+                settingsCount++;
+            }
+            if (s.name === "최종견적전달") {
+                await ctx.db.patch(s._id, { name: "최종견적생성" });
+                settingsCount++;
+            }
+        }
+
+        return { customerCount, settingsCount };
+    }
 });

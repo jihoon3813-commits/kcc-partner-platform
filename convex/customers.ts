@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const listCustomers = query({
     handler: async (ctx) => {
@@ -130,10 +131,26 @@ export const updateCustomer = mutation({
         }),
     },
     handler: async (ctx, args) => {
+        const oldCustomer = await ctx.db.get(args.id);
+
         await ctx.db.patch(args.id, {
             ...args.updates,
             updatedAt: Date.now(),
         });
+
+        if (oldCustomer && args.updates.status && args.updates.status !== oldCustomer.status) {
+            if (args.updates.status === "가견적전달" || args.updates.status === "최종견적전달") {
+                const customerName = args.updates.name || oldCustomer.name || "고객명 없음";
+                const channel = args.updates.channel || oldCustomer.channel || "확인불가";
+                const message = `🔔 **고객 상태 변경 알림**\n- **고객명**: ${customerName}\n- **채널/담당자**: ${channel}\n- **새로운 상태**: \`${args.updates.status}\``;
+                const webhookUrl = "https://discordapp.com/api/webhooks/1478231905261326359/VmYPVbrY6iT7wzhb2MO-FJeQaT2IAKzcwK9LN6Dx-hQmgECoGjZ5nZadmS_ElhtTo6ts";
+
+                await ctx.scheduler.runAfter(0, internal.actions.sendDiscordNotification, {
+                    message,
+                    webhookUrl
+                });
+            }
+        }
     },
 });
 
@@ -164,7 +181,6 @@ export const batchCreate = mutation({
     handler: async (ctx, args) => {
         let currentMaxNo = -1;
 
-        const now = Date.now();
         for (const customer of args.customers) {
             let finalNo = customer.no;
             if (!finalNo) {

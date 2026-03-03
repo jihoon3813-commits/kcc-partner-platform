@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as actions from "../actions.js";
 import type * as admins from "../admins.js";
 import type * as contracts from "../contracts.js";
 import type * as customers from "../customers.js";
@@ -15,6 +16,7 @@ import type * as estimates from "../estimates.js";
 import type * as init from "../init.js";
 import type * as installmentApplications from "../installmentApplications.js";
 import type * as notices from "../notices.js";
+import type * as one_off from "../one_off.js";
 import type * as partners from "../partners.js";
 import type * as products from "../products.js";
 import type * as rentalApplications from "../rentalApplications.js";
@@ -28,6 +30,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  actions: typeof actions;
   admins: typeof admins;
   contracts: typeof contracts;
   customers: typeof customers;
@@ -35,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   init: typeof init;
   installmentApplications: typeof installmentApplications;
   notices: typeof notices;
+  one_off: typeof one_off;
   partners: typeof partners;
   products: typeof products;
   rentalApplications: typeof rentalApplications;
