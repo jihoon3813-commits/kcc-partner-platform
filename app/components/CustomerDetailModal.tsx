@@ -236,11 +236,27 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         }
     };
 
+    // 링크 추가 핸들러
+    const handleAddLink = (key: string, label: string) => {
+        const url = prompt(`${label} 새로운 링크를 입력하세요`);
+        if (url) {
+            const current = formData[key] ? String(formData[key]) : '';
+            const updated = current ? `${current}\n${url}` : url;
+            setFormData({ ...formData, [key]: updated });
+        }
+    };
+
     // 링크 수정 핸들러
-    const handleEditLink = (key: string, currentVal: string) => {
-        const url = prompt('링크를 입력하세요', currentVal || '');
+    const handleEditLinkItem = (key: string, index: number, link: string) => {
+        const url = prompt('링크를 수정하세요 (빈칸 입력시 삭제)', link);
         if (url !== null) {
-            setFormData({ ...formData, [key]: url });
+            const currentLinks = String(formData[key] || '').split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+            if (url.trim() === '') {
+                currentLinks.splice(index, 1);
+            } else {
+                currentLinks[index] = url.trim();
+            }
+            setFormData({ ...formData, [key]: currentLinks.join('\n') });
         }
     };
 
@@ -252,45 +268,58 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
     // 링크 렌더링 헬퍼
     const renderLinkButtons = (label: string, key: string, colorClass: string) => {
-        const hasLink = !!formData[key];
-
-        let formattedHref = String(formData[key] || '');
-        if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
-            formattedHref = `http://${formattedHref}`;
-        }
+        const rawValue = String(formData[key] || '');
+        const links = rawValue.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
 
         return (
-            <div className="space-y-1">
-                <span className="text-[10px] text-gray-400 font-medium">{label}</span>
-                <div className="flex gap-1">
-                    {hasLink ? (
-                        <>
-                            <a
-                                href={formattedHref}
-                                target="_blank"
-                                rel="noreferrer"
-                                className={`flex-1 py-2 rounded border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm`}
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                <span className="ml-1">이동</span>
-                            </a>
-                            {!readOnly && (
-                                <button
-                                    onClick={() => handleEditLink(key, String(formData[key] || ''))}
-                                    className={`px-2 rounded border text-xs font-medium bg-white hover:bg-gray-50 text-gray-500 shadow-sm transition-colors`}
-                                >
-                                    <Edit2 className="w-3 h-3" />
-                                </button>
-                            )}
-                        </>
-                    ) : (
+            <div className="space-y-1 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                <div className="flex items-center justify-between px-1 mb-2">
+                    <span className="text-xs text-gray-700 font-bold">{label}</span>
+                    {!readOnly && (
                         <button
-                            className={`w-full py-2 rounded border text-xs font-medium transition-colors bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed`}
-                            onClick={() => !readOnly && handleEditLink(key, '')}
-                            disabled={readOnly}
+                            onClick={() => handleAddLink(key, label)}
+                            className="text-[10px] items-center flex gap-1 bg-white border px-2 py-1.5 rounded-lg text-gray-500 shadow-sm hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                            title="새 링크 추가"
                         >
-                            {readOnly ? '미등록' : '등록'}
+                            <span className="font-black tracking-tight">+ 추가</span>
                         </button>
+                    )}
+                </div>
+                <div className="space-y-1.5">
+                    {links.length > 0 ? (
+                        links.map((link, idx) => {
+                            let formattedHref = link;
+                            if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
+                                formattedHref = `http://${formattedHref}`;
+                            }
+                            return (
+                                <div key={idx} className="flex gap-1.5 items-stretch">
+                                    <a
+                                        href={formattedHref}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className={`flex-1 py-1.5 rounded-lg border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm min-w-0`}
+                                        title={link}
+                                    >
+                                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                                        <span className="ml-1.5 truncate max-w-[140px]">{links.length > 1 ? `${label} ${idx + 1}` : '이동'}</span>
+                                    </a>
+                                    {!readOnly && (
+                                        <button
+                                            onClick={() => handleEditLinkItem(key, idx, link)}
+                                            className={`px-3 rounded-lg border text-xs font-medium bg-white hover:bg-gray-50 text-gray-400 hover:text-gray-600 shadow-sm transition-colors flex items-center justify-center shrink-0`}
+                                            title="수정 또는 삭제"
+                                        >
+                                            <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="text-center text-[11px] font-bold py-3 text-gray-400 bg-white rounded-lg border border-dashed border-gray-200">
+                            등록된 링크가 없습니다
+                        </div>
                     )}
                 </div>
             </div>
@@ -495,10 +524,9 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                 <LinkIcon className="w-4 h-4 text-gray-500" />
                                 견적서 링크
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-3">
                                 {renderLinkButtons('가견적', '가견적 링크', 'bg-blue-50 text-blue-600 border-blue-100')}
                                 {renderLinkButtons('최종견적', '최종 견적 링크', 'bg-indigo-50 text-indigo-600 border-indigo-100')}
-                                {renderLinkButtons('견적조회', '고객견적서(가)', 'bg-orange-50 text-orange-600 border-orange-100')}
                                 {renderLinkButtons('내관도', '고객견적서(최종)', 'bg-green-50 text-green-600 border-green-100')}
                             </div>
                         </div>

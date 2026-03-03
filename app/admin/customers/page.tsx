@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy, Download } from 'lucide-react';
+import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy, Download, ExternalLink } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
 import DirectCustomerModal from '@/app/components/DirectCustomerModal';
 import ExcelDownloadModal from '@/app/components/ExcelDownloadModal';
@@ -44,6 +44,15 @@ function AdminCustomersContent() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isDirectModalOpen, setIsDirectModalOpen] = useState(false);
     const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
+
+    // Multi-links Modal State
+    const [isLinksModalOpen, setIsLinksModalOpen] = useState(false);
+    const [linksModalData, setLinksModalData] = useState<{ title: string; links: string[] }>({ title: '', links: [] });
+
+    const openLinksModal = (title: string, links: string[]) => {
+        setLinksModalData({ title, links });
+        setIsLinksModalOpen(true);
+    };
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -852,10 +861,9 @@ function AdminCustomersContent() {
                             {/* 3. 우측 컨트롤 & 일정 */}
                             <div className="lg:w-56 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
                                 <div className="flex gap-2 justify-end lg:justify-start items-center">
-                                    <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" />
-                                    <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종" />
-                                    <BadgeLink href={customer['고객견적서(가)']} color="orange" label="조회" />
-                                    <BadgeLink href={customer['고객견적서(최종)']} color="green" label="내관" />
+                                    <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" onMultiClick={(links) => openLinksModal('가견적', links)} />
+                                    <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종견적" onMultiClick={(links) => openLinksModal('최종견적', links)} />
+                                    <BadgeLink href={customer['고객견적서(최종)']} color="green" label="내관도" onMultiClick={(links) => openLinksModal('내관도', links)} />
 
                                     <div className="w-[1px] h-6 bg-gray-100 mx-0.5 hidden lg:block"></div>
                                     <button
@@ -955,6 +963,43 @@ function AdminCustomersContent() {
                 onUpdate={fetchData}
             />
 
+            {/* Multi-links Modal */}
+            {isLinksModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="font-bold text-gray-900">{linksModalData.title} 링크 목록</h3>
+                            <button onClick={() => setIsLinksModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+                            {linksModalData.links.map((link, idx) => {
+                                let formattedHref = link;
+                                if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
+                                    formattedHref = `http://${formattedHref}`;
+                                }
+                                return (
+                                    <a
+                                        key={idx}
+                                        href={formattedHref}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors group"
+                                    >
+                                        <div className="flex flex-col overflow-hidden pr-3 justify-center">
+                                            <span className="text-sm font-bold text-gray-900">{linksModalData.title} {idx + 1}</span>
+                                            <span className="text-xs text-gray-400 truncate mt-0.5 block">{link}</span>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-blue-500 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                    </a>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <DirectCustomerModal
                 isOpen={isDirectModalOpen}
                 onClose={() => setIsDirectModalOpen(false)}
@@ -992,7 +1037,7 @@ export default function AdminCustomersPage() {
 }
 
 // 뱃지 링크 컴포넌트
-function BadgeLink({ href, color, label }: { href: string | undefined, color: string, label: string }) {
+function BadgeLink({ href, color, label, onMultiClick }: { href: string | undefined, color: string, label: string, onMultiClick?: (links: string[]) => void }) {
     const colorClasses: Record<string, string> = {
         blue: href ? 'bg-blue-50 text-blue-600 border-blue-100 shadow-blue-50' : 'bg-gray-50 text-gray-200 border-gray-50',
         indigo: href ? 'bg-indigo-50 text-indigo-600 border-indigo-100 shadow-indigo-50' : 'bg-gray-50 text-gray-200 border-gray-50',
@@ -1000,7 +1045,20 @@ function BadgeLink({ href, color, label }: { href: string | undefined, color: st
         green: href ? 'bg-green-50 text-green-600 border-green-100 shadow-green-100' : 'bg-gray-50 text-gray-200 border-gray-50',
     };
 
-    let formattedHref = href;
+    const links = String(href || '').split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+
+    if (links.length > 1) {
+        return (
+            <button
+                onClick={(e) => { e.stopPropagation(); onMultiClick?.(links); }}
+                className={`min-w-[32px] h-8 px-1.5 flex items-center justify-center rounded-xl border-2 text-[10px] whitespace-nowrap font-black transition-all hover:scale-105 active:scale-95 shadow-sm ${colorClasses[color]}`}
+            >
+                {label}{links.length}
+            </button>
+        );
+    }
+
+    let formattedHref = links[0] || '';
     if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
         formattedHref = `http://${formattedHref}`;
     }
@@ -1010,8 +1068,8 @@ function BadgeLink({ href, color, label }: { href: string | undefined, color: st
             href={formattedHref}
             target="_blank"
             rel="noreferrer"
-            onClick={(e) => !href && e.preventDefault()}
-            className={`min-w-[32px] h-8 px-1.5 flex items-center justify-center rounded-xl border-2 text-[10px] whitespace-nowrap font-black transition-all ${colorClasses[color]} ${href ? 'hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/10' : 'cursor-default opacity-40'}`}
+            onClick={(e) => { e.stopPropagation(); if (!formattedHref) e.preventDefault(); }}
+            className={`min-w-[32px] h-8 px-1.5 flex items-center justify-center rounded-xl border-2 text-[10px] whitespace-nowrap font-black transition-all ${colorClasses[color]} ${formattedHref ? 'hover:scale-105 active:scale-95 shadow-sm' : 'cursor-default opacity-40'}`}
         >
             {label}
         </a>
