@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UserCheck, LogOut, ShoppingBag, Home, FolderDown, Menu, X, Settings, Printer, FileText, Calculator, Ruler, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, LogOut, ShoppingBag, Home, FolderDown, Menu, X, Settings, Printer, FileText, Calculator, Ruler, CalendarDays, FileSignature } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 export default function AdminLayout({
@@ -122,6 +122,7 @@ export default function AdminLayout({
                         { href: '/admin/customers', icon: UserCheck, label: '고객 관리', roles: ['admin', 'tm'] },
                         { href: '/admin/contracts', icon: FileText, label: '계약 관리', roles: ['admin'] },
                         { href: 'https://kcc-estimate2.vercel.app/admin', icon: Calculator, label: '견적 관리', roles: ['admin'], external: true },
+                        { href: 'https://glosign.com/index', icon: FileSignature, label: '전자계약서', roles: ['admin'], external: true },
                         { href: '/admin/products', icon: ShoppingBag, label: '상품 관리', roles: ['admin'] },
                         { href: '/admin/resources', icon: FolderDown, label: '자료실 관리', roles: ['admin'] },
                         { href: '/admin/notice', icon: Printer, label: '공사안내문 출력', roles: ['admin'] },
