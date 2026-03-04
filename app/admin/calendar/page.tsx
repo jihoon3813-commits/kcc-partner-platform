@@ -34,6 +34,10 @@ export default function AdminCalendarPage() {
                 '실측일자': c.measure_date || '',
                 '가견적 금액': c.price_pre || 0,
                 '최종견적 금액': c.price_final || 0,
+                '가견적 링크': c.link_pre_kcc || '',
+                '최종 견적 링크': c.link_final_kcc || '',
+                '고객견적서(가)': c.link_pre_cust || '',
+                '고객견적서(최종)': c.link_final_cust || '',
                 updatedAt: c.updatedAt
             };
         });

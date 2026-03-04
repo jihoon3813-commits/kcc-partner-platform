@@ -25,7 +25,7 @@ function AdminContractsContent() {
     const [statusFilter, setStatusFilter] = useState('');
     const [partnerFilter, setPartnerFilter] = useState('');
     const [checklistFilter, setChecklistFilter] = useState('');
-    const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc'>('reg_desc');
+    const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc' | 'checklist_desc'>('reg_desc');
 
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers || !convexContracts) return [];
@@ -98,6 +98,7 @@ function AdminContractsContent() {
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
                 contractDate: contract?.contractDate || '',
+                contractCreationTime: contract?._creationTime || 0,
                 alerts: alerts
             };
         });
@@ -116,22 +117,24 @@ function AdminContractsContent() {
 
     const sortedCustomers = useMemo(() => {
         return [...allMappedCustomers].sort((a, b) => {
-            if (sortOption === 'reg_desc') {
-                const dateA = a.contractDate || '';
-                const dateB = b.contractDate || '';
-                if (dateA !== dateB) return dateB.localeCompare(dateA);
+            if (sortOption === 'checklist_desc') {
+                const aHasAlert = a.alerts && a.alerts.length > 0;
+                const bHasAlert = b.alerts && b.alerts.length > 0;
+                if (aHasAlert && !bHasAlert) return -1;
+                if (!aHasAlert && bHasAlert) return 1;
 
-                const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
+                return timeB - timeA;
+            }
+            if (sortOption === 'reg_desc') {
+                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
-                const dateA = a.contractDate || '';
-                const dateB = b.contractDate || '';
-                if (dateA !== dateB) return dateA.localeCompare(dateB);
-
-                const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
                 return timeA - timeB;
             }
             if (sortOption === 'no_asc') {
@@ -298,6 +301,7 @@ function AdminContractsContent() {
                                 value={sortOption}
                                 onChange={(e) => setSortOption(e.target.value as any)}
                             >
+                                <option value="checklist_desc">체크리스트 있는 고객 우선 (최신순)</option>
                                 <option value="reg_desc">계약등록일 최신순</option>
                                 <option value="reg_asc">계약등록일 오래된순</option>
                                 <option value="reception_desc">접수일 최신순(엑셀)</option>

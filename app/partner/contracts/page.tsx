@@ -41,7 +41,7 @@ function PartnerContractsContent() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [checklistFilter, setChecklistFilter] = useState('');
-    const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc'>('reg_desc');
+    const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc' | 'checklist_desc'>('reg_desc');
 
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers || !convexContracts) return [];
@@ -113,6 +113,7 @@ function PartnerContractsContent() {
                 advancePayment: contract?.advancePayment,
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
+                contractCreationTime: contract?._creationTime || 0,
                 alerts: alerts
             };
         });
@@ -138,14 +139,25 @@ function PartnerContractsContent() {
     const filteredCustomers = useMemo(() => {
         // First sort
         const sorted = [...allMappedCustomers].sort((a, b) => {
+            if (sortOption === 'checklist_desc') {
+                const aHasAlert = a.alerts && a.alerts.length > 0;
+                const bHasAlert = b.alerts && b.alerts.length > 0;
+
+                if (aHasAlert && !bHasAlert) return -1;
+                if (!aHasAlert && bHasAlert) return 1;
+
+                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
+                return timeB - timeA;
+            }
             if (sortOption === 'reg_desc') {
-                const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
-                const timeA = Math.max(a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.updatedAt || 0, b._creationTime || 0);
+                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
+                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
                 return timeA - timeB;
             }
             if (sortOption === 'no_asc') {
@@ -289,6 +301,7 @@ function PartnerContractsContent() {
                                 value={sortOption}
                                 onChange={(e) => setSortOption(e.target.value as any)}
                             >
+                                <option value="checklist_desc">체크리스트 있는 고객 우선 (최신순)</option>
                                 <option value="reg_desc">등록일 최신순(시스템)</option>
                                 <option value="reg_asc">등록일 오래된순(시스템)</option>
                                 <option value="reception_desc">접수일 최신순(엑셀)</option>
