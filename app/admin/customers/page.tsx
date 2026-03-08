@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy, Download, ExternalLink } from 'lucide-react';
+import { Search, Filter, Calendar, MapPin, ClipboardList, TrendingUp, X, CheckCircle2, RefreshCcw, Upload, UserPlus, Trash2, CheckSquare, Square, ChevronLeft, ChevronRight, ListOrdered, Copy, Download, ExternalLink, User } from 'lucide-react';
 import CustomerDetailModal from '@/app/components/CustomerDetailModal';
 import DirectCustomerModal from '@/app/components/DirectCustomerModal';
 import ExcelDownloadModal from '@/app/components/ExcelDownloadModal';
@@ -65,6 +65,7 @@ function AdminCustomersContent() {
     const [statusFilter, setStatusFilter] = useState(routerStatus || '');
     const [labelFilter, setLabelFilter] = useState('');
     const [partnerFilter, setPartnerFilter] = useState('');
+    const [tmFilter, setTmFilter] = useState('');
 
     // Auth Admin
     const [adminInfo, setAdminInfo] = useState<{ id: string, name: string, role: string } | null>(null);
@@ -264,14 +265,24 @@ function AdminCustomersContent() {
             // Partner Filter
             if (partnerFilter && c['유입채널'] !== partnerFilter) return false;
 
+            // TM Search Filter (for dropdown)
+            if (tmFilter) {
+                const assignedTm = typeof c.assignedTm === 'string' ? c.assignedTm.toUpperCase() : '';
+                if (tmFilter === 'UNASSIGN') {
+                    if (assignedTm && assignedTm !== 'TM관리자') return false;
+                } else if (assignedTm !== tmFilter.toUpperCase()) {
+                    return false;
+                }
+            }
+
             return true;
         });
-    }, [sortedCustomers, searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter, customStartDate, customEndDate]);
+    }, [sortedCustomers, searchTerm, statusFilter, labelFilter, partnerFilter, tmFilter, dateFilter, customStartDate, customEndDate]);
 
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, statusFilter, labelFilter, partnerFilter, dateFilter]);
+    }, [searchTerm, statusFilter, labelFilter, partnerFilter, tmFilter, dateFilter]);
 
     const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
     const paginatedCustomers = useMemo(() => {
@@ -284,6 +295,7 @@ function AdminCustomersContent() {
         setStatusFilter('');
         setLabelFilter('');
         setPartnerFilter('');
+        setTmFilter('');
         setDateFilter('6months');
         setSelectedIds(new Set());
     };
@@ -606,7 +618,7 @@ function AdminCustomersContent() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={`grid grid-cols-1 md:grid-cols-2 ${adminInfo?.role !== 'tm' || adminInfo?.id?.toUpperCase() === 'TM' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
                     {/* Search Input */}
                     <div className="relative">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -656,6 +668,24 @@ function AdminCustomersContent() {
                             {filterOptions.partners.filter((p): p is string => Boolean(p)).map((p, i) => <option key={i} value={p}>{p}</option>)}
                         </select>
                     </div>
+
+                    {/* TM Filter (Only for Center/Admin) */}
+                    {(adminInfo?.role !== 'tm' || adminInfo?.id?.toUpperCase() === 'TM') && (
+                        <div className="relative">
+                            <User className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <select
+                                className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none font-medium appearance-none cursor-pointer"
+                                value={tmFilter}
+                                onChange={(e) => setTmFilter(e.target.value)}
+                            >
+                                <option value="">TM 전체</option>
+                                <option value="UNASSIGN">미배정 (TM관리자)</option>
+                                {tms.filter((tm: any) => tm.uid !== 'TM').map((tm: any) => (
+                                    <option key={tm.uid} value={tm.uid}>{tm.uid} / {tm.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -1072,6 +1102,7 @@ function AdminCustomersContent() {
                                     onChange={(e) => setSelectedTmId(e.target.value)}
                                 >
                                     <option value="">선택하세요</option>
+                                    <option value="UNASSIGN">미배정 (TM관리자)</option>
                                     {tms.filter((tm: any) => tm.uid !== 'TM').map((tm: any) => (
                                         <option key={tm.uid} value={tm.uid}>{tm.uid} / {tm.name}</option>
                                     ))}
