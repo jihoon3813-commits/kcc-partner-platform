@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText, Star } from 'lucide-react';
+import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText, Star, Copy } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Cookies from 'js-cookie';
@@ -450,7 +450,21 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         placeholder="연락처"
                                     />
                                 ) : (
-                                    <span className="whitespace-nowrap">{formData['연락처']}</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="whitespace-nowrap">{formData['연락처']}</span>
+                                        {formData['연락처'] && (
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(String(formData['연락처']));
+                                                    alert('연락처가 복사되었습니다.');
+                                                }}
+                                                className="text-slate-400 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-700"
+                                                title="연락처 복사"
+                                            >
+                                                <Copy className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                             <div className="hidden sm:block w-px h-3 bg-slate-600 shrink-0"></div>
@@ -465,7 +479,21 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         placeholder="주소"
                                     />
                                 ) : (
-                                    <span className="truncate">{formData['주소']}</span>
+                                    <div className="flex items-center gap-1 min-w-0">
+                                        <span className="truncate">{formData['주소']}</span>
+                                        {formData['주소'] && (
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(String(formData['주소']));
+                                                    alert('주소가 복사되었습니다.');
+                                                }}
+                                                className="text-slate-400 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-700 shrink-0"
+                                                title="주소 복사"
+                                            >
+                                                <Copy className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
