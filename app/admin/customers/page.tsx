@@ -9,6 +9,7 @@ import ExcelDownloadModal from '@/app/components/ExcelDownloadModal';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Cookies from 'js-cookie';
 
 type DateFilterType = 'currentMonth' | '3months' | '6months' | '1year' | 'all' | 'custom';
 
@@ -56,12 +57,23 @@ function AdminCustomersContent() {
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isTmAssignModalOpen, setIsTmAssignModalOpen] = useState(false);
+    const [selectedTmId, setSelectedTmId] = useState('');
 
     // Search & Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState(routerStatus || '');
     const [labelFilter, setLabelFilter] = useState('');
     const [partnerFilter, setPartnerFilter] = useState('');
+
+    // Auth Admin
+    const [adminInfo, setAdminInfo] = useState<{ id: string, name: string, role: string } | null>(null);
+    useEffect(() => {
+        const auth = Cookies.get('admin_session');
+        if (auth) {
+            setAdminInfo(JSON.parse(auth));
+        }
+    }, []);
 
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -86,12 +98,14 @@ function AdminCustomersContent() {
     const batchDelete = useMutation(api.customers.batchDelete);
     const duplicateCustomerMutation = useMutation(api.customers.duplicateCustomer);
     const normalizeSorting = useMutation(api.customers.normalizeSorting);
+    const batchAssignTm = useMutation(api.customers.batchAssignTm);
 
     // Fetch dynamic settings
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settingLabels = useQuery((api as any).settings.getLabels) || [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settingStatuses = useQuery((api as any).settings.getStatuses) || [];
+    const tms = useQuery(api.admins.getAllTMs) || [];
 
     const handleDuplicate = async (e: React.MouseEvent, customerId: string) => {
         e.stopPropagation();
@@ -132,6 +146,7 @@ function AdminCustomersContent() {
                 '시공일자': c.construct_date || '',
                 '가견적 금액': c.price_pre || 0,
                 '최종견적 금액': c.price_final || 0,
+                'assignedTm': c.assignedTm,
                 '_creationTime': c._creationTime,
                 'updatedAt': c.updatedAt,
             };
@@ -210,6 +225,13 @@ function AdminCustomersContent() {
         }
 
         return sortedCustomers.filter(c => {
+            // TM Filter (Case-insensitive)
+            if (adminInfo?.role === 'tm' && adminInfo.id.toUpperCase() !== 'TM') {
+                const assignedTm = typeof c.assignedTm === 'string' ? c.assignedTm.toUpperCase() : '';
+                const currentAdminId = adminInfo.id.toUpperCase();
+                if (assignedTm !== currentAdminId) return false;
+            }
+
             // Date Filter
             const dateStr = c['신청일'] || c['신청일시'];
             if (dateStr) {
@@ -284,6 +306,22 @@ function AdminCustomersContent() {
             newSelected.add(id);
         }
         setSelectedIds(newSelected);
+    };
+
+    const handleBatchAssignTm = async () => {
+        if (selectedIds.size === 0 || !selectedTmId) return;
+        if (!confirm(`선택한 ${selectedIds.size}명의 고객을 ${selectedTmId} 상담원에게 배정하시겠습니까?`)) return;
+
+        try {
+            await batchAssignTm({ ids: Array.from(selectedIds) as any, tmId: selectedTmId === 'UNASSIGN' ? '' : selectedTmId });
+            alert('배정되었습니다.');
+            setSelectedIds(new Set());
+            setIsTmAssignModalOpen(false);
+            setSelectedTmId('');
+        } catch (err) {
+            console.error(err);
+            alert('배정 중 오류가 발생했습니다.');
+        }
     };
 
     const handleBatchDelete = async () => {
@@ -638,13 +676,24 @@ function AdminCustomersContent() {
                     <p className="text-sm font-bold text-gray-500 whitespace-nowrap">검색 결과 <span className="text-blue-600">{filteredCustomers.length}</span>건</p>
 
                     {selectedIds.size > 0 && (
-                        <button
-                            onClick={handleBatchDelete}
-                            className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-black border border-red-100 hover:bg-red-100 transition-all animate-in fade-in slide-in-from-left-2"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {selectedIds.size}명 삭제
-                        </button>
+                        <>
+                            {adminInfo?.role !== 'tm' && (
+                                <button
+                                    onClick={() => setIsTmAssignModalOpen(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-black border border-indigo-100 hover:bg-indigo-100 transition-all animate-in fade-in slide-in-from-left-2"
+                                >
+                                    <UserPlus className="w-3.5 h-3.5" />
+                                    {selectedIds.size}명 TM 배정
+                                </button>
+                            )}
+                            <button
+                                onClick={handleBatchDelete}
+                                className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-black border border-red-100 hover:bg-red-100 transition-all animate-in fade-in slide-in-from-left-2"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                {selectedIds.size}명 삭제
+                            </button>
+                        </>
                     )}
 
                     <button
@@ -860,6 +909,9 @@ function AdminCustomersContent() {
 
                             {/* 3. 우측 컨트롤 & 일정 */}
                             <div className="lg:w-56 shrink-0 flex flex-col justify-center gap-3 border-t lg:border-t-0 lg:border-l border-gray-50 pt-3 lg:pt-0 lg:pl-6" onClick={(e) => e.stopPropagation()}>
+                                <div className="text-right text-[11px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 mb-1 lg:-mt-2 inline-block ml-auto w-fit">
+                                    {customer.assignedTm || 'TM관리자'}
+                                </div>
                                 <div className="flex gap-2 justify-end lg:justify-start items-center">
                                     <BadgeLink href={customer['가견적 링크']} color="blue" label="가견적" onMultiClick={(links) => openLinksModal('가견적', links)} />
                                     <BadgeLink href={customer['최종 견적 링크']} color="indigo" label="최종견적" onMultiClick={(links) => openLinksModal('최종견적', links)} />
@@ -995,6 +1047,40 @@ function AdminCustomersContent() {
                                     </a>
                                 );
                             })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TM Assignment Modal */}
+            {isTmAssignModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="font-bold text-gray-900">TM 상담원 배정</h3>
+                            <button onClick={() => setIsTmAssignModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <p className="text-sm text-gray-500">선택상태: <span className="font-bold text-indigo-600">{selectedIds.size}</span>개의 항목</p>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-700">배정할 TM 상담원 선택</label>
+                                <select
+                                    className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100 text-gray-800 font-medium"
+                                    value={selectedTmId}
+                                    onChange={(e) => setSelectedTmId(e.target.value)}
+                                >
+                                    <option value="">선택하세요</option>
+                                    {tms.filter((tm: any) => tm.uid !== 'TM').map((tm: any) => (
+                                        <option key={tm.uid} value={tm.uid}>{tm.uid} / {tm.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <button className="flex-1 py-2 text-sm font-bold bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200" onClick={() => setIsTmAssignModalOpen(false)}>취소</button>
+                                <button className="flex-1 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50" onClick={handleBatchAssignTm} disabled={!selectedTmId}>배정하기</button>
+                            </div>
                         </div>
                     </div>
                 </div>

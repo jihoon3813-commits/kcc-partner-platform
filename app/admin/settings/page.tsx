@@ -22,6 +22,11 @@ export default function SettingsPage() {
     const updateStatusOrders = useMutation(api.settings.updateStatusOrders);
 
     const authors = useQuery(api.settings.getAuthors) || [];
+    const tms = useQuery(api.admins.getAllTMs) || [];
+
+    const addTM = useMutation(api.admins.addTM);
+    const updateTM = useMutation(api.admins.updateTM);
+    const deleteTM = useMutation(api.admins.deleteTM);
     const addAuthor = useMutation(api.settings.addAuthor);
     const updateAuthor = useMutation(api.settings.updateAuthor);
     const deleteAuthor = useMutation(api.settings.deleteAuthor);
@@ -38,6 +43,13 @@ export default function SettingsPage() {
 
     const [newAuthorName, setNewAuthorName] = useState('');
     const [newAuthorType, setNewAuthorType] = useState<'progress' | 'feedback'>('progress');
+    const [newAuthorTm, setNewAuthorTm] = useState<string>('');
+
+    // TM States
+    const [newTmId, setNewTmId] = useState('');
+    const [newTmPassword, setNewTmPassword] = useState('');
+    const [newTmName, setNewTmName] = useState('');
+    const [newTmContact, setNewTmContact] = useState('');
 
     // Local states for smooth reordering
     const [localLabels, setLocalLabels] = useState<any[]>([]);
@@ -62,8 +74,25 @@ export default function SettingsPage() {
 
     const handleAddAuthor = async () => {
         if (!newAuthorName.trim()) return;
-        await addAuthor({ name: newAuthorName, type: newAuthorType });
+        await addAuthor({ name: newAuthorName, type: newAuthorType, assignedTm: newAuthorTm || undefined });
         setNewAuthorName('');
+        setNewAuthorTm('');
+    };
+
+    const handleAddTM = async () => {
+        if (!newTmId.trim() || !newTmPassword.trim() || !newTmName.trim()) {
+            return alert('아이디, 비밀번호, 담당자명은 필수입니다.');
+        }
+        try {
+            await addTM({ uid: newTmId, password: newTmPassword, name: newTmName, contact: newTmContact });
+            setNewTmId('');
+            setNewTmPassword('');
+            setNewTmName('');
+            setNewTmContact('');
+            alert('TM 계정이 등록되었습니다.');
+        } catch (e: any) {
+            alert(e.message);
+        }
     };
 
     const handleSync = async () => {
@@ -312,6 +341,18 @@ export default function SettingsPage() {
                         <option value="progress">진행현황</option>
                         <option value="feedback">피드백</option>
                     </select>
+                    {newAuthorType === 'progress' && (
+                        <select
+                            className="w-32 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                            value={newAuthorTm}
+                            onChange={(e) => setNewAuthorTm(e.target.value)}
+                        >
+                            <option value="">TM 선택안함</option>
+                            {tms.filter((tm: any) => tm.uid !== 'TM').map((tm: any) => (
+                                <option key={tm.uid} value={tm.uid}>{tm.uid} / {tm.name}</option>
+                            ))}
+                        </select>
+                    )}
                     <button
                         onClick={handleAddAuthor}
                         className="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors flex items-center gap-1 shrink-0"
@@ -337,15 +378,30 @@ export default function SettingsPage() {
                             </div>
                             <input
                                 type="text"
-                                className="flex-1 bg-transparent border-none text-sm font-bold text-gray-900 outline-none cursor-text"
+                                className="flex-1 min-w-0 bg-transparent border-none text-sm font-bold text-gray-900 outline-none cursor-text p-0"
                                 defaultValue={author.name}
                                 onClick={(e) => e.stopPropagation()}
                                 onBlur={(e) => {
                                     if (e.target.value !== author.name) {
-                                        updateAuthor({ id: author._id, name: e.target.value, type: author.type });
+                                        updateAuthor({ id: author._id, name: e.target.value, type: author.type, assignedTm: author.assignedTm });
                                     }
                                 }}
                             />
+                            {author.type === 'progress' && (
+                                <select
+                                    className="w-24 border-none bg-transparent rounded-lg text-xs outline-none cursor-pointer p-0 text-gray-500 font-medium"
+                                    defaultValue={author.assignedTm || ""}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => {
+                                        updateAuthor({ id: author._id, name: author.name, type: author.type, assignedTm: e.target.value || undefined });
+                                    }}
+                                >
+                                    <option value="">TM 미지정</option>
+                                    {tms.filter((tm: any) => tm.uid !== 'TM').map((tm: any) => (
+                                        <option key={tm.uid} value={tm.uid}>{tm.uid}</option>
+                                    ))}
+                                </select>
+                            )}
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -358,6 +414,46 @@ export default function SettingsPage() {
                         </Reorder.Item>
                     ))}
                 </Reorder.Group>
+            </div>
+
+            {/* TM Account Management */}
+            <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
+                <div>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">TM 상담원 계정 관리</h2>
+                    <p className="text-xs text-gray-500">TM 상담원 전용 어드민 계정을 추가하거나 관리하고, 연락처를 지정할 수 있습니다.</p>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-2 max-w-4xl">
+                    <input type="text" placeholder="아이디" className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" value={newTmId} onChange={(e) => setNewTmId(e.target.value)} />
+                    <input type="text" placeholder="비밀번호" className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" value={newTmPassword} onChange={(e) => setNewTmPassword(e.target.value)} />
+                    <input type="text" placeholder="담당자명" className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" value={newTmName} onChange={(e) => setNewTmName(e.target.value)} />
+                    <input type="text" placeholder="담당자 연락처" className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100" value={newTmContact} onChange={(e) => setNewTmContact(e.target.value)} />
+                    <button onClick={handleAddTM} className="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-1 shrink-0">
+                        <Plus className="w-4 h-4" /> 계정 추가
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                    {tms.map((tm: any) => (
+                        <div key={tm._id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 transition-all hover:border-blue-200 shadow-sm flex-wrap">
+                            <div className="px-2 py-0.5 rounded text-[10px] font-bold shrink-0 bg-indigo-100 text-indigo-700">TM 계정</div>
+                            <input type="text" className="w-24 bg-transparent border-none text-sm font-bold text-gray-900 outline-none p-0 cursor-not-allowed" disabled value={tm.uid} />
+                            <input type="text" placeholder="비밀번호" className="flex-1 min-w-[120px] bg-white border rounded px-2 py-1.5 text-sm font-medium text-gray-900 outline-none focus:ring-1" defaultValue={tm.password} onBlur={(e) => e.target.value !== tm.password && updateTM({ id: tm._id, password: e.target.value, name: tm.name, contact: tm.contact })} />
+                            <input type="text" placeholder="담당자명" className="flex-1 min-w-[120px] bg-white border rounded px-2 py-1.5 text-sm font-medium text-gray-900 outline-none focus:ring-1" defaultValue={tm.name} onBlur={(e) => e.target.value !== tm.name && updateTM({ id: tm._id, password: tm.password, name: e.target.value, contact: tm.contact })} />
+                            <input type="text" placeholder="담당자 연락처" className="flex-1 min-w-[120px] bg-white border rounded px-2 py-1.5 text-sm font-medium text-gray-900 outline-none focus:ring-1" defaultValue={tm.contact || ''} onBlur={(e) => e.target.value !== (tm.contact || '') && updateTM({ id: tm._id, password: tm.password, name: tm.name, contact: e.target.value })} />
+
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (confirm(`${tm.uid} 계정을 삭제하시겠습니까?`)) deleteTM({ id: tm._id });
+                                }}
+                                className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-auto"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

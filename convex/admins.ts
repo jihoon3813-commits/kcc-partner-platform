@@ -46,3 +46,48 @@ export const createInitialAdmin = mutation({
         }
     },
 });
+
+export const getAllTMs = query({
+    handler: async (ctx) => {
+        const allAdmins = await ctx.db.query("admins").collect();
+        return allAdmins.filter(admin => admin.role === "tm");
+    },
+});
+
+export const addTM = mutation({
+    args: { uid: v.string(), password: v.string(), name: v.string(), contact: v.optional(v.string()) },
+    handler: async (ctx, args) => {
+        const existing = await ctx.db
+            .query("admins")
+            .withIndex("by_uid", (q) => q.eq("uid", args.uid))
+            .unique();
+        if (existing) {
+            throw new Error("이미 존재하는 아이디입니다.");
+        }
+        await ctx.db.insert("admins", {
+            uid: args.uid,
+            password: args.password,
+            name: args.name,
+            contact: args.contact,
+            role: "tm",
+        });
+    },
+});
+
+export const updateTM = mutation({
+    args: { id: v.id("admins"), password: v.string(), name: v.string(), contact: v.optional(v.string()) },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.id, {
+            password: args.password,
+            name: args.name,
+            contact: args.contact,
+        });
+    },
+});
+
+export const deleteTM = mutation({
+    args: { id: v.id("admins") },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.id);
+    },
+});

@@ -229,6 +229,16 @@ export const batchDelete = mutation({
     },
 });
 
+export const batchAssignTm = mutation({
+    args: { ids: v.array(v.id("customers")), tmId: v.string() },
+    handler: async (ctx, args) => {
+        for (const id of args.ids) {
+            await ctx.db.patch(id, { assignedTm: args.tmId });
+        }
+        return { success: true, count: args.ids.length };
+    },
+});
+
 export const assignMissingNumbers = mutation({
     handler: async (ctx) => {
         const customers = await ctx.db.query("customers").order("asc").collect();

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText, Star } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Cookies from 'js-cookie';
 
 interface Customer {
     'No.': string | number;
@@ -43,6 +44,14 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     const [activeTab, setActiveTab] = useState('progress'); // progress, history, feedback
     const [formData, setFormData] = useState<Partial<Customer>>({});
     const [loading, setLoading] = useState(false);
+    const [adminInfo, setAdminInfo] = useState<{ id: string, name: string, role: string } | null>(null);
+
+    useEffect(() => {
+        const auth = Cookies.get('admin_session');
+        if (auth) {
+            setAdminInfo(JSON.parse(auth));
+        }
+    }, []);
 
     const convexLabels = useQuery(api.settings.getLabels);
     const convexStatuses = useQuery(api.settings.getStatuses);
@@ -51,9 +60,19 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     const settings = useMemo(() => ({
         labels: (convexLabels || []).map(l => l.name),
         statuses: (convexStatuses || []).map(s => s.name),
-        progressAuthors: (convexAuthors || []).filter(a => a.type === 'progress').map(a => a.name),
+        progressAuthors: (convexAuthors || [])
+            .filter(a => a.type === 'progress')
+            .filter(a => {
+                if (adminInfo?.role === 'tm' && adminInfo?.id?.toUpperCase() !== 'TM') {
+                    const assignedTm = typeof a.assignedTm === 'string' ? a.assignedTm.toUpperCase() : '';
+                    const currentAdminId = adminInfo.id.toUpperCase();
+                    return assignedTm === currentAdminId;
+                }
+                return true;
+            })
+            .map(a => a.name),
         feedbackAuthors: (convexAuthors || []).filter(a => a.type === 'feedback').map(a => a.name)
-    }), [convexLabels, convexStatuses, convexAuthors]);
+    }), [convexLabels, convexStatuses, convexAuthors, adminInfo]);
 
     // 헤더 직접 수정 모드
     const [isHeaderEditing, setIsHeaderEditing] = useState(false);

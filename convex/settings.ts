@@ -155,7 +155,7 @@ export const getAuthors = query({
 });
 
 export const addAuthor = mutation({
-    args: { name: v.string(), type: v.string() }, // type: 'progress' | 'feedback'
+    args: { name: v.string(), type: v.string(), assignedTm: v.optional(v.string()) }, // type: 'progress' | 'feedback'
     handler: async (ctx, args) => {
         const existing = await ctx.db.query("authors").collect();
         const order = existing.length;
@@ -164,9 +164,9 @@ export const addAuthor = mutation({
 });
 
 export const updateAuthor = mutation({
-    args: { id: v.id("authors"), name: v.string(), type: v.string() },
+    args: { id: v.id("authors"), name: v.string(), type: v.string(), assignedTm: v.optional(v.string()) },
     handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, { name: args.name, type: args.type });
+        await ctx.db.patch(args.id, { name: args.name, type: args.type, assignedTm: args.assignedTm });
     },
 });
 

@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
                 const adminRole = json.admin?.role || 'admin';
                 Cookies.set('admin_session', JSON.stringify({
                     name: json.admin?.name || '관리자',
-                    id: formData.id,
+                    id: json.admin?.id || formData.id,
                     role: adminRole
                 }), { expires: 1 });
 

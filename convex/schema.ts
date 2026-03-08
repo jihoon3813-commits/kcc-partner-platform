@@ -23,6 +23,7 @@ export default defineSchema({
         link_final_cust: v.optional(v.string()), // TEXT
         created_at: v.optional(v.string()), // Original application date
         updatedAt: v.optional(v.number()), // For sorting modified customers to the top
+        assignedTm: v.optional(v.string()), // assigned TM
     }).index("by_no", ["no"]).index("by_channel", ["channel"]),
 
     customerLabels: defineTable({
@@ -57,6 +58,7 @@ export default defineSchema({
         password: v.string(),
         name: v.optional(v.string()),
         role: v.optional(v.string()), // 'admin' | 'tm'
+        contact: v.optional(v.string()),
     }).index("by_uid", ["uid"]),
 
     products: defineTable({
@@ -85,6 +87,7 @@ export default defineSchema({
         name: v.string(),
         type: v.string(), // 'progress' | 'feedback'
         order: v.optional(v.number()),
+        assignedTm: v.optional(v.string()), // assigned TM
     }).index("by_type", ["type"]).index("by_order", ["order"]),
 
     notices: defineTable({
