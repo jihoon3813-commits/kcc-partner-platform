@@ -455,7 +455,13 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         {formData['연락처'] && (
                                             <button 
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(String(formData['연락처']));
+                                                    const today = new Date();
+                                                    const yy = String(today.getFullYear()).slice(-2);
+                                                    const mm = String(today.getMonth() + 1).padStart(2, '0');
+                                                    const dd = String(today.getDate()).padStart(2, '0');
+                                                    const dateStr = `${yy}${mm}${dd}`;
+                                                    const copyText = `${formData['고객명'] || '이름없음'}_${formData['연락처']}_${dateStr}`;
+                                                    navigator.clipboard.writeText(copyText);
                                                     alert('연락처가 복사되었습니다.');
                                                 }}
                                                 className="text-slate-400 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-700"
