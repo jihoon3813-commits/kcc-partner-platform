@@ -438,13 +438,13 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             )}
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-400 font-light mt-1 sm:mt-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-[15px] text-white font-semibold mt-1 sm:mt-2">
                             <div className="flex items-center gap-1.5 shrink-0">
-                                <Phone className="w-3.5 h-3.5 shrink-0" />
+                                <Phone className="w-4 h-4 shrink-0 opacity-90" />
                                 {isHeaderEditing ? (
                                     <input
                                         type="text"
-                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-xs outline-none focus:ring-1 w-32"
+                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-sm font-normal outline-none focus:ring-1 w-32"
                                         value={formData['연락처'] || ''}
                                         onChange={(e) => setFormData({ ...formData, '연락처': e.target.value })}
                                         placeholder="연락처"
@@ -464,22 +464,22 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                                     navigator.clipboard.writeText(copyText);
                                                     alert('연락처가 복사되었습니다.');
                                                 }}
-                                                className="text-slate-400 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-700"
+                                                className="text-slate-300 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-600"
                                                 title="연락처 복사"
                                             >
-                                                <Copy className="w-3 h-3" />
+                                                <Copy className="w-3.5 h-3.5" />
                                             </button>
                                         )}
                                     </div>
                                 )}
                             </div>
-                            <div className="hidden sm:block w-px h-3 bg-slate-600 shrink-0"></div>
+                            <div className="hidden sm:block w-px h-3.5 bg-slate-500 shrink-0"></div>
                             <div className="flex items-center gap-1.5 min-w-0">
-                                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                <MapPin className="w-4 h-4 shrink-0 opacity-90" />
                                 {isHeaderEditing ? (
                                     <input
                                         type="text"
-                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-xs outline-none focus:ring-1 w-full"
+                                        className="bg-slate-700 border-slate-600 text-white rounded px-2 py-0.5 text-sm font-normal outline-none focus:ring-1 w-full"
                                         value={formData['주소'] || ''}
                                         onChange={(e) => setFormData({ ...formData, '주소': e.target.value })}
                                         placeholder="주소"
@@ -493,10 +493,10 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                                     navigator.clipboard.writeText(String(formData['주소']));
                                                     alert('주소가 복사되었습니다.');
                                                 }}
-                                                className="text-slate-400 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-700 shrink-0"
+                                                className="text-slate-300 hover:text-white transition-colors p-0.5 rounded hover:bg-slate-600 shrink-0"
                                                 title="주소 복사"
                                             >
-                                                <Copy className="w-3 h-3" />
+                                                <Copy className="w-3.5 h-3.5" />
                                             </button>
                                         )}
                                     </div>
