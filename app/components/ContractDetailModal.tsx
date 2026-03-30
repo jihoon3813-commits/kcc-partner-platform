@@ -106,6 +106,8 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
     useEffect(() => {
         if (!isOpen) return;
         const pm = formData.paymentMethod || '';
+
+        // 현금/카드 잔금 계산
         const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(pm);
         if (isCashOrCard) {
             const finalQuote = Number(formData.finalQuotePrice) || 0;
@@ -115,7 +117,79 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 setFormData((prev) => ({ ...prev, remainingBalance: balance }));
             }
         }
-    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.paymentAmount1, formData.remainingBalance]);
+
+        // 구독(할부계산): 원리금균등상환 연 10% (현금+구독, 카드+구독 포함)
+        if (['구독(할부)', '현금+구독', '카드+구독'].includes(pm)) {
+            const finalQuote = Number(formData.finalQuotePrice) || 0;
+            const advance = Number(formData.advancePayment) || 0;
+            const months = Number(formData.subscriptionMonths) || 0;
+            const principal = finalQuote - advance;
+
+            if (months > 0 && principal > 0) {
+                const annualRate = 0.10;
+                const monthlyRate = annualRate / 12;
+                // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
+                const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+                const totalPayment = monthlyPayment * months;
+
+                const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
+                const roundedTotal = Math.round(totalPayment);
+
+                if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
+                    setFormData(prev => ({
+                        ...prev,
+                        monthlySubscriptionFee: roundedMonthly,
+                        totalSubscriptionFee: roundedTotal
+                    }));
+                }
+            } else if (months > 0 && principal <= 0) {
+                if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
+                    setFormData(prev => ({
+                        ...prev,
+                        monthlySubscriptionFee: 0,
+                        totalSubscriptionFee: 0
+                    }));
+                }
+            }
+        }
+    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
+
+    // 연동: 결제방법 선택 시 기본값 세팅
+    useEffect(() => {
+        const pm = formData.paymentMethod;
+        if (['구독(할부)', '현금+구독', '카드+구독'].includes(pm || '')) {
+            setFormData(prev => ({
+                ...prev,
+                hasInterest: '유',
+                subscriptionMonths: prev.subscriptionMonths || 24
+            }));
+        } else if (pm === 'BSON') {
+            setFormData(prev => ({
+                ...prev,
+                subscriptionMonths: 60,
+                monthlySubscriptionFee: prev.monthlySubscriptionFee || 111000
+            }));
+        }
+    }, [formData.paymentMethod]);
+
+    // BSON 계산: 월구독료 선택에 따른 선납금 자동 계산
+    useEffect(() => {
+        if (formData.paymentMethod === 'BSON') {
+            const finalQuote = Number(formData.finalQuotePrice) || 0;
+            const monthlyFee = Number(formData.monthlySubscriptionFee) || 0;
+            let advance = 0;
+
+            if (monthlyFee === 111000) advance = finalQuote - 5000000;
+            else if (monthlyFee === 222000) advance = finalQuote - 10000000;
+            else if (monthlyFee === 333000) advance = finalQuote - 15000000;
+
+            if (advance < 0) advance = 0;
+
+            if (formData.advancePayment !== advance) {
+                setFormData(prev => ({ ...prev, advancePayment: advance }));
+            }
+        }
+    }, [formData.paymentMethod, formData.finalQuotePrice, formData.monthlySubscriptionFee]);
 
     if (!isOpen || !customer) return null;
 
@@ -388,6 +462,12 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                         onChange={(e) => setFormData({ ...formData, advancePayment: e.target.value.replace(/[^0-9]/g, '') })} />
                                 </div>
                                 <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1 text-blue-600">잔금(구독원금)</label>
+                                    <div className="w-full bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700">
+                                        {((Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0)).toLocaleString()} 원
+                                    </div>
+                                </div>
+                                <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">이자유무</label>
                                     <select className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
                                         value={formData.hasInterest || ''} onChange={(e) => setFormData({ ...formData, hasInterest: e.target.value })}>
@@ -397,21 +477,27 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">총구독료</label>
-                                    <input type="text" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums focus:border-blue-500 outline-none"
-                                        value={formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee).toLocaleString() : ''}
-                                        onChange={(e) => setFormData({ ...formData, totalSubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
-                                </div>
-                                <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">구독개월</label>
-                                    <input type="number" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right focus:border-blue-500 outline-none"
-                                        value={formData.subscriptionMonths || ''} onChange={(e) => setFormData({ ...formData, subscriptionMonths: e.target.value })} />
+                                    <select className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        value={formData.subscriptionMonths || ''} onChange={(e) => setFormData({ ...formData, subscriptionMonths: Number(e.target.value) })}>
+                                        <option value="">선택</option>
+                                        <option value="24">24개월</option>
+                                        <option value="36">36개월</option>
+                                        <option value="48">48개월</option>
+                                        <option value="60">60개월</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">월구독료</label>
-                                    <input type="text" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums focus:border-blue-500 outline-none"
-                                        value={formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : ''}
-                                        onChange={(e) => setFormData({ ...formData, monthlySubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
+                                    <div className="w-full bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700">
+                                        {formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : '0'} 원
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">총구독료</label>
+                                    <div className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-medium text-gray-600">
+                                        {formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee).toLocaleString() : '0'} 원
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">할부약정일(모바일)</label>
@@ -429,21 +515,26 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                         {isRental && (
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">선납금</label>
-                                    <input type="text" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums focus:border-blue-500 outline-none"
-                                        value={formData.advancePayment ? Number(formData.advancePayment).toLocaleString() : ''}
-                                        onChange={(e) => setFormData({ ...formData, advancePayment: e.target.value.replace(/[^0-9]/g, '') })} />
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">월구독료</label>
+                                    <select className="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm font-bold text-blue-700 outline-none focus:border-blue-500"
+                                        value={formData.monthlySubscriptionFee || ''} 
+                                        onChange={(e) => setFormData({ ...formData, monthlySubscriptionFee: Number(e.target.value) })}>
+                                        <option value="111000">111,000 원</option>
+                                        <option value="222000">222,000 원</option>
+                                        <option value="333000">333,000 원</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">선납금 (자동계산)</label>
+                                    <div className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-medium text-gray-600">
+                                        {formData.advancePayment ? Number(formData.advancePayment).toLocaleString() : '0'} 원
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">구독개월</label>
-                                    <input type="number" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right focus:border-blue-500 outline-none"
-                                        value={formData.subscriptionMonths || ''} onChange={(e) => setFormData({ ...formData, subscriptionMonths: e.target.value })} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">월구독료</label>
-                                    <input type="text" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums focus:border-blue-500 outline-none"
-                                        value={formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : ''}
-                                        onChange={(e) => setFormData({ ...formData, monthlySubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
+                                    <div className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right font-bold text-gray-700">
+                                        60 개월 (고정)
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">녹취약정일</label>
