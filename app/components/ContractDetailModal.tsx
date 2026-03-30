@@ -312,6 +312,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     <option value="결제완료">결제완료</option>
                                     <option value="공사완료">공사완료</option>
                                     <option value="결제취소">결제취소</option>
+                                    <option value="진행취소">진행취소</option>
                                 </select>
                             </div>
                         </div>
