@@ -264,15 +264,22 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     const handleAddLink = (key: string, label: string) => {
         const url = prompt(`${label} 새로운 링크를 입력하세요`);
         if (url) {
+            const now = new Date();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const dateStr = `${mm}-${dd} ${hh}:${min}`;
+
             const current = formData[key] ? String(formData[key]) : '';
-            const updated = current ? `${current}\n${url}` : url;
+            const updated = current ? `${current}\n${url.trim()}|${dateStr}` : `${url.trim()}|${dateStr}`;
             setFormData({ ...formData, [key]: updated });
         }
     };
 
     // 링크 수정 핸들러
-    const handleEditLinkItem = (key: string, index: number, link: string) => {
-        const url = prompt('링크를 수정하세요 (빈칸 입력시 삭제)', link);
+    const handleEditLinkItem = (key: string, index: number, linkStr: string) => {
+        const url = prompt('링크를 수정하세요 (빈칸 입력시 삭제)', linkStr);
         if (url !== null) {
             const currentLinks = String(formData[key] || '').split(/[\n,]/).map(s => s.trim()).filter(Boolean);
             if (url.trim() === '') {
@@ -340,38 +347,66 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                 </div>
                 <div className="space-y-1.5">
                     {links.length > 0 ? (
-                        links.map((link, idx) => {
+                        links.map((linkStr, idx) => {
+                            const parts = linkStr.split('|');
+                            const link = parts[0];
+                            let regDate = parts[1] || '';
+
+                            // 소급 적용: 날짜가 없는 경우 진행로그에서 찾기
+                            if (!regDate) {
+                                const searchTerms = [`${label}${idx + 1}`, `${label} ${idx + 1}`];
+                                if (links.length === 1) searchTerms.push(label);
+                                
+                                for (const log of progressLogs) {
+                                    if (searchTerms.some(term => log.includes(term))) {
+                                        const dateMatch = log.match(/^\[(\d{2}-\d{2}\s\d{2}:\d{2})\]/);
+                                        if (dateMatch) {
+                                            regDate = dateMatch[1];
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
                             let formattedHref = link;
                             if (formattedHref && !/^https?:\/\//i.test(formattedHref)) {
                                 formattedHref = `http://${formattedHref}`;
                             }
                             return (
-                                <div key={idx} className="flex gap-1.5 items-stretch">
-                                    <a
-                                        href={formattedHref}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className={`flex-1 py-1.5 rounded-lg border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm min-w-0`}
-                                        title={link}
-                                    >
-                                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                                        <span className="ml-1.5 truncate max-w-[140px]">{links.length > 1 ? `${label} ${idx + 1}` : '이동'}</span>
-                                    </a>
-                                    {!readOnly && (
-                                        <button
-                                            onClick={() => handleEditLinkItem(key, idx, link)}
-                                            className={`px-3 rounded-lg border text-xs font-medium bg-white hover:bg-gray-50 text-gray-400 hover:text-gray-600 shadow-sm transition-colors flex items-center justify-center shrink-0`}
-                                            title="수정 또는 삭제"
+                                <div key={idx} className="flex flex-col gap-1">
+                                    <div className="flex gap-1.5 items-stretch">
+                                        <a
+                                            href={formattedHref}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className={`flex-1 py-1.5 rounded-lg border text-xs font-bold flex items-center justify-center transition-all ${colorClass} hover:opacity-80 active:scale-95 shadow-sm min-w-0`}
+                                            title={link}
                                         >
-                                            <Edit2 className="w-3.5 h-3.5" />
-                                        </button>
+                                            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                                            <span className="ml-1.5 truncate max-w-[140px]">{links.length > 1 ? `${label} ${idx + 1}` : '이동'}</span>
+                                        </a>
+                                        {!readOnly && (
+                                            <button
+                                                onClick={() => handleEditLinkItem(key, idx, linkStr)}
+                                                className={`px-3 rounded-lg border text-xs font-medium bg-white hover:bg-gray-50 text-gray-400 hover:text-gray-600 shadow-sm transition-colors flex items-center justify-center shrink-0`}
+                                                title="수정 또는 삭제"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {regDate && (
+                                        <div className="text-[9px] text-gray-400 flex items-center gap-1 px-1">
+                                            <Calendar className="w-2.5 h-2.5" />
+                                            {regDate} 등록됨
+                                        </div>
                                     )}
                                 </div>
                             );
                         })
                     ) : (
                         <div className="text-center text-[11px] font-bold py-3 text-gray-400 bg-white rounded-lg border border-dashed border-gray-200">
-                            등록된 링크가 없습니다
+                             등록된 링크가 없습니다
                         </div>
                     )}
                 </div>
