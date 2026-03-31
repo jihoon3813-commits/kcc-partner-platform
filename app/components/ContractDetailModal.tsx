@@ -126,14 +126,19 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
             const principal = finalQuote - advance;
 
             if (months > 0 && principal > 0) {
-                const annualRate = 0.10;
-                const monthlyRate = annualRate / 12;
-                // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
-                const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-                const totalPayment = monthlyPayment * months;
+                const annualRate = formData.hasInterest === '무' ? 0 : 0.10;
+                let monthlyPayment = 0;
+                
+                if (annualRate > 0) {
+                    const monthlyRate = annualRate / 12;
+                    // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
+                    monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+                } else {
+                    monthlyPayment = principal / months;
+                }
 
                 const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
-                const roundedTotal = Math.round(totalPayment);
+                const roundedTotal = roundedMonthly * months;
 
                 if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
                     setFormData(prev => ({
@@ -152,7 +157,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 }
             }
         }
-    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
+    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.hasInterest, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
 
     // 연동: 결제방법 선택 시 기본값 세팅
     useEffect(() => {
