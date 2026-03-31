@@ -24,7 +24,8 @@ export default defineSchema({
         created_at: v.optional(v.string()), // Original application date
         updatedAt: v.optional(v.number()), // For sorting modified customers to the top
         assignedTm: v.optional(v.string()), // assigned TM
-    }).index("by_no", ["no"]).index("by_channel", ["channel"]),
+        category: v.optional(v.string()), // 'window' | 'kitchen' | 'bathroom'
+    }).index("by_no", ["no"]).index("by_channel", ["channel"]).index("by_category", ["category"]),
 
     customerLabels: defineTable({
         name: v.string(),

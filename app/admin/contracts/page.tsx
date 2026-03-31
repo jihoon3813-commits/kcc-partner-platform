@@ -2,7 +2,7 @@
 
 import { useState, useMemo, Suspense } from 'react';
 
-import { Search, FileText, RefreshCcw, MapPin, Trash2, ListOrdered, Download } from 'lucide-react';
+import { Search, FileText, RefreshCcw, MapPin, Trash2, ListOrdered, Download, Boxes } from 'lucide-react';
 import ContractDetailModal, { Customer } from '@/app/components/ContractDetailModal';
 import ExcelDownloadModal from '@/app/components/ExcelDownloadModal';
 import { useQuery, useMutation } from 'convex/react';
@@ -24,6 +24,7 @@ function AdminContractsContent() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [partnerFilter, setPartnerFilter] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
     const [checklistFilter, setChecklistFilter] = useState('');
     const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc' | 'checklist_desc'>('reg_desc');
 
@@ -83,6 +84,7 @@ function AdminContractsContent() {
                 '최종견적 금액': contract?.finalQuotePrice || c.price_final || 0,
                 '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
                 'id': c._id,
+                'category': c.category,
                 '_creationTime': c._creationTime,
                 'updatedAt': c.updatedAt,
                 // ==== 계약 상세 정보 ====
@@ -176,13 +178,21 @@ function AdminContractsContent() {
             );
             if (!searchMatch) return false;
 
+            if (categoryFilter) {
+                if (categoryFilter === 'window') {
+                    if (c.category && c.category !== 'window') return false;
+                } else {
+                    if (c.category !== categoryFilter) return false;
+                }
+            }
+
             if (statusFilter && c.contractStatus !== statusFilter) return false;
             if (partnerFilter && c['유입채널'] !== partnerFilter) return false;
             if (checklistFilter && !c.alerts.includes(checklistFilter)) return false;
 
             return true;
         });
-    }, [sortedCustomers, searchTerm, statusFilter, partnerFilter, checklistFilter]);
+    }, [sortedCustomers, searchTerm, statusFilter, partnerFilter, categoryFilter, checklistFilter]);
 
     const loading = convexCustomers === undefined;
 
@@ -237,8 +247,8 @@ function AdminContractsContent() {
                     </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                    <div className="flex-1 min-w-[150px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                    <div className="flex flex-col">
                         <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block">검색어 (이름, 연락처, 주소, 유입채널)</label>
                         <div className="relative group">
                             <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -252,7 +262,21 @@ function AdminContractsContent() {
                         </div>
                     </div>
 
-                    <div className="w-full lg:w-[140px] shrink-0">
+                    <div className="flex flex-col">
+                        <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block">제품 카테고리</label>
+                        <select
+                            className="w-full px-3 py-2.5 bg-gray-50 border border-transparent rounded-xl text-sm font-bold outline-none focus:bg-white focus:border-blue-200 transition-all cursor-pointer"
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                            <option value="">제품카테고리 전체</option>
+                            <option value="window">🪟 창호</option>
+                            <option value="kitchen">🍳 주방</option>
+                            <option value="bathroom">🛀 욕실</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col">
                         <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block">계약 진행상태</label>
                         <select
                             className="w-full px-3 py-2.5 bg-gray-50 border border-transparent rounded-xl text-sm font-bold outline-none focus:bg-white focus:border-blue-200 transition-all cursor-pointer"
@@ -264,7 +288,7 @@ function AdminContractsContent() {
                         </select>
                     </div>
 
-                    <div className="w-full lg:w-[140px] shrink-0">
+                    <div className="flex flex-col">
                         <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block">유입채널</label>
                         <select
                             className="w-full px-3 py-2.5 bg-gray-50 border border-transparent rounded-xl text-sm font-bold outline-none focus:bg-white focus:border-blue-200 transition-all cursor-pointer"
@@ -276,7 +300,7 @@ function AdminContractsContent() {
                         </select>
                     </div>
 
-                    <div className="w-full lg:w-[190px] shrink-0">
+                    <div className="flex flex-col">
                         <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block text-red-600">체크리스트 필터</label>
                         <select
                             className="w-full px-3 py-2.5 bg-gray-50 border border-transparent rounded-xl text-sm font-bold outline-none focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-red-600 truncate"
@@ -292,7 +316,7 @@ function AdminContractsContent() {
                         </select>
                     </div>
 
-                    <div className="w-full lg:w-[210px] shrink-0">
+                    <div className="flex flex-col">
                         <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block">정렬 기준</label>
                         <div className="relative group">
                             <ListOrdered className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -371,7 +395,16 @@ function AdminContractsContent() {
                                         </div>
 
                                         <div className="flex items-baseline gap-3 mt-1">
-                                            <h3 className="text-lg font-black text-gray-900 leading-tight">{customer['고객명']}</h3>
+                                            <div className="flex items-center gap-2">
+                                                {customer.category === 'kitchen' ? (
+                                                    <span className="text-[10px] font-black bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md border border-purple-200">주방</span>
+                                                ) : customer.category === 'bathroom' ? (
+                                                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">욕실</span>
+                                                ) : (
+                                                    <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200">창호</span>
+                                                )}
+                                                <h3 className="text-lg font-black text-gray-900 leading-tight">{customer['고객명']}</h3>
+                                            </div>
                                             <span className="text-sm text-gray-500 font-bold tracking-tight">{customer['연락처']}</span>
                                         </div>
 

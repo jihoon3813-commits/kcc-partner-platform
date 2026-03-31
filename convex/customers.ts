@@ -77,6 +77,7 @@ export const createCustomer = mutation({
         link_final_cust: v.optional(v.string()),
         partner_benefit: v.optional(v.string()),
         created_at: v.optional(v.string()),
+        category: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         let finalNo = args.no;
@@ -100,6 +101,7 @@ export const createCustomer = mutation({
             no: finalNo,
             status: args.status ?? "접수",
             label: args.label ?? "일반",
+            category: args.category ?? "window",
             // We don't set updatedAt here to let it use _creationTime, showing as "New" (Blue) in UI.
         });
     },
@@ -128,6 +130,7 @@ export const updateCustomer = mutation({
             link_final_cust: v.optional(v.string()),
             partner_benefit: v.optional(v.string()),
             created_at: v.optional(v.string()),
+            category: v.optional(v.string()),
         }),
     },
     handler: async (ctx, args) => {
@@ -176,6 +179,7 @@ export const batchCreate = mutation({
             link_final_cust: v.optional(v.string()),
             partner_benefit: v.optional(v.string()),
             created_at: v.optional(v.string()),
+            category: v.optional(v.string()),
         }))
     },
     handler: async (ctx, args) => {
@@ -205,6 +209,7 @@ export const batchCreate = mutation({
                 no: finalNo,
                 status: customer.status || "접수",
                 label: customer.label || "일반",
+                category: customer.category || "window",
                 // updatedAt을 생략하여 _creationTime만으로 최신 등록건 판단(분류기 파란색 띠 표시)
             });
         }
@@ -342,4 +347,3 @@ export const normalizeSorting = mutation({
         };
     },
 });
-

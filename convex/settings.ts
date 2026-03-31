@@ -14,7 +14,7 @@ export const syncFromCustomers = mutation({
         const newStatuses = new Set<string>();
 
         // Hardcoded defaults from old API as starting seed
-        const defaultLabels = ['일반', '체크', '접수', '완료', '보류'];
+        const defaultLabels = ['일반', '체크', '접수', '완료', '보류', '주방', '욕실'];
         const defaultStatuses = [
             '접수', '부재', '예약콜', '거부',
             '가견적요청', '가견적생성', '가견적불가', '사이즈요청',

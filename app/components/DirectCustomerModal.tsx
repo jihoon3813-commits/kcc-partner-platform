@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { X, UserPlus, Calendar, Layout, MapPin, Phone, User, MessageSquare, RefreshCcw, Hash } from 'lucide-react';
+import { X, UserPlus, Calendar, Layout, MapPin, Phone, User, MessageSquare, RefreshCcw, Hash, Boxes } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { format } from 'date-fns';
@@ -9,9 +9,10 @@ import { format } from 'date-fns';
 interface DirectCustomerModalProps {
     isOpen: boolean;
     onClose: () => void;
+    defaultCategory?: string;
 }
 
-export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerModalProps) {
+export default function DirectCustomerModal({ isOpen, onClose, defaultCategory }: DirectCustomerModalProps) {
     const createCustomer = useMutation(api.customers.createCustomer);
     const batchCreate = useMutation(api.customers.batchCreate);
     const convexCustomers = useQuery(api.customers.listCustomers);
@@ -23,6 +24,7 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
         customChannel: '',
         rawInfo: '',
         startNo: '',
+        category: defaultCategory || 'window'
     });
 
     const [parsedCustomers, setParsedCustomers] = useState<Array<{ name: string, contact: string, address: string }>>([]);
@@ -34,6 +36,13 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
             setFormData(prev => ({ ...prev, startNo: (latestNo + 1).toString() }));
         }
     }, [latestNo, formData.startNo]);
+
+    // Set default category when prop changes or modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setFormData(prev => ({ ...prev, category: defaultCategory || 'window' }));
+        }
+    }, [isOpen, defaultCategory]);
 
     // Get unique channels for selection
     const channels = useMemo(() => {
@@ -84,7 +93,8 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                     channel: channel,
                     created_at: formData.created_at,
                     status: '접수',
-                    label: '일반'
+                    label: '일반',
+                    category: formData.category
                 });
             } else {
                 const startNum = parseInt(formData.startNo);
@@ -101,7 +111,8 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                         channel: channel,
                         created_at: formData.created_at,
                         status: '접수',
-                        label: '일반'
+                        label: '일반',
+                        category: formData.category
                     };
                 });
                 await batchCreate({ customers: data });
@@ -115,6 +126,7 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                 customChannel: '',
                 rawInfo: '',
                 startNo: latestNo !== undefined ? (latestNo + 1).toString() : '',
+                category: defaultCategory || 'window'
             });
             setParsedCustomers([]);
         } catch (error) {
@@ -147,6 +159,31 @@ export default function DirectCustomerModal({ isOpen, onClose }: DirectCustomerM
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[80vh]">
+                    {/* Category Selection */}
+                    <div className="space-y-3">
+                        <label className="text-sm font-black text-gray-700 flex items-center gap-2">
+                            <Boxes className="w-4 h-4 text-purple-500" /> 제품 카테고리
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {[
+                                { id: 'window', label: '🪟 창호' },
+                                { id: 'kitchen', label: '🍳 주방' },
+                                { id: 'bathroom', label: '🛀 욕실' }
+                            ].map((cat) => (
+                                <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, category: cat.id })}
+                                    className={`py-3.5 rounded-2xl text-sm font-bold transition-all border-2 ${formData.category === cat.id 
+                                        ? 'bg-purple-50 border-purple-500 text-purple-700 shadow-sm' 
+                                        : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'}`}
+                                >
+                                    {cat.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Registration Date */}
                         <div className="space-y-2">
