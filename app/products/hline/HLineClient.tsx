@@ -753,7 +753,7 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
 
                     <div className="flex flex-col gap-3 w-full max-w-sm mx-auto mb-12">
                         <button 
-                            onClick={() => window.open('https://kcc-partner.vercel.app/consult', '_blank')}
+                            onClick={handleConsultClick}
                             className="bg-gradient-to-r from-[#C9A97A] to-[#B8944A] text-[#1E1E1E] font-black py-5 rounded-2xl flex items-center justify-center gap-3 shadow-2xl active:scale-95 transition-all text-lg tracking-tight"
                         >
                             <MessageSquare size={22} fill="currentColor" stroke="none" />
