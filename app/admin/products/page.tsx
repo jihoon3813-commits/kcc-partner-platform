@@ -28,7 +28,7 @@ export default function AdminProductsPage() {
     // Form State
     const [formData, setFormData] = useState({
         id: '',
-        category: '창호/샷시',
+        category: '창호',
         name: '',
         description: '',
         specs: ['', '', ''],
@@ -63,7 +63,7 @@ export default function AdminProductsPage() {
         setEditMode(false);
         setFormData({
             id: '',
-            category: '창호/샷시',
+            category: '창호',
             name: '',
             description: '',
             specs: ['', '', ''],
@@ -198,9 +198,10 @@ export default function AdminProductsPage() {
                         defaultValue=""
                     >
                         <option value="">전체 카테고리</option>
-                        <option value="창호/샷시">창호/샷시</option>
-                        <option value="유리/글라스">유리/글라스</option>
-                        <option value="인테리어">인테리어</option>
+                        <option value="창호">창호</option>
+                        <option value="주방">주방</option>
+                        <option value="욕실">욕실</option>
+                        <option value="기타">기타</option>
                     </select>
                 </div>
             </div>
@@ -334,9 +335,9 @@ export default function AdminProductsPage() {
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         >
-                                            <option value="창호/샷시">창호/샷시</option>
-                                            <option value="유리/글라스">유리/글라스</option>
-                                            <option value="인테리어">인테리어</option>
+                                            <option value="창호">창호</option>
+                                            <option value="주방">주방</option>
+                                            <option value="욕실">욕실</option>
                                             <option value="기타">기타 상품</option>
                                         </select>
                                     </div>

@@ -208,10 +208,12 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
         return sortedCustomers.filter(c => {
             // Category Filtering
             if (categoryFilter) {
-                if (categoryFilter === 'window') {
-                    if (c.category && c.category !== 'window') return false;
-                } else {
-                    if (c.category !== categoryFilter) return false;
+                if (categoryFilter === '창호') {
+                    if (c.category && c.category !== '창호' && c.category !== 'window') return false;
+                } else if (categoryFilter === '주방') {
+                    if (c.category !== '주방' && c.category !== 'kitchen') return false;
+                } else if (categoryFilter === '욕실') {
+                    if (c.category !== '욕실' && c.category !== 'bathroom') return false;
                 }
             }
 
@@ -410,11 +412,11 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
                             const num = parseFloat(val.replace(/[^0-9.-]/g, ''));
                             obj[field] = isNaN(num) ? 0 : num;
                         } else if (field === 'category') {
-                            const catMap: Record<string, string> = { '창호': 'window', '주방': 'kitchen', '욕실': 'bathroom' };
+                            const catMap: Record<string, string> = { '창호': '창호', '주방': '주방', '욕실': '욕실', 'window': '창호', 'kitchen': '주방', 'bathroom': '욕실' };
                             obj[field] = catMap[val] || val;
                         } else obj[field] = val;
                     });
-                    return { ...obj, category: obj.category || 'window' } as any;
+                    return { ...obj, category: obj.category || '창호' } as any;
                 });
                 const result = await batchCreate({ customers: data });
                 if (result.success) alert(`${result.count}명의 고객 데이터가 일괄 등록되었습니다.`);
@@ -487,9 +489,9 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
                         <Boxes className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <select className="w-full pl-9 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none font-medium appearance-none cursor-pointer" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as any)}>
                             <option value="">제품카테고리 전체</option>
-                            <option value="window">🪟 창호</option>
-                            <option value="kitchen">🍳 주방</option>
-                            <option value="bathroom">🛀 욕실</option>
+                            <option value="창호">🪟 창호</option>
+                            <option value="주방">🍳 주방</option>
+                            <option value="욕실">🛀 욕실</option>
                         </select>
                     </div>
                     <div className="relative">
@@ -609,9 +611,9 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
                                     </div>
                                     <div className="flex items-baseline gap-3 mt-0.5">
                                         <div className="flex items-center gap-2">
-                                            {customer.category === 'kitchen' ? (
+                                            {(customer.category === 'kitchen' || customer.category === '주방') ? (
                                                 <span className="text-[10px] font-black bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md border border-purple-200">주방</span>
-                                            ) : customer.category === 'bathroom' ? (
+                                            ) : (customer.category === 'bathroom' || customer.category === '욕실') ? (
                                                 <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">욕실</span>
                                             ) : (
                                                 <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200">창호</span>

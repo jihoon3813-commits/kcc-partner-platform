@@ -40,6 +40,7 @@ function PartnerContractsContent() {
     // Filtering & Sorting State
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
     const [checklistFilter, setChecklistFilter] = useState('');
     const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc' | 'checklist_desc'>('reg_desc');
 
@@ -114,6 +115,7 @@ function PartnerContractsContent() {
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
                 contractCreationTime: contract?._creationTime || 0,
+                category: c.category,
                 alerts: alerts
             };
         });
@@ -191,6 +193,17 @@ function PartnerContractsContent() {
             if (!searchMatch) return false;
 
             if (statusFilter && c.contractStatus !== statusFilter) return false;
+            
+            if (categoryFilter) {
+                if (categoryFilter === '창호') {
+                    if (c.category && c.category !== '창호' && c.category !== 'window') return false;
+                } else if (categoryFilter === '주방') {
+                    if (c.category !== '주방' && c.category !== 'kitchen') return false;
+                } else if (categoryFilter === '욕실') {
+                    if (c.category !== '욕실' && c.category !== 'bathroom') return false;
+                }
+            }
+
             if (checklistFilter && !c.alerts.includes(checklistFilter)) return false;
 
             return true;
@@ -273,6 +286,20 @@ function PartnerContractsContent() {
                         >
                             <option value="">전체 상태</option>
                             {filterOptions.statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="w-full lg:w-[150px] shrink-0">
+                        <label className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 block">제품 카테고리</label>
+                        <select
+                            className="w-full px-3 py-2.5 bg-gray-50 border border-transparent rounded-xl text-sm font-bold outline-none focus:bg-white focus:border-blue-200 transition-all cursor-pointer"
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                            <option value="">카테고리 전체</option>
+                            <option value="창호">🪟 창호</option>
+                            <option value="주방">🍳 주방</option>
+                            <option value="욕실">🛀 욕실</option>
                         </select>
                     </div>
 
@@ -370,7 +397,16 @@ function PartnerContractsContent() {
                                         </div>
 
                                         <div className="flex items-baseline gap-3 mt-1">
-                                            <h3 className="text-lg font-black text-gray-900 leading-tight">{customer['고객명']}</h3>
+                                            <div className="flex items-center gap-2">
+                                                {(customer.category === 'kitchen' || customer.category === '주방') ? (
+                                                    <span className="text-[10px] font-black bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md border border-purple-200">주방</span>
+                                                ) : (customer.category === 'bathroom' || customer.category === '욕실') ? (
+                                                    <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">욕실</span>
+                                                ) : (
+                                                    <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200">창호</span>
+                                                )}
+                                                <h3 className="text-lg font-black text-gray-900 leading-tight">{customer['고객명']}</h3>
+                                            </div>
                                             <span className="text-sm text-gray-500 font-bold tracking-tight">{customer['연락처']}</span>
                                         </div>
 

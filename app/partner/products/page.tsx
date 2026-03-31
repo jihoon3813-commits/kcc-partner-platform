@@ -118,7 +118,7 @@ export default function PartnerCombinedProductsPage() {
         }
     };
 
-    const landingUrl = partnerInfo && selectedProduct ? `${baseUrl}${selectedProduct.link || '/products/onev'}?p=${partnerInfo['아이디']}` : '';
+    const landingUrl = partnerInfo && selectedProduct ? `${baseUrl}${selectedProduct.link || '/products/onev'}?p=${partnerInfo['아이디']}&cat=${encodeURIComponent(selectedProduct.category)}` : '';
 
     const handleCopy = () => {
         if (!landingUrl) return;
@@ -247,7 +247,7 @@ export default function PartnerCombinedProductsPage() {
                                 </div>
                                 <div className="p-6 bg-indigo-50/50 rounded-3xl border-2 border-dashed border-indigo-200 flex flex-col sm:flex-row items-center gap-6">
                                     <p className="flex-1 font-mono text-sm text-indigo-700 font-black break-all select-all">
-                                        {landingUrl || `${baseUrl}${selectedProduct.link || '/products/onev'}?p=${partnerInfo?.['아이디'] || 'loading...'}`}
+                                        {`${baseUrl}${selectedProduct.link || '/products/onev'}?p=${partnerInfo?.['아이디'] || '...'}&cat=${encodeURIComponent(selectedProduct.category)}`}
                                     </p>
                                     <div className="flex gap-3 shrink-0">
                                         <button onClick={handleCopy} className={`px-6 py-3 rounded-xl font-black text-xs transition-all uppercase ${copied ? 'bg-emerald-500 text-white' : 'bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50'}`}>
@@ -268,13 +268,13 @@ export default function PartnerCombinedProductsPage() {
                                 </div>
                                 <div className="p-6 bg-pink-50/50 rounded-3xl border-2 border-dashed border-pink-200 flex flex-col sm:flex-row items-center gap-6">
                                     <p className="flex-1 font-mono text-sm text-pink-700 font-black break-all select-all">
-                                        {baseUrl}/products/onev/consult?p={partnerInfo?.['아이디'] || '...'}
+                                        {`${baseUrl}/products/onev/consult?p=${partnerInfo?.['아이디'] || '...'}&cat=${encodeURIComponent(selectedProduct.category)}`}
                                     </p>
                                     <div className="flex gap-3 shrink-0">
                                         <button
                                             onClick={() => {
-                                                if (!baseUrl || !partnerInfo) return;
-                                                const url = `${baseUrl}/products/onev/consult?p=${partnerInfo['아이디']}`;
+                                                if (!baseUrl || !partnerInfo || !selectedProduct) return;
+                                                const url = `${baseUrl}/products/onev/consult?p=${partnerInfo['아이디']}&cat=${encodeURIComponent(selectedProduct.category)}`;
                                                 navigator.clipboard.writeText(url);
                                                 setConsultCopied(true);
                                                 setTimeout(() => setConsultCopied(false), 2000);
@@ -286,8 +286,8 @@ export default function PartnerCombinedProductsPage() {
                                         </button>
                                         <button
                                             onClick={() => {
-                                                if (!baseUrl || !partnerInfo) return;
-                                                window.open(`${baseUrl}/products/onev/consult?p=${partnerInfo['아이디']}`, '_blank');
+                                                if (!baseUrl || !partnerInfo || !selectedProduct) return;
+                                                window.open(`${baseUrl}/products/onev/consult?p=${partnerInfo['아이디']}&cat=${encodeURIComponent(selectedProduct.category)}`, '_blank');
                                             }}
                                             className="px-6 py-3 bg-gray-900 text-white rounded-xl font-black text-xs hover:bg-black transition-all uppercase flex items-center gap-2"
                                         >

@@ -101,7 +101,7 @@ export const createCustomer = mutation({
             no: finalNo,
             status: args.status ?? "접수",
             label: args.label ?? "일반",
-            category: args.category ?? "window",
+            category: args.category ?? "창호",
             // We don't set updatedAt here to let it use _creationTime, showing as "New" (Blue) in UI.
         });
     },
@@ -209,7 +209,7 @@ export const batchCreate = mutation({
                 no: finalNo,
                 status: customer.status || "접수",
                 label: customer.label || "일반",
-                category: customer.category || "window",
+                category: customer.category || "창호",
                 // updatedAt을 생략하여 _creationTime만으로 최신 등록건 판단(분류기 파란색 띠 표시)
             });
         }

@@ -1,20 +1,18 @@
 import React from 'react';
-import ONEVClient from './ONEVClient';
+import HLineClient from './HLineClient';
 
-export default async function ONEVProductPage({
+export default async function HLineProductPage({
     searchParams
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-    // searchParams를 바로 꺼내서 Client Component로 전달 (서버 대기 없음)
     const p = await searchParams;
     const partnerId = (p.p as string) || null;
-    const category = (p.cat as string) || "창호";
 
+    const category = (p.cat as string) || "주방";
     return (
-        <ONEVClient
+        <HLineClient
             partnerId={partnerId}
-            initialPartnerData={null}
             category={category}
         />
     );

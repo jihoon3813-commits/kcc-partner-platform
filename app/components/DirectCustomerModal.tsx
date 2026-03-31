@@ -24,7 +24,7 @@ export default function DirectCustomerModal({ isOpen, onClose, defaultCategory }
         customChannel: '',
         rawInfo: '',
         startNo: '',
-        category: defaultCategory || 'window'
+        category: defaultCategory || '창호'
     });
 
     const [parsedCustomers, setParsedCustomers] = useState<Array<{ name: string, contact: string, address: string }>>([]);
@@ -40,7 +40,7 @@ export default function DirectCustomerModal({ isOpen, onClose, defaultCategory }
     // Set default category when prop changes or modal opens
     useEffect(() => {
         if (isOpen) {
-            setFormData(prev => ({ ...prev, category: defaultCategory || 'window' }));
+            setFormData(prev => ({ ...prev, category: defaultCategory || '창호' }));
         }
     }, [isOpen, defaultCategory]);
 
@@ -126,7 +126,7 @@ export default function DirectCustomerModal({ isOpen, onClose, defaultCategory }
                 customChannel: '',
                 rawInfo: '',
                 startNo: latestNo !== undefined ? (latestNo + 1).toString() : '',
-                category: defaultCategory || 'window'
+                category: defaultCategory || '창호'
             });
             setParsedCustomers([]);
         } catch (error) {
@@ -166,9 +166,9 @@ export default function DirectCustomerModal({ isOpen, onClose, defaultCategory }
                         </label>
                         <div className="grid grid-cols-3 gap-3">
                             {[
-                                { id: 'window', label: '🪟 창호' },
-                                { id: 'kitchen', label: '🍳 주방' },
-                                { id: 'bathroom', label: '🛀 욕실' }
+                                { id: '창호', label: '🪟 창호' },
+                                { id: '주방', label: '🍳 주방' },
+                                { id: '욕실', label: '🛀 욕실' }
                             ].map((cat) => (
                                 <button
                                     key={cat.id}

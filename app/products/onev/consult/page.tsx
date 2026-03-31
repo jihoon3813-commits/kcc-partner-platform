@@ -43,6 +43,7 @@ interface PostcodeData {
 
 export default function ConsultPage() {
     const [partnerData, setPartnerData] = useState<PartnerData | null>(null);
+    const [category, setCategory] = useState('창호');
 
     // Consultation States
     const [name, setName] = useState('');
@@ -68,6 +69,8 @@ export default function ConsultPage() {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const pId = params.get('p');
+            const cat = params.get('cat');
+            if (cat) setCategory(cat);
 
             if (pId) {
                 // Fetch partner data
@@ -134,6 +137,7 @@ export default function ConsultPage() {
             }
 
             await createCustomerMutation({
+                category: category,
                 name,
                 contact,
                 address: consultType === 'quick' ? `${selectedSido} ${selectedGungu}` : `${address} ${detailAddress}`,

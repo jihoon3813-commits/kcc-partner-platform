@@ -45,9 +45,10 @@ interface PostcodeData {
 interface ONEVClientProps {
     initialPartnerData: PartnerData | null;
     partnerId: string | null;
+    category?: string;
 }
 
-export default function ONEVClient({ partnerId }: ONEVClientProps) {
+export default function ONEVClient({ partnerId, category = "창호" }: ONEVClientProps) {
     const [showBenefitModal, setShowBenefitModal] = useState(false);
 
     // Convex Data
@@ -177,6 +178,7 @@ export default function ONEVClient({ partnerId }: ONEVClientProps) {
                 status: '접수',
                 progress_detail: progressDetail,
                 partner_benefit: partnerBenefit,
+                category: category,
                 created_at: new Date().toISOString().split('T')[0]
             });
 

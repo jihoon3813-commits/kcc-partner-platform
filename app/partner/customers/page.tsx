@@ -104,6 +104,7 @@ function PartnerCustomersContent() {
             '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
             '신청일시': c._creationTime ? new Date(c._creationTime).toISOString() : '',
             'id': c._id,
+            'category': c.category,
             '_creationTime': c._creationTime,
             'updatedAt': c.updatedAt
         }));
@@ -148,6 +149,7 @@ function PartnerCustomersContent() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState(routerStatus || '');
     const [labelFilter, setLabelFilter] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
 
     // Date Filters
     const [dateFilter, setDateFilter] = useState<DateFilterType>('3months');
@@ -218,7 +220,19 @@ function PartnerCustomersContent() {
             }
 
             // Label Filter
+            // Label Filter
             if (labelFilter && c['라벨'] !== labelFilter) return false;
+
+            // Category Filter
+            if (categoryFilter) {
+                if (categoryFilter === '창호') {
+                    if (c.category && c.category !== '창호' && c.category !== 'window') return false;
+                } else if (categoryFilter === '주방') {
+                    if (c.category !== '주방' && c.category !== 'kitchen') return false;
+                } else if (categoryFilter === '욕실') {
+                    if (c.category !== '욕실' && c.category !== 'bathroom') return false;
+                }
+            }
 
             return true;
         });
@@ -228,6 +242,7 @@ function PartnerCustomersContent() {
         setSearchTerm('');
         setStatusFilter('');
         setLabelFilter('');
+        setCategoryFilter('');
         setDateFilter('3months');
     };
 
@@ -294,7 +309,7 @@ function PartnerCustomersContent() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                     {/* Search */}
                     <div className="relative group">
                         <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -305,6 +320,23 @@ function PartnerCustomersContent() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+                    </div>
+
+                    {/* Category Filter */}
+                    <div className="relative group">
+                        <div className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                            <RefreshCcw className="w-3.5 h-3.5 text-gray-400 group-focus-within:text-blue-500" />
+                        </div>
+                        <select
+                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm font-bold focus:bg-white focus:border-blue-200 focus:ring-4 focus:ring-blue-50 outline-none appearance-none cursor-pointer transition-all"
+                            value={categoryFilter}
+                            onChange={(e) => setCategoryFilter(e.target.value)}
+                        >
+                            <option value="">카테고리 전체</option>
+                            <option value="창호">🪟 창호</option>
+                            <option value="주방">🍳 주방</option>
+                            <option value="욕실">🛀 욕실</option>
+                        </select>
                     </div>
 
                     {/* Status Filter */}
@@ -464,6 +496,13 @@ function PartnerCustomersContent() {
                                         </div>
 
                                         <div className="flex items-baseline gap-3 mt-0.5">
+                                            {(customer.category === 'kitchen' || customer.category === '주방') ? (
+                                                <span className="text-[10px] font-black bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md border border-purple-200">주방</span>
+                                            ) : (customer.category === 'bathroom' || customer.category === '욕실') ? (
+                                                <span className="text-[10px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-200">욕실</span>
+                                            ) : (
+                                                <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200">창호</span>
+                                            )}
                                             <h3 className="text-xl font-black text-gray-900 leading-tight">{customer['고객명']}</h3>
                                             <span className="text-base text-gray-500 font-bold tracking-tight">{customer['연락처']}</span>
                                         </div>
