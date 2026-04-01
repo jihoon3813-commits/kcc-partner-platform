@@ -199,7 +199,7 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
                     style={{ y: heroBgY }}
                 >
                     <Image 
-                        src="/images/hline/hero.png" 
+                        src="https://hcc.kccglass.co.kr/interior/editor/images/000042/08_(3).jpg" 
                         alt="HomeCC H-LINE" 
                         fill 
                         className="object-cover opacity-75"
@@ -345,9 +345,8 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
 
                 <div className="space-y-6">
                     {[
-                        { img: '/images/hline/18t.png', num: '01 / STRUCTURE', title: '견고한 뼈대', desc: '변형 없는 18T와 고밀도 MDF. 무거운 냄비를 올려도 흔들림 없는 수납 공간을 완성합니다.', tags: ['18T 전면 적용', '고밀도 MDF', '일반대비 20% 두꺼움'] },
-                        { img: '/images/hline/eco.png', num: '02 / ECO MATERIAL', title: '친환경 안심 자재', desc: '안심하고 숨 쉴 수 있는 E0 등급. 포름알데히드 방출량을 엄격히 제어해 가족의 건강을 지킵니다.', tags: ['E0 등급 인증', '포름알데히드 제어', '가족 안심'] },
-                        { img: '/images/hline/hardware.png', num: '03 / HARDWARE', title: '명품 하드웨어', desc: '수만 번을 열어와도 변함없는 독일·이태리 부품. 문을 닫는 순간 느껴지는 고급감이 다릅니다.', tags: ['독일 HÄFELE', '저소음 댐핑', '장기 내구성'] }
+                        { img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/8afcb58e71f46.png', num: '01 / STRUCTURE', title: '견고한 뼈대', desc: '변형 없는 18T와 고밀도 MDF. 무거운 냄비를 올려도 흔들림 없는 수납 공간을 완성합니다.', tags: ['18T 전면 적용', '고밀도 MDF', '일반대비 20% 두꺼움'] },
+                        { img: 'https://cdn.imweb.me/upload/S20250904697320f4fd9ed/90a27f7cba55f.png', num: '02 / ECO MATERIAL', title: '친환경 안심 자재', desc: '안심하고 숨 쉴 수 있는 E0 등급. 포름알데히드 방출량을 엄격히 제어해 가족의 건강을 지킵니다.', tags: ['E0 등급 인증', '포름알데히드 제어', '가족 안심'] }
                     ].map((card, i) => (
                         <motion.div 
                             key={i}
@@ -355,18 +354,26 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.1 }}
-                            className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100"
+                            className="bg-white rounded-[32px] overflow-hidden shadow-md border border-gray-100"
                         >
-                            <div className="relative h-48 w-full">
-                                <Image src={card.img} alt={card.title} fill className="object-cover" unoptimized />
+                            <div className="p-3 pb-0">
+                                <div className="relative w-full aspect-video bg-slate-50 rounded-[20px] overflow-hidden">
+                                    <Image 
+                                        src={card.img} 
+                                        alt={card.title} 
+                                        fill 
+                                        className="object-contain p-2" 
+                                        unoptimized 
+                                    />
+                                </div>
                             </div>
-                            <div className="p-5">
+                            <div className="p-6">
                                 <span className="font-en text-[11px] font-bold tracking-[2px] text-[#C9A97A] mb-2 block">{card.num}</span>
-                                <h3 className="text-lg font-black mb-2">{card.title}</h3>
-                                <p className="text-gray-600 text-[13px] leading-relaxed mb-4 break-keep">{card.desc}</p>
+                                <h3 className="text-lg font-black mb-2 text-slate-800">{card.title}</h3>
+                                <p className="text-slate-500 text-[13px] leading-relaxed mb-4 break-keep">{card.desc}</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {card.tags.map(tag => (
-                                        <span key={tag} className="bg-[#F7F2EB] text-[#5B4335] text-[11px] font-bold px-3 py-1 rounded-full border border-[#EDE6DB]">
+                                        <span key={tag} className="bg-slate-50 text-slate-400 text-[10px] font-bold px-3 py-1 rounded-full border border-slate-100">
                                             {tag}
                                         </span>
                                     ))}
@@ -736,7 +743,13 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
 
             {/* Section 11: Final CTA */}
             <section id="section-final-cta" className="relative h-screen flex flex-col justify-center items-center text-center px-6 overflow-hidden bg-black">
-                <Image src="/images/hline/cta_bg.png" alt="CTA BG" fill className="object-cover opacity-60" unoptimized />
+                <Image 
+                    src="https://hcc.kccglass.co.kr/interior/editor/images/000042/08_(3).jpg" 
+                    alt="CTA BG" 
+                    fill 
+                    className="object-cover opacity-60" 
+                    unoptimized 
+                />
                 <div className="absolute inset-0 bg-black/40" />
                 
                 <div className="relative z-10 w-full">
@@ -785,12 +798,35 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
             </section>
 
             {/* Footer */}
-            <footer className="bg-gray-50 px-6 py-10 pb-32 text-center">
-                <span className="font-en text-sm font-black text-gray-300 tracking-[1px] mb-2 block uppercase">HomeCC H-LINE</span>
-                <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
-                    KCC글라스(주) | 고객센터 1588-0883<br />
-                    © 2026 HomeCC. All rights reserved.
-                </p>
+            <footer className="bg-[#111111] text-[#888888] py-20 pb-40 border-t border-white/5 font-['Noto_Sans_KR',sans-serif]">
+                <div className="max-w-[480px] mx-auto px-8 text-left">
+                    <div className="mb-8">
+                        <h4 className="text-white text-sm font-black mb-6 uppercase tracking-wider">판매사 정보</h4>
+                        <div className="text-[11px] leading-relaxed space-y-1.5 font-medium">
+                            <p>주식회사 티유디지털(KCC글라스 판매점) <span className="opacity-20 inline-block px-2">|</span> 대표 : 김정열</p>
+                            <p>주소 : 서울시 금천구 가산디지털1로 83, 802호</p>
+                            <p>사업자등록번호 : 220-87-15092</p>
+                        </div>
+                    </div>
+
+                    <div className="text-[11px] leading-relaxed space-y-1.5 font-medium mb-12">
+                        <p>고객센터 : 1588-0883</p>
+                        <p>개인정보 관리자 : 김은경 (kek3171@nate.com)</p>
+                    </div>
+
+                    <div className="flex items-center gap-4 border-t border-white/5 pt-10 opacity-40">
+                        <div className="relative w-[110px] h-[30px]">
+                            <Image 
+                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png" 
+                                alt="KCC HomeCC Logo" 
+                                fill 
+                                className="object-contain"
+                                unoptimized
+                            />
+                        </div>
+                        <p className="text-[9px] uppercase tracking-widest leading-none">© 2024 KCC HomeCC. All rights reserved.</p>
+                    </div>
+                </div>
             </footer>
 
             {/* Consultation Modal */}
