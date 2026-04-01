@@ -96,14 +96,28 @@ export const createCustomer = mutation({
             finalNo = (maxNo + 1).toString();
         }
 
-        return await ctx.db.insert("customers", {
+        const insertedId = await ctx.db.insert("customers", {
             ...args,
             no: finalNo,
             status: args.status ?? "접수",
             label: args.label ?? "일반",
             category: args.category ?? "창호",
-            // We don't set updatedAt here to let it use _creationTime, showing as "New" (Blue) in UI.
         });
+
+        const status = args.status ?? "접수";
+        if (status === "접수" || status === "가견적전달" || status === "최종견적전달") {
+            const customerName = args.name || "고객명 없음";
+            const channel = args.channel || "확인불가";
+            const message = `🔔 **신규 고객 등록 알림**\n- **고객명**: ${customerName}\n- **채널/담당자**: ${channel}\n- **상태**: \`${status}\``;
+            const webhookUrl = "https://discordapp.com/api/webhooks/1478231905261326359/VmYPVbrY6iT7wzhb2MO-FJeQaT2IAKzcwK9LN6Dx-hQmgECoGjZ5nZadmS_ElhtTo6ts";
+
+            await ctx.scheduler.runAfter(0, internal.actions.sendDiscordNotification, {
+                message,
+                webhookUrl
+            });
+        }
+        
+        return insertedId;
     },
 });
 
@@ -142,7 +156,7 @@ export const updateCustomer = mutation({
         });
 
         if (oldCustomer && args.updates.status && args.updates.status !== oldCustomer.status) {
-            if (args.updates.status === "가견적전달" || args.updates.status === "최종견적전달") {
+            if (args.updates.status === "접수" || args.updates.status === "가견적전달" || args.updates.status === "최종견적전달") {
                 const customerName = args.updates.name || oldCustomer.name || "고객명 없음";
                 const channel = args.updates.channel || oldCustomer.channel || "확인불가";
                 const message = `🔔 **고객 상태 변경 알림**\n- **고객명**: ${customerName}\n- **채널/담당자**: ${channel}\n- **새로운 상태**: \`${args.updates.status}\``;

@@ -75,9 +75,10 @@ export default function EasyBathClient({ partnerId, category = "욕실" }: EasyB
         const rawBenefit = partner.special_benefits || "";
         try {
             const benefitsObj = JSON.parse(rawBenefit);
-            return benefitsObj['P002'] || benefitsObj['easybath'] || Object.values(benefitsObj)[0] || '';
+            // P003 is the Bath (욕실) ID
+            return benefitsObj['P003'] || benefitsObj['easybath'] || benefitsObj['bath'] || '';
         } catch {
-            return rawBenefit;
+            return '';
         }
     }, [partner]);
 
