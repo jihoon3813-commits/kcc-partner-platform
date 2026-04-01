@@ -145,8 +145,8 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
                         className="fixed top-28 right-0 md:right-[calc(50%-235px)] z-[999] flex flex-col gap-3 items-end"
                     >
                         {[
-                            { text: "맞춤제작 가능", delay: 0.6 },
-                            { text: "최저가+10%할인", delay: 0.7 },
+                            { text: "60개월 구독 가능", delay: 0.6, highlight: true },
+                            { text: "맞춤제작 가능", delay: 0.7 },
                             { text: "본사 시공&A/S", delay: 0.8 }
                         ].map((item, idx) => (
                             <motion.div
@@ -160,22 +160,27 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
                                     x: { duration: 0.6, delay: item.delay, ease: "easeOut" },
                                     opacity: { duration: 0.6, delay: item.delay }
                                 }}
-                                className="w-[125px] py-3 rounded-l-full relative overflow-hidden group shadow-[0_10px_20px_rgba(0,0,0,0.15)] flex items-center justify-center text-[12px] font-black text-white cursor-default cursor-pointer tracking-tighter"
+                                className={`w-[130px] py-3.5 rounded-l-full relative overflow-hidden group shadow-2xl flex items-center justify-center text-[12px] font-black text-white cursor-pointer tracking-tighter ${item.highlight ? 'ring-2 ring-orange-500/50 shadow-orange-500/30' : ''}`}
                                 style={{
-                                    background: 'linear-gradient(135deg, #5B4335 0%, #C9A97A 50%, #5B4335 100%)',
+                                    background: item.highlight 
+                                        ? 'linear-gradient(135deg, #FF6B00 0%, #FFB800 50%, #FF6B00 100%)' 
+                                        : 'linear-gradient(135deg, #5B4335 0%, #C9A97A 50%, #5B4335 100%)',
                                     backgroundSize: '200% 100%',
                                 }}
                             >
                                 <motion.div 
                                     animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
-                                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                    transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
                                     className="absolute inset-0 opacity-80"
                                     style={{
-                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
                                         backgroundSize: '200% 100%',
                                     }}
                                 />
-                                <span className="relative z-10 drop-shadow-md whitespace-nowrap">{item.text}</span>
+                                <span className={`relative z-10 drop-shadow-md whitespace-nowrap ${item.highlight ? 'scale-110' : ''}`}>{item.text}</span>
+                                {item.highlight && (
+                                    <div className="absolute top-1 right-3 w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+                                )}
                             </motion.div>
                         ))}
                         

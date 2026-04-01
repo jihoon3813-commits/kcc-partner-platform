@@ -948,15 +948,18 @@ export default function EasyBathClient({ partnerId, category = "욕실" }: EasyB
             {showBanners && !submitted && (
                 <div className="fixed right-0 top-24 z-[2000] flex flex-col items-end gap-2 pointer-events-none">
                     {[
+                        { t: '60개월 구독 가능', c: 'from-yellow-400 to-yellow-500', h: true },
                         { t: '원데이 시공', c: 'from-orange-500 to-orange-400' },
-                        { t: '최저가+10%할인', c: 'from-orange-600 to-orange-500' },
                         { t: '본사 시공&A/S', c: 'from-slate-800 to-slate-700' }
                     ].map((b, i) => (
                         <div key={i} 
-                             className={`pointer-events-auto w-32 flex justify-center items-center bg-gradient-to-r ${b.c} text-white font-black text-[10px] px-3 py-3 rounded-l-2xl shadow-2xl relative overflow-hidden group animate-in slide-in-from-right duration-500`}
+                             className={`pointer-events-auto w-32 flex justify-center items-center bg-gradient-to-r ${b.c} ${b.h ? 'text-black ring-2 ring-yellow-400/50 shadow-yellow-500/50 scale-105' : 'text-white'} font-black text-[10px] px-3 py-3 rounded-l-2xl shadow-2xl relative overflow-hidden group animate-in slide-in-from-right duration-500`}
                              style={{ animationDelay: `${i * 100}ms` }}>
-                            <div className="shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full" />
+                            <div className="shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full" />
                             <span className="relative z-10">{b.t}</span>
+                            {b.h && (
+                                <div className="absolute top-1 right-2 w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+                            )}
                         </div>
                     ))}
                     <button 
