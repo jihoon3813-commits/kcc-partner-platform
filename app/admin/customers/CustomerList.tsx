@@ -232,9 +232,10 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
             }
 
             const searchMatch = !searchTerm ||
-                (c['고객명'] && c['고객명'].includes(searchTerm)) ||
-                (c['연락처'] && c['연락처'].includes(searchTerm)) ||
-                (c['주소'] && c['주소'].includes(searchTerm));
+                (c['고객명'] && String(c['고객명']).includes(searchTerm)) ||
+                (c['연락처'] && String(c['연락처']).includes(searchTerm)) ||
+                (c['주소'] && String(c['주소']).includes(searchTerm)) ||
+                (c['진행현황(상세)_최근'] && String(c['진행현황(상세)_최근']).includes(searchTerm));
             if (!searchMatch) return false;
 
             if (statusFilter && c['진행구분'] !== statusFilter) {
