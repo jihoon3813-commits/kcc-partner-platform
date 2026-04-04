@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="KCC HomeCC 이지바스 - 단 하루 만에 완성되는 이음매 없는 프리미엄 욕실. 먼지, 소음, 곰팡이 걱정 없이 욕실을 바꿔보세요." />
+  <title>KCC HomeCC 이지바스 | 단 하루 만에 완성되는 프리미엄 욕실</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- ========== 상단 고정 네비게이션 ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-kcc">KCC</span>
+        <span class="logo-homecc">HomeCC</span>
+      </div>
+      <button class="cta-btn-small" onclick="scrollToForm()">무료 상담 신청</button>
+    </div>
+  </header>
+
+  <!-- ========== SECTION 1 : 히어로 ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-star"></i>
+        욕실 리모델링의 새로운 기준
+      </div>
+      <h1 class="hero-title">
+        단 하루 만에 완성되는<br />
+        <span class="accent">이음매 없는 휴식처</span>
+      </h1>
+      <p class="hero-desc">
+        먼지, 소음, 곰팡이 걱정 없이<br />
+        욕실의 패러다임을 바꿉니다.
+      </p>
+      <div class="hero-badges">
+        <span class="badge"><i class="fas fa-check"></i> 단 1~2일 시공</span>
+        <span class="badge"><i class="fas fa-check"></i> 이음매 없는 구조</span>
+        <span class="badge"><i class="fas fa-check"></i> 거주 중 가능</span>
+      </div>
+      <div class="hero-cta-group">
+        <button class="cta-primary" onclick="scrollToForm()">
+          <i class="fas fa-phone-alt"></i>
+          이지바스 무료 상담 신청
+        </button>
+        <button class="cta-secondary" onclick="scrollToCase()">
+          시공 전후 사례 보기
+          <i class="fas fa-arrow-down"></i>
+        </button>
+      </div>
+    </div>
+    <div class="hero-scroll-hint">
+      <span>스크롤하여 더 알아보기</span>
+      <i class="fas fa-chevron-down bounce"></i>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 2 : 문제 제기 ========== -->
+  <section class="problem" id="problem">
+    <div class="container">
+      <div class="section-label danger">⚠️ 기존 방식의 한계</div>
+      <h2 class="section-title white">
+        타일 덧방,<br />
+        정말 <span class="highlight-red">괜찮을까요?</span>
+      </h2>
+      <p class="section-desc white">
+        새 타일을 덧붙이는 방식은 당장은 편해 보이지만,<br />
+        두 가지 핵심 문제를 영원히 해결하지 못합니다.
+      </p>
+
+      <div class="problem-cards">
+        <div class="problem-card" data-aos="fade-up" data-aos-delay="0">
+          <div class="problem-icon">
+            <i class="fas fa-compress-arrows-alt"></i>
+          </div>
+          <h3>공간 축소 문제</h3>
+          <p>기존 타일 위에 두꺼운 접착제와 새 타일을 덧붙이면 욕실이 점점 좁아집니다. 이미 좁은 욕실이 더욱 답답해질 수 있습니다.</p>
+          <div class="problem-visual">
+            <div class="layer-viz">
+              <div class="layer original">기존 타일</div>
+              <div class="layer adhesive">두꺼운 접착제</div>
+              <div class="layer newtile">새 타일</div>
+            </div>
+            <span class="problem-tag">⬅️ 공간이 줄어든다</span>
+          </div>
+        </div>
+
+        <div class="problem-card" data-aos="fade-up" data-aos-delay="150">
+          <div class="problem-icon red">
+            <i class="fas fa-biohazard"></i>
+          </div>
+          <h3>영원한 곰팡이 문제</h3>
+          <p>줄눈 사이로 물기와 세균이 쌓이면서 곰팡이가 반복해서 생겨납니다. 아무리 청소해도 줄눈이 있는 한 근본적인 해결이 불가능합니다.</p>
+          <div class="mold-visual">
+            <div class="grout-grid">
+              <div class="tile-cell"></div><div class="grout-v"></div><div class="tile-cell"></div><div class="grout-v"></div><div class="tile-cell"></div>
+              <div class="grout-h"></div><div class="grout-c"></div><div class="grout-h"></div><div class="grout-c"></div><div class="grout-h"></div>
+              <div class="tile-cell"></div><div class="grout-v"></div><div class="tile-cell mold"></div><div class="grout-v mold"></div><div class="tile-cell"></div>
+              <div class="grout-h"></div><div class="grout-c mold"></div><div class="grout-h mold"></div><div class="grout-c"></div><div class="grout-h"></div>
+              <div class="tile-cell"></div><div class="grout-v"></div><div class="tile-cell"></div><div class="grout-v"></div><div class="tile-cell"></div>
+            </div>
+            <span class="problem-tag red">🦠 줄눈 곰팡이 반복 발생</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="problem-summary">
+        <p>이 두 가지 문제는 타일로 마감하는 방식 자체의 한계입니다.<br />
+        <strong>방식 자체를 바꿔야 합니다.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 3 : 솔루션 ========== -->
+  <section class="solution" id="solution">
+    <div class="container">
+      <div class="section-label primary">✨ 혁신적 솔루션</div>
+      <h2 class="section-title">
+        타일의 한계를 넘다,<br />
+        <span class="accent">이지바스 신소재</span>
+      </h2>
+      <p class="section-desc">
+        타일 대신 얇고 강력한 첨단 패널을 사용하여,<br />
+        철거의 고통과 공간 축소 없이<br />
+        완벽한 욕실을 구현합니다.
+      </p>
+
+      <div class="solution-visual">
+        <div class="panel-demo">
+          <div class="panel-wrap">
+            <div class="panel-glow"></div>
+            <div class="panel-body">
+              <div class="panel-surface">
+                <div class="panel-shine"></div>
+                <div class="panel-label-wrap">
+                  <span class="panel-tag">Easy Bath Panel</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-callouts">
+            <div class="callout left">
+              <span class="callout-dot"></span>
+              <div class="callout-content">
+                <strong>초박형 설계</strong>
+                <p>기존 타일 두께의 1/3 수준</p>
+              </div>
+            </div>
+            <div class="callout right">
+              <span class="callout-dot"></span>
+              <div class="callout-content">
+                <strong>이음매 없는 표면</strong>
+                <p>줄눈 제로 클린 구조</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="solution-points">
+        <div class="solution-point">
+          <div class="sp-icon"><i class="fas fa-bolt"></i></div>
+          <div class="sp-text">
+            <strong>얇다</strong>
+            <span>공간 손실 최소화</span>
+          </div>
+        </div>
+        <div class="solution-point">
+          <div class="sp-icon"><i class="fas fa-shield-alt"></i></div>
+          <div class="sp-text">
+            <strong>강하다</strong>
+            <span>고내구성 소재</span>
+          </div>
+        </div>
+        <div class="solution-point">
+          <div class="sp-icon"><i class="fas fa-sparkles"></i></div>
+          <div class="sp-text">
+            <strong>깔끔하다</strong>
+            <span>무줄눈 완벽 마감</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 4 : 핵심 베네핏 5가지 ========== -->
+  <section class="benefits" id="benefits">
+    <div class="container">
+      <div class="section-label primary">🏆 5가지 핵심 장점</div>
+      <h2 class="section-title">
+        왜 이지바스를<br />선택해야 할까요?
+      </h2>
+
+      <div class="benefits-slider" id="benefitsSlider">
+        <!-- Card 1 -->
+        <div class="benefit-card active" data-index="0">
+          <div class="bc-header" style="background: linear-gradient(135deg, #1a3a6e, #2d5aa0);">
+            <div class="bc-num">01</div>
+            <div class="bc-icon"><i class="fas fa-clock"></i></div>
+          </div>
+          <div class="bc-body">
+            <h3>단 하루 시공</h3>
+            <p class="bc-highlight">창호 교체 1일 + 욕실 교체 1일,<br />단 이틀이면 가장 까다로운 공사가 끝납니다.</p>
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-day">Day 1</div>
+                <div class="tl-label">창호 교체</div>
+              </div>
+              <div class="tl-arrow"><i class="fas fa-arrow-right"></i></div>
+              <div class="tl-item">
+                <div class="tl-day">Day 2</div>
+                <div class="tl-label">욕실 교체</div>
+              </div>
+              <div class="tl-arrow"><i class="fas fa-arrow-right"></i></div>
+              <div class="tl-item done">
+                <div class="tl-day"><i class="fas fa-check"></i></div>
+                <div class="tl-label">완성!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="benefit-card" data-index="1">
+          <div class="bc-header" style="background: linear-gradient(135deg, #1a5c3a, #2d8a56);">
+            <div class="bc-num">02</div>
+            <div class="bc-icon"><i class="fas fa-expand-arrows-alt"></i></div>
+          </div>
+          <div class="bc-body">
+            <h3>공간 100% 유지</h3>
+            <p class="bc-highlight">초박형 패널로 기존 공간을 100% 유지합니다.<br />좁은 욕실도 더 이상 좁아지지 않습니다.</p>
+            <div class="comparison-bar">
+              <div class="bar-item">
+                <span class="bar-label">기존 방식</span>
+                <div class="bar-track">
+                  <div class="bar-fill red" style="width: 60%">60%만 남음</div>
+                </div>
+              </div>
+              <div class="bar-item">
+                <span class="bar-label">이지바스</span>
+                <div class="bar-track">
+                  <div class="bar-fill green" style="width: 100%">100% 유지</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="benefit-card" data-index="2">
+          <div class="bc-header" style="background: linear-gradient(135deg, #4a1a6e, #7a2da0);">
+            <div class="bc-num">03</div>
+            <div class="bc-icon"><i class="fas fa-water"></i></div>
+          </div>
+          <div class="bc-body">
+            <h3>무줄눈 클린 구조</h3>
+            <p class="bc-highlight">패널 사이 이음매가 없어 줄눈 자체가 존재하지 않습니다.<br />물때가 낄 틈이 없어 물청소만으로도 새것처럼!</p>
+            <div class="clean-icons">
+              <div class="clean-item yes">
+                <i class="fas fa-droplet"></i>
+                <span>물청소만으로 OK</span>
+              </div>
+              <div class="clean-item no">
+                <i class="fas fa-brush"></i>
+                <span>힘든 청소 불필요</span>
+                <div class="x-mark">✕</div>
+              </div>
+              <div class="clean-item no">
+                <i class="fas fa-biohazard"></i>
+                <span>곰팡이 걱정 없음</span>
+                <div class="x-mark">✕</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="benefit-card" data-index="3">
+          <div class="bc-header" style="background: linear-gradient(135deg, #6e3a1a, #a05e2d);">
+            <div class="bc-num">04</div>
+            <div class="bc-icon"><i class="fas fa-layer-group"></i></div>
+          </div>
+          <div class="bc-body">
+            <h3>3중 결합 안심 소재</h3>
+            <p class="bc-highlight">10년 이상 검증된 KCC의 기술력.<br />단순 플라스틱이 아닌 첨단 엔지니어링 소재!</p>
+            <div class="layers-stack">
+              <div class="material-layer top">
+                <div class="ml-icon"><i class="fas fa-sun"></i></div>
+                <div class="ml-info">
+                  <strong>UV 코팅 마감</strong>
+                  <span>스크래치·오염 방지</span>
+                </div>
+              </div>
+              <div class="material-layer mid">
+                <div class="ml-icon"><i class="fas fa-leaf"></i></div>
+                <div class="ml-info">
+                  <strong>친환경 PET 시트</strong>
+                  <span>안전한 소재</span>
+                </div>
+              </div>
+              <div class="material-layer bot">
+                <div class="ml-icon"><i class="fas fa-water"></i></div>
+                <div class="ml-info">
+                  <strong>PVC 탄산칼슘보드</strong>
+                  <span>물에 강한 기반재</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="benefit-card" data-index="4">
+          <div class="bc-header" style="background: linear-gradient(135deg, #1a4e6e, #2d7fa0);">
+            <div class="bc-num">05</div>
+            <div class="bc-icon"><i class="fas fa-shield-alt"></i></div>
+          </div>
+          <div class="bc-body">
+            <h3>무분진 보양 시스템</h3>
+            <p class="bc-highlight">거주 중 공사도 걱정 없습니다.<br />벽, 바닥, 가전, 가구까지 철저히 보호합니다.</p>
+            <div class="protection-list">
+              <div class="prot-item"><i class="fas fa-check-circle"></i> 비닐 보양으로 분진 차단</div>
+              <div class="prot-item"><i class="fas fa-check-circle"></i> 가전·가구 찍힘 방지</div>
+              <div class="prot-item"><i class="fas fa-check-circle"></i> 이사 없이 시공 가능</div>
+              <div class="prot-item"><i class="fas fa-check-circle"></i> 생활 방해 최소화</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 슬라이더 컨트롤 -->
+      <div class="slider-controls">
+        <button class="slider-btn prev" id="prevBtn" onclick="slideBenefit(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="slider-dots" id="sliderDots">
+          <span class="dot active" onclick="goToSlide(0)"></span>
+          <span class="dot" onclick="goToSlide(1)"></span>
+          <span class="dot" onclick="goToSlide(2)"></span>
+          <span class="dot" onclick="goToSlide(3)"></span>
+          <span class="dot" onclick="goToSlide(4)"></span>
+        </div>
+        <button class="slider-btn next" id="nextBtn" onclick="slideBenefit(1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 5 : 비교표 ========== -->
+  <section class="comparison" id="comparison">
+    <div class="container">
+      <div class="section-label primary">📊 직접 비교</div>
+      <h2 class="section-title">
+        당신의 욕실을 위한<br />
+        <span class="accent">최선의 선택</span>
+      </h2>
+
+      <div class="compare-table">
+        <div class="compare-header">
+          <div class="ch-item old">기존 타일 덧방</div>
+          <div class="ch-divider"></div>
+          <div class="ch-item new">
+            <span class="best-badge">추천</span>
+            홈씨씨 이지바스
+          </div>
+        </div>
+
+        <div class="compare-row">
+          <div class="cr-label"><i class="fas fa-calendar-day"></i> 시공 기간</div>
+          <div class="cr-row-body">
+            <div class="cr-old"><i class="fas fa-times-circle"></i> 수일 이상 소요</div>
+            <div class="cr-divider"></div>
+            <div class="cr-new"><i class="fas fa-check-circle"></i> 단 1~2일</div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="cr-label"><i class="fas fa-ruler-combined"></i> 공간감</div>
+          <div class="cr-row-body">
+            <div class="cr-old"><i class="fas fa-times-circle"></i> 두꺼워져 좁아짐</div>
+            <div class="cr-divider"></div>
+            <div class="cr-new"><i class="fas fa-check-circle"></i> 초박형으로 넓게 유지</div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="cr-label"><i class="fas fa-broom"></i> 위생/관리</div>
+          <div class="cr-row-body">
+            <div class="cr-old"><i class="fas fa-times-circle"></i> 줄눈 변색·곰팡이</div>
+            <div class="cr-divider"></div>
+            <div class="cr-new"><i class="fas fa-check-circle"></i> 이음매 없는 청정 구조</div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="cr-label"><i class="fas fa-palette"></i> 디자인</div>
+          <div class="cr-row-body">
+            <div class="cr-old"><i class="fas fa-times-circle"></i> 제한적</div>
+            <div class="cr-divider"></div>
+            <div class="cr-new"><i class="fas fa-check-circle"></i> 트렌디한 일체감</div>
+          </div>
+        </div>
+        <div class="compare-row last">
+          <div class="cr-label"><i class="fas fa-home"></i> 거주 중 시공</div>
+          <div class="cr-row-body">
+            <div class="cr-old"><i class="fas fa-times-circle"></i> 분진·소음 심함</div>
+            <div class="cr-divider"></div>
+            <div class="cr-new"><i class="fas fa-check-circle"></i> 무분진 보양 시스템</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-cta">
+        <button class="cta-primary" onclick="scrollToForm()">
+          <i class="fas fa-phone-alt"></i>
+          지금 바로 무료 상담 신청
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 6 : 비포 애프터 ========== -->
+  <section class="before-after" id="case">
+    <div class="container">
+      <div class="section-label success">📸 시공 사례</div>
+      <h2 class="section-title">
+        낡고 좁은 욕실의<br />
+        <span class="accent">드라마틱한 변화</span>
+      </h2>
+      <p class="section-desc">
+        수납 공간조차 없던 노후화된 소형 욕실이,<br />
+        거울과 수납이 동시에 가능한<br />
+        호텔급 프리미엄 공간으로 재탄생했습니다.
+      </p>
+
+      <div class="ba-container">
+        <div class="ba-labels">
+          <span class="ba-label before-label">BEFORE</span>
+          <span class="ba-label after-label">AFTER</span>
+        </div>
+        <div class="ba-slider-wrap">
+          <div class="ba-before">
+            <div class="bath-mockup old">
+              <div class="bath-wall old-wall">
+                <div class="crack"></div>
+                <div class="crack c2"></div>
+                <div class="mold-spot"></div>
+                <div class="mold-spot m2"></div>
+              </div>
+              <div class="bath-floor old-floor"></div>
+              <div class="bath-sink old-sink">
+                <div class="sink-body"></div>
+                <div class="faucet"></div>
+              </div>
+              <div class="bath-mirror old-mirror">
+                <div class="mirror-crack"></div>
+              </div>
+              <div class="bath-items">
+                <div class="clutter"></div>
+                <div class="clutter c2"></div>
+              </div>
+              <div class="ba-overlay-text">
+                <span>리빙우드 천장</span>
+                <span>카운터 세면대</span>
+                <span>좁고 어두운 공간</span>
+              </div>
+            </div>
+          </div>
+          <div class="ba-divider">
+            <div class="ba-divider-line"></div>
+            <div class="ba-divider-btn">
+              <i class="fas fa-arrows-alt-h"></i>
+            </div>
+          </div>
+          <div class="ba-after">
+            <div class="bath-mockup new">
+              <div class="bath-wall new-wall">
+                <div class="tile-sheen"></div>
+              </div>
+              <div class="bath-floor new-floor"></div>
+              <div class="bath-sink new-sink">
+                <div class="sink-body"></div>
+                <div class="faucet new-faucet"></div>
+              </div>
+              <div class="bath-mirror new-mirror">
+                <div class="storage-bar"></div>
+                <div class="mirror-shine"></div>
+              </div>
+              <div class="ba-overlay-text new-text">
+                <span>SMC 천장</span>
+                <span>원피스 도기류</span>
+                <span>호텔급 프리미엄</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ba-tags">
+          <div class="ba-tag">✅ 수납형 거울</div>
+          <div class="ba-tag">✅ 원피스 도기류</div>
+          <div class="ba-tag">✅ SMC 천장</div>
+          <div class="ba-tag">✅ 무줄눈 벽면</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 7 : 신뢰 보강 ========== -->
+  <section class="trust" id="trust">
+    <div class="container">
+      <div class="section-label primary">🔬 기술 신뢰</div>
+      <h2 class="section-title">
+        10년 이상 검증된<br />
+        <span class="accent">KCC의 기술력</span>
+      </h2>
+
+      <div class="trust-stats">
+        <div class="stat-item">
+          <div class="stat-num" data-target="10">0</div>
+          <div class="stat-unit">년+</div>
+          <div class="stat-label">기술 검증 기간</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="3">0</div>
+          <div class="stat-unit">중</div>
+          <div class="stat-label">결합 소재 구조</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" data-target="100">0</div>
+          <div class="stat-unit">%</div>
+          <div class="stat-label">공간 유지율</div>
+        </div>
+      </div>
+
+      <div class="material-detail">
+        <h3 class="md-title">3중 결합 안심 소재 구조</h3>
+        <div class="md-layers">
+          <div class="mdl-item">
+            <div class="mdl-num">1</div>
+            <div class="mdl-bar uv"></div>
+            <div class="mdl-info">
+              <strong>UV 코팅 마감층</strong>
+              <p>스크래치와 오염을 막는 강화 표면</p>
+            </div>
+          </div>
+          <div class="mdl-item">
+            <div class="mdl-num">2</div>
+            <div class="mdl-bar pet"></div>
+            <div class="mdl-info">
+              <strong>친환경 PET 시트</strong>
+              <p>인체에 무해한 안전 소재</p>
+            </div>
+          </div>
+          <div class="mdl-item">
+            <div class="mdl-num">3</div>
+            <div class="mdl-bar pvc"></div>
+            <div class="mdl-info">
+              <strong>PVC 탄산칼슘보드</strong>
+              <p>물에 강한 내구성 기반재</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 시공 프로세스 -->
+      <div class="process-section">
+        <h3>간편한 시공 프로세스</h3>
+        <div class="process-steps">
+          <div class="step">
+            <div class="step-icon"><i class="fas fa-comments"></i></div>
+            <div class="step-text">
+              <strong>Step 1</strong>
+              <span>무료 상담</span>
+            </div>
+          </div>
+          <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+          <div class="step">
+            <div class="step-icon"><i class="fas fa-ruler"></i></div>
+            <div class="step-text">
+              <strong>Step 2</strong>
+              <span>현장 실측</span>
+            </div>
+          </div>
+          <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+          <div class="step">
+            <div class="step-icon"><i class="fas fa-tools"></i></div>
+            <div class="step-text">
+              <strong>Step 3</strong>
+              <span>당일 시공</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="faq-section">
+        <h3>자주 묻는 질문</h3>
+        <div class="faq-list">
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>정말 하루 만에 시공이 가능한가요?</span>
+              <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>네, 가능합니다. 이지바스는 기존 타일을 철거하지 않고 초박형 패널을 바로 시공하는 방식이라 일반 욕실 기준 1~2일 이내에 완성됩니다.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>거주 중에 공사가 가능한가요?</span>
+              <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>가능합니다. 무분진 보양 시스템을 통해 벽, 바닥, 가전, 가구까지 철저히 보호하므로 이사 없이 생활하면서 시공을 완료할 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>작은 욕실에도 적합한가요?</span>
+              <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>오히려 더 적합합니다. 초박형 패널로 기존 공간을 100% 유지하기 때문에, 좁은 욕실일수록 이지바스의 장점이 더욱 크게 체감됩니다.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>곰팡이 관리가 정말 쉬운가요?</span>
+              <i class="fas fa-plus"></i>
+            </button>
+            <div class="faq-answer">
+              <p>네. 패널 사이 이음매가 없어 줄눈이 존재하지 않기 때문에 물때와 곰팡이가 쌓일 공간이 없습니다. 가벼운 물청소만으로도 새것처럼 유지할 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 8 : 최종 CTA / 상담 폼 ========== -->
+  <section class="form-section" id="consultForm">
+    <div class="container">
+      <div class="form-header">
+        <div class="form-icon"><i class="fas fa-bath"></i></div>
+        <h2>욕실의 진화,<br /><span class="accent">가전처럼 쉽게 교체하다</span></h2>
+        <p>더 이상 먼지와 소음, 곰팡이와 싸우지 마세요.<br />KCC HomeCC 이지바스와 함께라면,<br />욕실 교체는 <strong>완벽한 휴식처를 구매하는 일</strong>입니다.</p>
+      </div>
+
+      <div class="form-card">
+        <div class="form-badge">🎁 지금 신청 시 <strong>무료 상담</strong> 제공</div>
+        <form class="consult-form" id="consultFormEl" onsubmit="submitForm(event)">
+          <div class="form-step" id="step1">
+            <h3 class="step-title"><span class="step-num">1</span> 기본 정보</h3>
+            <div class="form-group">
+              <label for="userName"><i class="fas fa-user"></i> 이름</label>
+              <input type="text" id="userName" placeholder="성함을 입력해주세요" required />
+            </div>
+            <div class="form-group">
+              <label for="userPhone"><i class="fas fa-phone"></i> 연락처</label>
+              <input type="tel" id="userPhone" placeholder="010-0000-0000" required />
+            </div>
+            <div class="form-group">
+              <label for="userRegion"><i class="fas fa-map-marker-alt"></i> 거주 지역</label>
+              <select id="userRegion" required>
+                <option value="" disabled selected>지역을 선택해주세요</option>
+                <option>서울</option>
+                <option>경기</option>
+                <option>인천</option>
+                <option>부산</option>
+                <option>대구</option>
+                <option>대전</option>
+                <option>광주</option>
+                <option>울산</option>
+                <option>세종</option>
+                <option>강원</option>
+                <option>충북</option>
+                <option>충남</option>
+                <option>전북</option>
+                <option>전남</option>
+                <option>경북</option>
+                <option>경남</option>
+                <option>제주</option>
+              </select>
+            </div>
+            <button type="button" class="step-next-btn" onclick="nextStep()">
+              다음 단계 <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+
+          <div class="form-step hidden" id="step2">
+            <h3 class="step-title"><span class="step-num">2</span> 욕실 고민 선택</h3>
+            <div class="form-group">
+              <label><i class="fas fa-exclamation-circle"></i> 현재 가장 큰 불편이 무엇인가요? (복수 선택 가능)</label>
+              <div class="checkbox-group">
+                <label class="check-item"><input type="checkbox" value="곰팡이" /> 줄눈 곰팡이·물때</label>
+                <label class="check-item"><input type="checkbox" value="좁음" /> 좁고 답답한 공간</label>
+                <label class="check-item"><input type="checkbox" value="노후" /> 전반적 노후화</label>
+                <label class="check-item"><input type="checkbox" value="청소" /> 청소 스트레스</label>
+                <label class="check-item"><input type="checkbox" value="디자인" /> 오래된 디자인</label>
+                <label class="check-item"><input type="checkbox" value="기타" /> 기타</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="consultTime"><i class="fas fa-calendar-alt"></i> 상담 희망 시간</label>
+              <select id="consultTime">
+                <option value="" disabled selected>시간을 선택해주세요</option>
+                <option>오전 (9시 ~ 12시)</option>
+                <option>오후 (12시 ~ 18시)</option>
+                <option>저녁 (18시 ~ 20시)</option>
+                <option>언제든 가능</option>
+              </select>
+            </div>
+            <div class="step-btns">
+              <button type="button" class="step-back-btn" onclick="prevStep()">
+                <i class="fas fa-arrow-left"></i> 이전
+              </button>
+              <button type="submit" class="cta-primary submit-btn">
+                <i class="fas fa-paper-plane"></i>
+                무료 상담 신청 완료
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- 신청 완료 메시지 -->
+        <div class="success-msg hidden" id="successMsg">
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+          <h3>상담 신청이 완료되었습니다!</h3>
+          <p>담당자가 빠른 시간 내에 연락드리겠습니다.<br />이지바스로 새로운 욕실을 만나보세요.</p>
+          <div class="success-badges">
+            <span>📞 빠른 응대 보장</span>
+            <span>🎁 무료 상담</span>
+            <span>✅ 부담 없는 견적</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-trust-text">
+        <p><i class="fas fa-lock"></i> 개인정보는 상담 목적 외에 사용되지 않습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 푸터 ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-logo">
+        <span class="logo-kcc">KCC</span>
+        <span class="logo-homecc">HomeCC</span>
+      </div>
+      <p class="footer-product">이지바스 (Easy Bath)</p>
+      <p class="footer-tagline">욕실의 패러다임을 바꿉니다.</p>
+      <p class="footer-copy">© 2024 KCC HomeCC. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- 하단 고정 CTA 버튼 -->
+  <div class="fixed-cta" id="fixedCta">
+    <button class="fixed-cta-btn" onclick="scrollToForm()">
+      <i class="fas fa-phone-alt"></i>
+      무료 상담 신청하기
+    </button>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
