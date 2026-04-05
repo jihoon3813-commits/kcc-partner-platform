@@ -295,7 +295,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             </AnimatePresence>
 
             {/* Section 1: Hero */}
-            <section className="relative min-h-[600px] h-screen sm:h-[85vh] flex flex-col items-center justify-center overflow-hidden">
+            <section className="relative min-h-[550px] h-screen sm:h-[85vh] flex flex-col items-center justify-center overflow-hidden pt-24 sm:pt-0">
                 <motion.div
                     className="absolute inset-0 z-0"
                     style={{ opacity: heroOpacity, scale: heroScale }}
@@ -318,7 +318,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         transition={{ duration: 0.8 }}
                     >
                         <span className="text-white text-sm sm:text-lg mb-4 block font-black tracking-[0.2em] sm:tracking-[0.45em] uppercase">창호 名家, <br className="block sm:hidden" /> KCC 글라스가 만든</span>
-                        <h1 className="text-[3rem] sm:text-7xl md:text-8xl font-black leading-[1.1] tracking-tighter mb-10 break-keep px-2">
+                        <h1 className="text-[2.5rem] sm:text-7xl md:text-8xl font-black leading-[1.1] tracking-tighter mb-10 break-keep px-2">
                             <span className="text-gradient-gold">
                                 프리미엄 <br className="block sm:hidden" /> 맞춤 주방
                             </span>
@@ -329,7 +329,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </p>
 
                         {/* Special Promotion Labels with Neon & Wave Effect */}
-                        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-16 max-w-4xl mx-auto">
+                        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-10 sm:mb-16 max-w-4xl mx-auto">
                             {['60개월 구독 오픈', 'LG빌트인 가전할인', '출시기념 할인행사'].map((txt, i) => (
                                 <motion.span
                                     key={i}
@@ -665,12 +665,11 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     <div className="flex flex-col items-center gap-4 sm:gap-5 group flex-1 max-w-[110px]">
                                         <div className="relative flex items-end h-32 w-full bg-[#F0F0F0] rounded-t-2xl overflow-hidden shadow-inner">
                                             <motion.div
-                                                initial={{ scaleY: 0 }}
-                                                whileInView={{ scaleY: 0.83 }}
-                                                viewport={{ once: true }}
+                                                initial={{ height: 0 }}
+                                                whileInView={{ height: '83%' }}
+                                                viewport={{ once: true, amount: 0.5 }}
                                                 transition={{ duration: 0.8, ease: "easeOut" }}
-                                                style={{ originY: 1 }}
-                                                className="w-full h-full bg-[#CCCCCC] rounded-t-xl"
+                                                className="w-full bg-[#D1D1D1] rounded-t-xl"
                                             />
                                         </div>
                                         <div className="text-center">
@@ -682,16 +681,15 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                         <span className="font-serif italic text-xl sm:text-2xl text-[#C9A97A]/40 tracking-tighter">VS</span>
                                     </div>
                                     <div className="flex flex-col items-center gap-4 sm:gap-5 group flex-1 max-w-[110px]">
-                                        <div className="relative flex items-end h-32 w-full bg-[#F0F0F0] rounded-t-2xl overflow-hidden shadow-inner">
+                                        <div className="relative flex items-end h-32 w-full bg-[#F0F0F0] rounded-t-2xl overflow-hidden shadow-inner font-black">
                                             <motion.div
-                                                initial={{ scaleY: 0 }}
-                                                whileInView={{ scaleY: 1 }}
-                                                viewport={{ once: true }}
+                                                initial={{ height: 0 }}
+                                                whileInView={{ height: '100%' }}
+                                                viewport={{ once: true, amount: 0.5 }}
                                                 transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                                                style={{ originY: 1 }}
-                                                className="w-full h-full bg-gradient-to-t from-[#B8944A] to-[#E2C99A] rounded-t-xl shadow-lg"
+                                                className="w-full bg-gradient-to-t from-[#B8944A] to-[#E2C99A] rounded-t-xl shadow-lg relative z-10"
                                             />
-                                            <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-0.5 rounded-full z-10">KCC</div>
+                                            <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-0.5 rounded-full z-20">KCC</div>
                                         </div>
                                         <div className="text-center">
                                             <span className="text-xl sm:text-2xl font-black text-[#C9A97A] mb-1 sm:mb-2 block leading-none">18T</span>
@@ -1281,7 +1279,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </h2>
                         <p className="text-white/70 text-lg max-w-3xl mx-auto break-keep leading-relaxed font-medium mb-12">
                             단순한 설치를 넘어선 일체감. 세계적인 가전 브랜드 LG전자와 전략적 제휴를 통해<br className="hidden sm:block" />
-                            빌트인 주방가전에 최적화된 맞춤 주방 패키지를 곧 선보입니다.
+                            빌트인 주방가전에 최적화된 맞춤 주방 패키지를 선보입니다.
                         </p>
 
                         {/* Special Promotion Badge */}
