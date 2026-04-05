@@ -974,7 +974,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </div>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
                         {[
                             {
                                 title: '전 제품 비규격 주문 제작 가능',
@@ -998,13 +998,17 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className="bg-[#F8F8F8] rounded-3xl p-10 group hover:bg-white hover:shadow-xl transition-all border border-black/5"
+                                className="bg-[#F8F8F8] rounded-3xl p-5 sm:p-10 group hover:bg-white hover:shadow-xl transition-all border border-black/5"
                             >
-                                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                                    {item.icon}
+                                <div className="flex flex-row sm:flex-col items-center sm:items-start gap-4 sm:gap-0">
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center sm:mb-8 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                        {item.icon}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base sm:text-xl font-black mb-0.5 sm:mb-4 text-[#111] whitespace-nowrap sm:whitespace-normal tracking-tight">{item.title}</h3>
+                                        <p className="text-[#666] leading-relaxed text-xs sm:text-sm break-keep opacity-80">{item.desc}</p>
+                                    </div>
                                 </div>
-                                <h3 className="text-xl font-black mb-4 text-[#111]">{item.title}</h3>
-                                <p className="text-[#666] leading-relaxed text-sm break-keep">{item.desc}</p>
                             </motion.div>
                         ))}
                     </div>
