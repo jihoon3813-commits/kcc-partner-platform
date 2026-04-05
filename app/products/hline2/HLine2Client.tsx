@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { 
-    Phone, MessageSquare, ChevronDown, Check, ShieldCheck, Trophy, 
+import {
+    Phone, MessageSquare, ChevronDown, Check, ShieldCheck, Trophy,
     Shield, Leaf, Scissors, X, Loader2, User, PhoneCall,
     Sparkles, CreditCard, Layout, Zap, ArrowRight, Star, Anchor,
     Play, Volume2, ChevronLeft, ChevronRight
@@ -20,7 +20,7 @@ interface HLine2ClientProps {
 const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주방" }) => {
     const [isMounted, setIsMounted] = useState(false);
     const { scrollY } = useScroll();
-    
+
     // Consultation States
     const [showConsultModal, setShowConsultModal] = useState(false);
     const [name, setName] = useState('');
@@ -34,7 +34,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
 
     const lgProducts = [
         { name: '냉장고', en: 'Refrigerator', img: 'https://www.lge.co.kr/kr/images/refrigerators/md10516831/gallery/large02.jpg' },
-        { name: '김치냉장고', en: 'Kimchi Fridge', img: 'https://www.lge.co.kr/kr/images/kimchi-refrigerators/md10432829/gallery/large01.jpg' }, 
+        { name: '김치냉장고', en: 'Kimchi Fridge', img: 'https://www.lge.co.kr/kr/images/kimchi-refrigerators/md10432829/gallery/large01.jpg' },
         { name: '인덕션', en: 'Induction', img: 'https://www.lge.co.kr/kr/images/electric-ranges/md10372836/gallery/large01.jpg' },
         { name: '정수기', en: 'Water Purifier', img: 'https://www.lge.co.kr/kr/images/water-purifiers/md10017839/gallery/large01.jpg' },
         { name: '광파오븐', en: 'Triple Cook Oven', img: 'https://www.lge.co.kr/kr/images/microwaves-and-ovens/md10200826/gallery/large01.jpg' },
@@ -131,12 +131,12 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
         { type: 'image', url: 'https://www.lge.co.kr/kr/images/dishwashers/md09731826/usp/dishwasher_high_e_Cover_DUE6BGE.jpg', title: 'Premium Objet Collection' }
     ];
 
-    const currentMediaSet = selectedLGProduct === 0 ? lgRefrigeratorMedia : 
-                            selectedLGProduct === 1 ? lgKimchiMedia : 
-                            selectedLGProduct === 2 ? lgInductionMedia : 
-                            selectedLGProduct === 3 ? lgWaterPurifierMedia : 
-                            selectedLGProduct === 4 ? lgOvenMedia : 
-                            selectedLGProduct === 5 ? lgDishwasherMedia : [];
+    const currentMediaSet = selectedLGProduct === 0 ? lgRefrigeratorMedia :
+        selectedLGProduct === 1 ? lgKimchiMedia :
+            selectedLGProduct === 2 ? lgInductionMedia :
+                selectedLGProduct === 3 ? lgWaterPurifierMedia :
+                    selectedLGProduct === 4 ? lgOvenMedia :
+                        selectedLGProduct === 5 ? lgDishwasherMedia : [];
 
     const handleNextLGMedia = useCallback(() => {
         if (currentMediaSet.length > 0) {
@@ -231,28 +231,32 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                 ::-webkit-scrollbar-track { background: #0D0D0D; }
                 ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
                 ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
+
+                /* Hide scrollbar utility */
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
             {/* Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-[1000] bg-black/40 backdrop-blur-xl border-b border-white/5">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <img 
-                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png" 
-                            alt="HomeCC Logo" 
+                        <img
+                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png"
+                            alt="HomeCC Logo"
                             className="h-8"
                         />
                         <div className="w-px h-6 bg-white/20 hidden sm:block mx-1" />
                         <span className="font-serif text-xl font-bold tracking-[0.2em] text-gradient-gold hidden sm:block leading-none">H-LINE <span className="text-[11px] font-medium opacity-50 tracking-normal">2.0</span></span>
                     </div>
                     <div className="flex items-center gap-6">
-                        <button 
+                        <button
                             onClick={handleConsultClick}
                             className="hidden md:flex items-center gap-2 text-xs font-bold tracking-widest text-[#E2C99A] hover:opacity-70 transition-opacity"
                         >
                             CONSULTING <ArrowRight size={14} />
                         </button>
-                        <button 
+                        <button
                             onClick={handleConsultClick}
                             className="bg-[#C9A97A] text-black px-6 py-2.5 rounded-full text-xs font-black tracking-tight hover:scale-105 transition-transform"
                         >
@@ -265,21 +269,21 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             {/* Floating Quick CTA */}
             <AnimatePresence>
                 {showFloatingCta && (
-                    <motion.div 
+                    <motion.div
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
-                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[900] w-[calc(100%-48px)] max-w-lg"
+                        className="fixed bottom-6 inset-x-0 mx-auto z-[1000] w-[calc(100%-40px)] sm:max-w-2xl"
                     >
-                        <div className="bg-black/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-4 flex gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                            <button 
+                        <div className="bg-black/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-3 sm:p-4 flex gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+                            <button
                                 onClick={handleConsultClick}
                                 className="flex-1 bg-gradient-to-r from-[#C9A97A] to-[#B8944A] text-black font-black py-4 rounded-2xl flex items-center justify-center gap-2 text-sm shadow-xl"
                             >
                                 <MessageSquare size={18} />
                                 무료 상담 신청
                             </button>
-                            <button 
+                            <button
                                 onClick={handleCallClick}
                                 className="w-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-colors"
                             >
@@ -291,12 +295,12 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             </AnimatePresence>
 
             {/* Section 1: Hero */}
-            <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
-                <motion.div 
+            <section className="relative min-h-[600px] h-screen sm:h-[85vh] flex flex-col items-center justify-center overflow-hidden">
+                <motion.div
                     className="absolute inset-0 z-0"
                     style={{ opacity: heroOpacity, scale: heroScale }}
                 >
-                    <Image 
+                    <Image
                         src="https://hcc.kccglass.co.kr/interior/editor/images/000042/08_(3).jpg"
                         alt="Background"
                         fill
@@ -306,25 +310,52 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-transparent to-black/60" />
                 </motion.div>
-                
+
                 <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <span className="font-serif italic text-[#C9A97A] text-base sm:text-2xl mb-4 block tracking-wide">The Art of Bespoke Kitchen</span>
-                        <h1 className="text-[2.5rem] sm:text-7xl md:text-8xl font-black leading-[1.1] tracking-tighter mb-8 break-keep px-2">
-                            당신의 공간을 위한<br />
-                            <span className="text-gradient-gold">유일무이한 마스터피스</span>
+                        <span className="text-white text-sm sm:text-lg mb-4 block font-black tracking-[0.2em] sm:tracking-[0.45em] uppercase">창호 名家, <br className="block sm:hidden" /> KCC 글라스가 만든</span>
+                        <h1 className="text-[3rem] sm:text-7xl md:text-8xl font-black leading-[1.1] tracking-tighter mb-10 break-keep px-2">
+                            <span className="text-gradient-gold">
+                                프리미엄 <br className="block sm:hidden" /> 맞춤 주방
+                            </span>
                         </h1>
-                        <p className="text-white/60 text-sm sm:text-xl md:text-2xl font-light leading-relaxed max-w-3xl mx-auto mb-12 break-keep px-4">
+                        <p className="text-white/60 text-sm sm:text-xl md:text-2xl font-light leading-relaxed max-w-3xl mx-auto mb-10 break-keep px-4">
                             맞춤은 비싸다는 편견을 넘어, 하이엔드 퀄리티와 합리적 가치를 동시에.<br className="hidden sm:block" />
                             KCC글라스 홈씨씨 H-LINE이 제안하는 주방의 새로운 기준.
                         </p>
-                        
-                        <div className="flex flex-col items-center justify-center gap-10">
-                            <button 
+
+                        {/* Special Promotion Labels with Neon & Wave Effect */}
+                        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-16 max-w-4xl mx-auto">
+                            {['60개월 구독 오픈', 'LG빌트인 가전할인', '출시기념 할인행사'].map((txt, i) => (
+                                <motion.span
+                                    key={i}
+                                    animate={{
+                                        y: [0, -8, 0],
+                                        boxShadow: [
+                                            "0 0 10px rgba(201,169,122,0.2)",
+                                            "0 0 25px rgba(201,169,122,0.5)",
+                                            "0 0 10px rgba(201,169,122,0.2)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                        delay: i * 0.4
+                                    }}
+                                    className="bg-[#C9A97A]/20 border border-[#C9A97A]/50 text-white px-8 sm:px-10 py-3.5 rounded-full text-sm sm:text-base font-black tracking-widest backdrop-blur-xl ring-1 ring-white/10"
+                                >
+                                    {txt}
+                                </motion.span>
+                            ))}
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center gap-6 sm:gap-10">
+                            <button
                                 onClick={handleConsultClick}
                                 className="w-[80%] sm:w-auto bg-[#C9A97A] text-black px-12 py-5 rounded-full font-black text-lg hover:scale-105 hover:glow-gold transition-all duration-300"
                             >
@@ -349,19 +380,19 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </div>
                     </motion.div>
                 </div>
-                
-                <motion.div 
-                    animate={{ y: [0, 15, 0] }}
+
+                <motion.div
+                    animate={{ y: [0, 10, 0] }}
                     transition={{ repeat: Infinity, duration: 2.5 }}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30"
+                    className="absolute inset-x-0 bottom-6 sm:bottom-10 mx-auto w-fit flex flex-col items-center gap-1 opacity-30 cursor-default z-30"
                 >
-                    <span className="text-[10px] font-bold tracking-[0.3em] uppercase">Explore</span>
-                    <ChevronDown size={20} />
+                    <span className="text-[9px] font-bold tracking-[0.3em] uppercase">Explore</span>
+                    <ChevronDown size={18} />
                 </motion.div>
             </section>
 
             {/* Section 2: Custom Cost Advantage */}
-            <section className="relative py-32 px-6 overflow-hidden">
+            <section className="relative pt-12 sm:pt-20 pb-32 px-6 overflow-hidden">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-20 items-stretch">
                         <motion.div
@@ -373,13 +404,13 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                             <span className="font-serif text-[#C9A97A] text-xl mb-4 block underline underline-offset-8 decoration-1">Rational Luxury</span>
                             <h2 className="text-3xl sm:text-5xl font-black leading-tight mb-8 break-keep">
                                 맞춤 제작의 비용 장벽,<br />
-                                <span className="text-gradient-gold">H-LINE은 무너뜨렸습니다.</span>
+                                <span className="text-gradient-gold">H-LINE이 무너뜨렸습니다.</span>
                             </h2>
                             <p className="text-white/50 text-lg leading-relaxed mb-10 break-keep">
                                 일반적인 맞춤 가구는 규격을 벗어나는 순간 비용이 1.5배에서 2배까지 폭등합니다.<br />
                                 KCC는 효율적인 공정 시스템을 통해 추가 비용 걱정 없는 합리적인 맞춤형 주방을 완성합니다.
                             </p>
-                            
+
                             <div className="space-y-6">
                                 <div className="bg-white/5 rounded-3xl p-8 border border-white/5 hover:bg-white/10 transition-colors cursor-default">
                                     <div className="flex items-center justify-between mb-6">
@@ -388,17 +419,17 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     </div>
                                     <div className="flex items-center gap-4 mb-2 opacity-50">
                                         <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                        <span className="text-xl font-bold">타사 맞춤 가구 (150% ~ 200%)</span>
+                                        <span className="text-xl font-bold leading-snug">타사 맞춤 가구 <br className="block sm:hidden" /> (150% ~ 200%)</span>
                                     </div>
                                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '85%' }}
                                             className="h-full bg-red-500/50"
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="bg-gradient-to-br from-[#C9A97A]/20 to-transparent rounded-3xl p-8 border border-[#C9A97A]/30 glow-gold relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
                                         <Zap size={100} />
@@ -409,10 +440,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     </div>
                                     <div className="flex items-center gap-4 mb-2">
                                         <div className="w-2 h-2 rounded-full bg-[#C9A97A]" />
-                                        <span className="text-2xl font-black text-gradient-gold">홈씨씨 H-LINE (합리적 수준)</span>
+                                        <span className="text-2xl font-black text-gradient-gold leading-tight">홈씨씨 H-LINE <br className="block sm:hidden" /> (합리적 수준)</span>
                                     </div>
                                     <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ width: 0 }}
                                             whileInView={{ width: '50%' }}
                                             className="h-full bg-gradient-to-r from-[#E2C99A] to-[#C9A97A]"
@@ -421,18 +452,18 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 </div>
                             </div>
                         </motion.div>
-                        
-                        <motion.div 
+
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.8 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            className="relative aspect-square md:aspect-auto h-full min-h-[400px] md:min-h-[600px] bg-[#0A0A0A] rounded-[40px] border border-white/10 overflow-hidden group shadow-2xl"
+                            className="relative aspect-[3/4] sm:aspect-square md:aspect-auto h-full min-h-[400px] md:min-h-[600px] bg-[#0A0A0A] rounded-[40px] border border-white/10 overflow-hidden group shadow-2xl"
                         >
-                            <Image 
+                            <Image
                                 src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272830/1.%EB%B9%84%EC%A0%95%ED%98%95_%EA%B3%B5%EA%B0%84%EB%8F%84_%EC%B6%94%EA%B0%80_%EB%B9%84%EC%9A%A9_%EC%B5%9C%EC%86%8C%ED%99%94_nvy0sd.jpg"
                                 alt="비정형 공간도 추가 비용 최소화"
                                 fill
-                                className="object-cover transition-transform duration-1000"
+                                className="object-cover object-center scale-[1.2] sm:scale-100 transition-transform duration-1000"
                                 unoptimized
                             />
 
@@ -467,23 +498,23 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
-                            { 
-                                img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272832/2.%EB%A7%9E%EC%B6%A4%ED%98%95_%EC%A3%BC%EB%B0%A9%EC%9D%80_%EB%84%88%EB%AC%B4_%EB%B9%84%EC%8B%B8%EB%8B%A4_ow4uki.png', 
-                                title: '맞춤형 주방은 너무 비싸다', 
-                                desc: '원하는 디자인과 사양으로 설계하면 예산을 훌쩍 넘어버리는 현실' 
+                            {
+                                img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272832/2.%EB%A7%9E%EC%B6%A4%ED%98%95_%EC%A3%BC%EB%B0%A9%EC%9D%80_%EB%84%88%EB%AC%B4_%EB%B9%84%EC%8B%B8%EB%8B%A4_ow4uki.png',
+                                title: '맞춤형 주방은 너무 비싸다',
+                                desc: '원하는 디자인과 사양으로 설계하면 예산을 훌쩍 넘어버리는 현실'
                             },
-                            { 
-                                img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272832/3.%EC%A0%80%EB%A0%B4%ED%95%9C_%EC%82%AC%EC%A0%9C_%EC%A3%BC%EB%B0%A9%EC%9D%80_%EB%82%B4%EA%B5%AC%EC%84%B1%EC%9D%B4_%EB%B6%88%EC%95%88_ars6iu.png', 
-                                title: '저렴한 사제 주방은 내구성이 불안하다', 
-                                desc: '가격은 합리적이지만 소재 품질, 시공 후 하자, A/S 걱정이 가시지 않음' 
+                            {
+                                img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272832/3.%EC%A0%80%EB%A0%B4%ED%95%9C_%EC%82%AC%EC%A0%9C_%EC%A3%BC%EB%B0%A9%EC%9D%80_%EB%82%B4%EA%B5%AC%EC%84%B1%EC%9D%B4_%EB%B6%88%EC%95%88_ars6iu.png',
+                                title: '저렴한 사제 주방은 내구성이 불안하다',
+                                desc: '가격은 합리적이지만 소재 품질, 시공 후 하자, A/S 걱정이 가시지 않음'
                             },
-                            { 
-                                img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272832/4.%EA%B8%B0%EC%84%B1_%EA%B7%9C%EA%B2%A9%EC%9D%B4%EB%9D%BC_%EC%9A%B0%EB%A6%AC_%EC%A7%91%EC%97%90_%EB%94%B1_%EC%95%88_%EB%A7%9E%EB%8A%94%EB%8B%A4_i2cqkj.png', 
-                                title: '기성 규격이라 우리 집에 딱 안 맞는다', 
-                                desc: '브랜드 주방은 정해진 규격만 있어 공간이 애매하게 남거나 몰딩이 어색함' 
+                            {
+                                img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272832/4.%EA%B8%B0%EC%84%B1_%EA%B7%9C%EA%B2%A9%EC%9D%B4%EB%9D%BC_%EC%9A%B0%EB%A6%AC_%EC%A7%91%EC%97%90_%EB%94%B1_%EC%95%88_%EB%A7%9E%EB%8A%94%EB%8B%A4_i2cqkj.png',
+                                title: '기성 규격이라 우리 집에 딱 안 맞는다',
+                                desc: '브랜드 주방은 정해진 규격만 있어 공간이 애매하게 남거나 몰딩이 어색함'
                             }
                         ].map((item, i) => (
-                            <motion.div 
+                            <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -492,10 +523,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 className="bg-[#0D0D0D] border border-white/5 rounded-[40px] overflow-hidden hover:bg-[#1A1A1A] transition-all group"
                             >
                                 <div className="w-full aspect-[4/3] relative overflow-hidden">
-                                    <Image 
-                                        src={item.img} 
-                                        alt={item.title} 
-                                        fill 
+                                    <Image
+                                        src={item.img}
+                                        alt={item.title}
+                                        fill
                                         className="object-cover group-hover:scale-110 transition-transform duration-700"
                                         unoptimized
                                     />
@@ -508,7 +539,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         ))}
                     </div>
 
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -564,7 +595,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 icon: <Leaf className="text-[#C9A97A]" size={24} />
                             }
                         ].map((card, i) => (
-                            <motion.div 
+                            <motion.div
                                 key={i}
                                 initial={{ opacity: 0, x: i === 0 ? -30 : 30 }}
                                 whileInView={{ opacity: 1, x: 0 }}
@@ -573,10 +604,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 className="bg-[#0D0D0D] rounded-[48px] overflow-hidden border border-white/5 shadow-2xl group flex flex-col"
                             >
                                 <div className="w-full aspect-video relative overflow-hidden">
-                                    <Image 
-                                        src={card.img} 
-                                        alt={card.title} 
-                                        fill 
+                                    <Image
+                                        src={card.img}
+                                        alt={card.title}
+                                        fill
                                         className="object-cover group-hover:scale-110 transition-transform duration-1000"
                                         unoptimized
                                     />
@@ -630,10 +661,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     <div className="flex flex-col lg:flex-row items-stretch justify-between gap-10 md:gap-16 lg:gap-24 mb-24">
                         <div className="flex-1 w-full max-w-xl">
                             <div className="bg-[#F8F8F8] rounded-[40px] p-10 md:p-16 flex flex-col items-center justify-center gap-12 shadow-sm border border-black/5 h-full">
-                                <div className="flex items-end justify-center gap-10 sm:gap-20 h-56 w-full px-4 border-b border-[#EEEEEE] pb-10">
-                                    <div className="flex flex-col items-center gap-5 group flex-1 max-w-[100px]">
+                                <div className="flex items-end justify-center gap-6 sm:gap-20 h-56 w-full px-2 sm:px-4 border-b border-[#EEEEEE] pb-8 sm:pb-10">
+                                    <div className="flex flex-col items-center gap-4 sm:gap-5 group flex-1 max-w-[110px]">
                                         <div className="relative flex items-end h-32 w-full bg-[#F0F0F0] rounded-t-2xl overflow-hidden shadow-inner">
-                                            <motion.div 
+                                            <motion.div
                                                 initial={{ scaleY: 0 }}
                                                 whileInView={{ scaleY: 0.83 }}
                                                 viewport={{ once: true }}
@@ -643,16 +674,16 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                             />
                                         </div>
                                         <div className="text-center">
-                                            <span className="text-xl sm:text-2xl font-black text-[#999999] mb-2 block">15T</span>
-                                            <span className="text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest leading-tight block">타사 일반<br />브랜드 주방</span>
+                                            <span className="text-xl sm:text-2xl font-black text-[#999999] mb-1 sm:mb-2 block leading-none">15T</span>
+                                            <span className="text-[9px] sm:text-[10px] font-bold text-[#AAAAAA] uppercase tracking-widest leading-[1.3] block">타사 일반<br className="sm:hidden" /> 브랜드 주방</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center pb-24">
-                                        <span className="font-serif italic text-2xl text-[#C9A97A]/40">VS</span>
+                                    <div className="flex items-center pb-20 sm:pb-24">
+                                        <span className="font-serif italic text-xl sm:text-2xl text-[#C9A97A]/40 tracking-tighter">VS</span>
                                     </div>
-                                    <div className="flex flex-col items-center gap-5 group flex-1 max-w-[100px]">
+                                    <div className="flex flex-col items-center gap-4 sm:gap-5 group flex-1 max-w-[110px]">
                                         <div className="relative flex items-end h-32 w-full bg-[#F0F0F0] rounded-t-2xl overflow-hidden shadow-inner">
-                                            <motion.div 
+                                            <motion.div
                                                 initial={{ scaleY: 0 }}
                                                 whileInView={{ scaleY: 1 }}
                                                 viewport={{ once: true }}
@@ -663,8 +694,8 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                             <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-0.5 rounded-full z-10">KCC</div>
                                         </div>
                                         <div className="text-center">
-                                            <span className="text-xl sm:text-2xl font-black text-[#C9A97A] mb-2 block">18T</span>
-                                            <span className="text-[10px] font-black text-[#111] uppercase tracking-widest leading-tight block underline decoration-[#C9A97A] underline-offset-4">홈씨씨<br />H-LINE</span>
+                                            <span className="text-xl sm:text-2xl font-black text-[#C9A97A] mb-1 sm:mb-2 block leading-none">18T</span>
+                                            <span className="text-[9px] sm:text-[10px] font-black text-[#111] uppercase tracking-widest leading-[1.3] block underline decoration-[#C9A97A]/50 underline-offset-4">홈씨씨<br className="sm:hidden" /> H-LINE</span>
                                         </div>
                                     </div>
                                 </div>
@@ -696,14 +727,14 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </div>
                     </div>
 
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         className="bg-[#F8F8F8] border-l-4 border-[#C9A97A] p-8 md:p-12 rounded-r-[32px] max-w-4xl mx-auto"
                     >
                         <p className="text-lg md:text-xl text-[#333333] leading-relaxed font-medium break-keep">
-                            코어 자재 역시 PB가 아닌 <strong className="text-[#C9A97A] font-black">밀도 높은 MDF 도어</strong>를 적용하여,<br className="hidden md:block" /> 
+                            코어 자재 역시 PB가 아닌 <strong className="text-[#C9A97A] font-black">밀도 높은 MDF 도어</strong>를 적용하여,<br className="hidden md:block" />
                             수십 년을 반복 개폐해도 <strong className="text-[#1E1E1E] font-black underline underline-offset-4 decoration-[#C9A97A]/30">경첩 고정력이 매우 우수합니다.</strong>
                         </p>
                     </motion.div>
@@ -759,10 +790,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[40px] group hover:bg-white/[0.08] transition-all duration-500 shadow-2xl overflow-hidden relative flex flex-col"
                             >
                                 <div className="w-full aspect-video relative overflow-hidden">
-                                    <Image 
-                                        src={item.img} 
-                                        alt={item.title} 
-                                        fill 
+                                    <Image
+                                        src={item.img}
+                                        alt={item.title}
+                                        fill
                                         className="object-cover group-hover:scale-110 transition-transform duration-1000"
                                         unoptimized
                                     />
@@ -791,7 +822,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             {/* Section 7: Eco & Safety (E0 Grade) */}
             <section className="relative py-32 px-6 overflow-hidden bg-[#0D2418]">
                 <div className="absolute inset-0">
-                    <Image 
+                    <Image
                         src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272834/12.%EC%9A%94%EB%A6%AC%ED%95%98%EB%8A%94_%EA%B3%B5%EA%B0%84%EC%9D%B4%EB%8B%88%EA%B9%8C_3_umq2ah.png"
                         alt="Eco Friendly Material Background"
                         fill
@@ -818,17 +849,16 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     <div className="max-w-4xl mx-auto mb-20">
                         <div className="flex rounded-2xl overflow-hidden shadow-2xl border border-white/5 h-16 sm:h-20 items-stretch font-black text-xs sm:text-sm tracking-widest">
                             {['E2', 'E1', 'E0', 'SE0'].map((grade) => (
-                                <div 
-                                    key={grade} 
-                                    className={`flex-1 flex items-center justify-center transition-all duration-300 ${
-                                        grade === 'E0' 
-                                        ? 'bg-[#4CAF50] text-white scale-105 shadow-[0_0_40px_rgba(76,175,80,0.4)] z-10 ring-2 ring-white/20' 
-                                        : grade === 'SE0' 
-                                        ? 'bg-[#2E7D32] text-white/50'
-                                        : grade === 'E1'
-                                        ? 'bg-[#81C784] text-white/50'
-                                        : 'bg-[#9E9E9E] text-white/50'
-                                    }`}
+                                <div
+                                    key={grade}
+                                    className={`flex-1 flex items-center justify-center transition-all duration-300 ${grade === 'E0'
+                                        ? 'bg-[#4CAF50] text-white scale-105 shadow-[0_0_40px_rgba(76,175,80,0.4)] z-10 ring-2 ring-white/20'
+                                        : grade === 'SE0'
+                                            ? 'bg-[#2E7D32] text-white/50'
+                                            : grade === 'E1'
+                                                ? 'bg-[#81C784] text-white/50'
+                                                : 'bg-[#9E9E9E] text-white/50'
+                                        }`}
                                 >
                                     {grade}
                                     {grade === 'E0' && <span className="absolute -top-1 w-full h-1 bg-white/40" />}
@@ -839,7 +869,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-8 mb-20">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
@@ -848,7 +878,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                             <div className="text-4xl sm:text-6xl font-black text-[#89AC76] mb-4 group-hover:scale-110 transition-transform">E0 <span className="text-xl sm:text-2xl">등급</span></div>
                             <div className="text-white/40 font-bold uppercase tracking-widest text-sm">Eco-Friendly Material Grade</div>
                         </motion.div>
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
@@ -859,7 +889,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </motion.div>
                     </div>
 
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -870,7 +900,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                             <strong className="text-[#81C784] font-black"> E0 등급 친환경 자재만을 사용합니다.</strong>
                         </p>
                         <p className="text-white/40 text-base sm:text-lg leading-relaxed break-keep">
-                            눈이 맵지 않고 호흡기가 편안한,<br className="sm:hidden" /> 
+                            눈이 맵지 않고 호흡기가 편안한,<br className="sm:hidden" />
                             우리 가족 모두를 위한 <span className="text-white/80 underline decoration-[#81C784] underline-offset-8">가장 안전한 주방</span>을 완성합니다.
                         </p>
                     </motion.div>
@@ -902,16 +932,16 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                         <div className="flex flex-col lg:flex-row items-stretch gap-10 relative z-10">
                             {[
-                                { 
-                                    label: 'STANDARD', 
-                                    status: 'X', 
+                                {
+                                    label: 'STANDARD',
+                                    status: 'X',
                                     color: '#FF5252',
                                     img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775287969/13-3.%EC%A0%95%EB%A6%AC%EB%90%9C_%EC%8B%B1%ED%81%AC%EB%8C%80_rizrjp.png',
                                     desc: '어색한 틈새와 남는 공간, 몰딩 분리'
                                 },
-                                { 
-                                    label: 'H-LINE', 
-                                    status: '✓', 
+                                {
+                                    label: 'H-LINE',
+                                    status: '✓',
                                     color: '#C9A97A',
                                     img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272836/15-1.%EC%82%AC%EB%A1%802-1_o20ivz.jpg',
                                     desc: '공간의 제약 없는 무몰딩 완벽 핏'
@@ -925,7 +955,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                         <span className={`text-xl font-black tracking-widest`} style={{ color: box.color }}>{box.label}</span>
                                     </div>
                                     <div className="w-full aspect-video bg-white/5 rounded-2xl mb-8 relative overflow-hidden border border-white/10 group-hover:border-[#C9A97A]/30 transition-colors">
-                                        <Image 
+                                        <Image
                                             src={box.img}
                                             alt={box.label}
                                             fill
@@ -964,7 +994,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 icon: <Star size={24} className="text-[#C9A97A]" />
                             }
                         ].map((item, i) => (
-                            <motion.div 
+                            <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -995,7 +1025,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                             <span className="font-serif text-[#C9A97A] text-xl mb-4 block tracking-widest uppercase">Portfolio</span>
                             <h2 className="text-4xl sm:text-6xl font-black mb-8 break-keep text-white">
                                 홈씨씨 H-LINE<br />
-                                <span className="text-gradient-gold text-3xl sm:text-5xl">공간의 완성, 실제 시공 사례</span>
+                                <span className="text-gradient-gold text-3xl sm:text-5xl">공간의 완성, <br className="block sm:hidden" /> 실제 시공 사례</span>
                             </h2>
                         </motion.div>
                     </div>
@@ -1046,44 +1076,9 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                         </ul>
                                     </div>
                                 </div>
-                                
-                                {/* Group 1: Main Overview (3 Images) */}
-                                <div className="flex-1 grid grid-cols-3 gap-4 h-[500px]">
-                                    <div className="col-span-2 bg-white/5 rounded-3xl border border-white/10 relative overflow-hidden group/img cursor-pointer">
-                                        <Image 
-                                            src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272833/14-1.%EC%82%AC%EB%A1%801-1_d3cj6a.jpg"
-                                            alt="Main Landscape View"
-                                            fill
-                                            className="object-cover group-hover/img:scale-105 transition-transform duration-1000"
-                                            unoptimized
-                                        />
-                                        <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                            <p className="text-white text-xs font-black tracking-widest uppercase">Main Perspective</p>
-                                        </div>
-                                    </div>
-                                    <div className="col-span-1 grid grid-rows-2 gap-4">
-                                        <div className="bg-white/5 rounded-2xl border border-white/10 relative overflow-hidden group/img cursor-pointer">
-                                            <Image 
-                                                src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272835/14-8.%EC%82%AC%EB%A1%801-8_e2hesn.jpg"
-                                                alt="Hallway View"
-                                                fill
-                                                className="object-cover group-hover/img:scale-105 transition-transform duration-1000"
-                                                unoptimized
-                                            />
-                                        </div>
-                                        <div className="bg-white/5 rounded-2xl border border-white/10 relative overflow-hidden group/img cursor-pointer">
-                                            <Image 
-                                                src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272834/14-3.%EC%82%AC%EB%A1%801-3_o9hzr1.jpg"
-                                                alt="Storage View"
-                                                fill
-                                                className="object-cover group-hover/img:scale-105 transition-transform duration-1000"
-                                                unoptimized
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+
                             </div>
-                            
+
                             {/* Group 2: Kitchen Detail (3 Images) */}
                             <div className="mb-20">
                                 <h5 className="text-[#C9A97A]/50 text-[10px] font-black tracking-[0.3em] uppercase mb-8 flex items-center gap-4 px-2">
@@ -1098,10 +1093,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     ].map((detail, idx) => (
                                         <div key={idx} className="space-y-4 group/detail">
                                             <div className="aspect-square bg-white/5 rounded-3xl border border-white/10 relative overflow-hidden">
-                                                <Image 
-                                                    src={detail.img} 
-                                                    alt={detail.title} 
-                                                    fill 
+                                                <Image
+                                                    src={detail.img}
+                                                    alt={detail.title}
+                                                    fill
                                                     className="object-cover group-hover/detail:scale-105 transition-transform duration-700"
                                                     unoptimized
                                                 />
@@ -1118,9 +1113,9 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     <span className="flex-shrink-0">Detail Cut: Storage</span>
                                     <div className="h-px bg-white/10 w-full" />
                                 </h5>
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
                                     {/* Left 4 Images in 2x2 Grid */}
-                                    <div className="col-span-2 grid grid-cols-2 gap-8">
+                                    <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
                                         {[
                                             { img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272835/14-7.%EC%82%AC%EB%A1%801-7_sqjhos.jpg', title: "천장라인 맞춤설계" },
                                             { img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272834/14-2.%EC%82%AC%EB%A1%801-2_dgedkj.jpg', title: "냉장고장 라인연결" },
@@ -1129,31 +1124,31 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                         ].map((detail, idx) => (
                                             <div key={idx} className="space-y-4 group/detail">
                                                 <div className="aspect-square bg-white/5 rounded-3xl border border-white/10 relative overflow-hidden">
-                                                    <Image 
-                                                        src={detail.img} 
-                                                        alt={detail.title} 
-                                                        fill 
+                                                    <Image
+                                                        src={detail.img}
+                                                        alt={detail.title}
+                                                        fill
                                                         className="object-cover group-hover/detail:scale-105 transition-transform duration-700"
                                                         unoptimized
                                                     />
                                                 </div>
-                                                <p className="text-white/40 text-[10px] font-bold tracking-tight text-center group-hover/detail:text-[#C9A97A] transition-colors uppercase">{detail.title}</p>
+                                                <p className="text-white/40 text-xs font-bold tracking-tight text-center group-hover/detail:text-[#C9A97A] transition-colors uppercase">{detail.title}</p>
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     {/* Right Tall Image (Item 5) */}
-                                    <div className="col-span-2 lg:col-span-1 space-y-4 group/detail flex flex-col h-full">
-                                        <div className="flex-1 bg-white/5 rounded-[40px] border border-white/10 relative overflow-hidden min-h-[400px]">
-                                            <Image 
+                                    <div className="col-span-1 sm:col-span-2 lg:col-span-1 space-y-4 group/detail flex flex-col h-full">
+                                        <div className="flex-1 bg-white/5 rounded-3xl border border-white/10 relative overflow-hidden min-h-[400px]">
+                                            <Image
                                                 src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272835/14-11.%EC%82%AC%EB%A1%801-11_mzyanv.jpg"
                                                 alt="거실장"
-                                                fill 
+                                                fill
                                                 className="object-cover group-hover/detail:scale-105 transition-transform duration-700"
                                                 unoptimized
                                             />
                                         </div>
-                                        <p className="text-white/40 text-[10px] font-bold tracking-tight text-center group-hover/detail:text-[#C9A97A] transition-colors uppercase">거실장</p>
+                                        <p className="text-white/40 text-xs font-bold tracking-tight text-center group-hover/detail:text-[#C9A97A] transition-colors uppercase">거실장</p>
                                     </div>
                                 </div>
                             </div>
@@ -1206,18 +1201,18 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 </div>
                                 <div className="flex-1">
                                     <div className="h-full min-h-[400px] bg-white/5 rounded-[40px] overflow-hidden border border-white/10 group-hover:border-[#C9A97A]/30 transition-all shadow-2xl relative">
-                                        <Image 
-                                            src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272836/15-1.%EC%82%AC%EB%A1%802-1_o20ivz.jpg" 
-                                            alt="CASE 02 Main View" 
-                                            fill 
+                                        <Image
+                                            src="https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272836/15-1.%EC%82%AC%EB%A1%802-1_o20ivz.jpg"
+                                            alt="CASE 02 Main View"
+                                            fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-1000"
                                             unoptimized
                                         />
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                                 {[
                                     { img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272836/15-2.%EC%82%AC%EB%A1%802-2_hdwurl.jpg', title: '아일랜드장' },
                                     { img: 'https://res.cloudinary.com/dx7l09wwu/image/upload/v1775272836/15-3.%EC%82%AC%EB%A1%802-3_ntqrmh.jpg', title: '하부장 도어 내림(걸레받이 노출 최소화)' },
@@ -1226,15 +1221,15 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 ].map((detail, idx) => (
                                     <div key={idx} className="space-y-4 group/detail">
                                         <div className="aspect-[3/4] lg:aspect-[10/16] bg-white/5 rounded-3xl border border-white/10 relative overflow-hidden">
-                                            <Image 
-                                                src={detail.img} 
-                                                alt={detail.title} 
-                                                fill 
+                                            <Image
+                                                src={detail.img}
+                                                alt={detail.title}
+                                                fill
                                                 className="object-cover group-hover/detail:scale-105 transition-transform duration-700"
                                                 unoptimized
                                             />
                                         </div>
-                                        <p className="text-center text-white/40 text-[10px] font-bold tracking-tight px-2 break-keep group-hover/detail:text-[#C9A97A] transition-colors">{detail.title}</p>
+                                        <p className="text-center text-white/40 text-xs font-bold tracking-tight px-2 break-keep group-hover/detail:text-[#C9A97A] transition-colors">{detail.title}</p>
                                     </div>
                                 ))}
                             </div>
@@ -1253,10 +1248,36 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     >
                         <span className="font-serif italic text-white/60 text-xl tracking-widest mb-6 block uppercase text-shadow-sm">Exclusive Partnership</span>
                         <h2 className="text-4xl sm:text-6xl font-black mb-8 space-y-4 text-white">
-                            <span className="block drop-shadow-lg">가전과 가구의 완벽한 조우</span>
-                            <span className="block">
-                                LG 전자 <span className="text-2xl sm:text-4xl font-extralight opacity-50 mx-2 italic">x</span> KCC 홈씨씨
-                            </span>
+                            <span className="block drop-shadow-lg leading-tight">가전과 가구의 <br className="block sm:hidden" /> 완벽한 조합</span>
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                className="inline-block mt-6 px-10 py-5 bg-gradient-to-br from-[#D1D1D1] via-[#FFFFFF] to-[#A3A3A3] rounded-2xl border border-white/40 shadow-[inset_-2px_-2px_5px_rgba(0,0,0,0.2),inset_2px_2px_5px_rgba(255,255,255,0.8),0_15px_40px_rgba(0,0,0,0.3)] relative overflow-hidden group"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-2000" />
+                                <div className="relative z-10 flex items-center justify-center gap-6 sm:gap-10">
+                                    <div className="relative h-8 sm:h-12 w-24 sm:w-40">
+                                        <Image
+                                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/b9e64aa25ee54.png"
+                                            alt="LG Logo"
+                                            fill
+                                            className="object-contain"
+                                            unoptimized
+                                        />
+                                    </div>
+                                    <span className="text-xl sm:text-4xl font-extralight opacity-30 italic text-[rgb(30,30,30)] mx-1">x</span>
+                                    <div className="relative h-8 sm:h-12 w-24 sm:w-40">
+                                        <Image
+                                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                                            alt="KCC Logo"
+                                            fill
+                                            className="object-contain"
+                                            unoptimized
+                                        />
+                                    </div>
+                                </div>
+                            </motion.div>
                         </h2>
                         <p className="text-white/70 text-lg max-w-3xl mx-auto break-keep leading-relaxed font-medium mb-12">
                             단순한 설치를 넘어선 일체감. 세계적인 가전 브랜드 LG전자와 전략적 제휴를 통해<br className="hidden sm:block" />
@@ -1264,14 +1285,17 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         </p>
 
                         {/* Special Promotion Badge */}
-                        <div className="inline-flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl border border-white/20 px-12 py-6 rounded-3xl shadow-[0_0_50px_rgba(255,255,255,0.1)] relative overflow-hidden group mb-16">
+                        <div className="inline-flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl border border-white/20 px-6 sm:px-12 py-6 rounded-3xl shadow-[0_0_50px_rgba(255,255,255,0.1)] relative overflow-hidden group mb-16">
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                             <span className="text-white/60 text-xs sm:text-sm font-bold tracking-widest uppercase mb-3">주방과 가전 동시 진행 시</span>
                             <div className="flex flex-col items-center gap-2">
                                 <div className="flex items-center gap-4">
-                                    <Sparkles size={20} className="text-[#C9A97A] animate-pulse" />
-                                    <span className="text-xl sm:text-3xl font-black text-white tracking-tighter">LG가전 <span className="text-[#FBBF24]">특별 할인가로 제공</span></span>
-                                    <Sparkles size={20} className="text-[#C9A97A] animate-pulse" />
+                                    <Sparkles size={20} className="text-[#C9A97A] animate-pulse flex-shrink-0" />
+                                    <span className="text-xl sm:text-3xl font-black text-white tracking-tighter">
+                                        LG가전 <br className="sm:hidden" />
+                                        <span className="text-[#FBBF24] whitespace-nowrap">특별 할인가로 제공</span>
+                                    </span>
+                                    <Sparkles size={20} className="text-[#C9A97A] animate-pulse flex-shrink-0" />
                                 </div>
                                 <span className="text-white/40 text-[10px] sm:text-xs">(자세한 내용은 상담 시 안내)</span>
                             </div>
@@ -1280,30 +1304,29 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                 </div>
 
                 <div className="max-w-7xl mx-auto">
-                    {/* Product Selection Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-16">
+                    {/* Product Selection Grid: Horizontal Scroll on Mobile */}
+                    <div className="flex overflow-x-auto gap-4 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-6 mb-12 sm:mb-16 px-6 sm:px-0 hide-scrollbar scroll-smooth">
                         {lgProducts.map((item, i) => (
                             <motion.div
                                 key={i}
                                 onClick={() => setSelectedLGProduct(i)}
                                 whileHover={{ y: -5 }}
                                 whileTap={{ scale: 0.98 }}
-                                className={`cursor-pointer rounded-3xl p-4 flex flex-col items-center justify-center gap-4 transition-all duration-500 overflow-hidden relative group ${
-                                    selectedLGProduct === i 
-                                    ? 'bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-2 ring-white/20' 
+                                className={`flex-shrink-0 w-28 sm:w-auto cursor-pointer rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col items-center justify-center gap-3 sm:gap-4 transition-all duration-500 overflow-hidden relative group ${selectedLGProduct === i
+                                    ? 'bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-2 ring-white/20'
                                     : 'bg-[#F5F5F5] opacity-60 grayscale hover:grayscale-0 hover:opacity-100'
-                                }`}
+                                    }`}
                             >
                                 <div className="w-full aspect-square relative rounded-2xl overflow-hidden mb-2">
-                                    <Image 
-                                        src={item.img} 
-                                        alt={item.name} 
-                                        fill 
+                                    <Image
+                                        src={item.img}
+                                        alt={item.name}
+                                        fill
                                         className={`object-cover transition-transform duration-700 ${selectedLGProduct === i ? 'scale-110' : 'scale-100 group-hover:scale-105'}`}
                                         unoptimized
                                     />
                                     {selectedLGProduct === i && (
-                                        <motion.div 
+                                        <motion.div
                                             layoutId="active-indicator"
                                             className="absolute inset-0 bg-[#7E0023]/10 flex items-center justify-center"
                                         >
@@ -1324,8 +1347,8 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     {/* Dynamic Media Carousel Section */}
                     <div className="max-w-7xl mx-auto group/carousel">
                         {/* Media Display Area */}
-                        <div 
-                            className="relative aspect-video bg-[#111] rounded-[48px] overflow-hidden shadow-2xl border border-white/5"
+                        <div
+                            className="relative aspect-[3/4] sm:aspect-video bg-[#111] rounded-[32px] sm:rounded-[48px] overflow-hidden shadow-2xl border border-white/5"
                             onMouseEnter={() => setIsLGMediaHovered(true)}
                             onMouseLeave={() => setIsLGMediaHovered(false)}
                         >
@@ -1340,7 +1363,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 >
                                     {currentMediaSet.length > 0 && currentMediaSet[currentLGMediaIdx] ? (
                                         currentMediaSet[currentLGMediaIdx].type === 'video' ? (
-                                            <video 
+                                            <video
                                                 src={currentMediaSet[currentLGMediaIdx].url}
                                                 className="w-full h-full object-cover"
                                                 autoPlay
@@ -1353,7 +1376,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                             />
                                         ) : (
                                             <div className="relative w-full h-full">
-                                                <Image 
+                                                <Image
                                                     src={currentMediaSet[currentLGMediaIdx].url}
                                                     alt={`LG Media ${currentLGMediaIdx}`}
                                                     fill
@@ -1370,19 +1393,19 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                             </div>
                                         </div>
                                     )}
-                                    
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity flex flex-col justify-end p-12">
+
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-100 sm:opacity-0 sm:group-hover/carousel:opacity-100 transition-opacity flex flex-col justify-end p-6 sm:p-12">
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <span className="text-[#C9A97A] font-black text-xs tracking-widest uppercase mb-2 block">Built-in Premium Features</span>
-                                                <h4 className="text-2xl font-black text-white">
+                                                <h4 className="text-xl sm:text-2xl font-black text-white">
                                                     {currentMediaSet.length > 0 && currentMediaSet[currentLGMediaIdx] ? currentMediaSet[currentLGMediaIdx].title : lgProducts[selectedLGProduct]?.name}
                                                 </h4>
                                             </div>
                                             {currentMediaSet.length > 0 && currentMediaSet[currentLGMediaIdx]?.type === 'video' && (
                                                 <div className="flex gap-4">
-                                                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-                                                        <Volume2 size={20} className="text-white" />
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                                                        <Volume2 size={18} className="text-white" />
                                                     </div>
                                                 </div>
                                             )}
@@ -1394,17 +1417,17 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                             {/* Carousel Navigation Controls (Arrows) */}
                             {currentMediaSet.length > 0 && (
                                 <>
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentLGMediaIdx(prev => (prev === 0 ? currentMediaSet.length - 1 : prev - 1))}
-                                        className="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-[#7E0023] hover:border-[#7E0023] transition-all opacity-0 group-hover/carousel:opacity-100 z-30"
+                                        className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-[#7E0023] hover:border-[#7E0023] transition-all opacity-100 sm:opacity-0 sm:group-hover/carousel:opacity-100 z-30"
                                     >
-                                        <ChevronLeft size={24} />
+                                        <ChevronLeft size={20} />
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentLGMediaIdx(prev => (prev === currentMediaSet.length - 1 ? 0 : prev + 1))}
-                                        className="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-[#7E0023] hover:border-[#7E0023] transition-all opacity-0 group-hover/carousel:opacity-100 z-30"
+                                        className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-14 sm:h-14 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-[#7E0023] hover:border-[#7E0023] transition-all opacity-100 sm:opacity-0 sm:group-hover/carousel:opacity-100 z-30"
                                     >
-                                        <ChevronRight size={24} />
+                                        <ChevronRight size={20} />
                                     </button>
                                 </>
                             )}
@@ -1442,35 +1465,35 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             {/* Section 11: 60-Month Subscription */}
             <section className="relative py-32 px-6 overflow-hidden bg-[#131C31]">
                 <div className="max-w-7xl mx-auto">
-                    <div className="bg-[#0A1525] border border-white/10 rounded-[40px] p-8 sm:p-20 relative overflow-hidden flex flex-col md:flex-row md:items-stretch gap-12 lg:gap-24 shadow-2xl">
+                    <div className="bg-[#0A1525] border border-white/10 rounded-[40px] px-6 py-12 sm:p-20 relative overflow-hidden flex flex-col md:flex-row md:items-stretch gap-12 lg:gap-24 shadow-2xl">
                         <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
                             <CreditCard size={400} className="text-white -rotate-12 translate-x-1/2" />
                         </div>
-                        
+
                         <div className="relative z-10 flex-1 flex flex-col justify-center">
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="w-12 h-px bg-[#C9A97A]" />
                                 <span className="font-serif italic text-[#C9A97A] text-xl">Financial Freedom</span>
                             </div>
-                            <h2 className="text-3xl sm:text-5xl font-black leading-tight mb-8 break-keep">
+                            <h2 className="text-[1.65rem] sm:text-5xl font-black leading-[1.2] mb-8 break-keep">
                                 부담 없이 시작하는<br />
                                 <span className="text-gradient-gold">60개월 구독 플랜 오픈</span>
                             </h2>
                             <p className="text-white/50 text-lg leading-relaxed mb-10 break-keep">
-                                월 커피 몇 잔 값의 여유로 지금 당장<br />
+                                월 커피 몇 잔 값으로 지금 바로<br />
                                 하이엔드 맞춤 주방의 오너가 되실 수 있습니다.
                             </p>
-                            
+
                             <ul className="space-y-4 mb-4">
                                 {[
                                     '최장 60개월 분할 결제로 부담 감소',
                                     '제휴 카드 이용 시 추가 할인 혜택',
                                     '소유권 이전까지 확실한 토탈 케어',
-                                    '주방+가전 통합 구독전환까지 가능합니다.'
+                                    '주방+가전 통합 구독 가능'
                                 ].map((item, i) => {
                                     const isHighlight = i === 3;
                                     return (
-                                        <li key={i} className={`flex items-center gap-4 text-sm sm:text-base font-bold transition-all duration-500 ${isHighlight ? 'text-white bg-white/5 p-4 rounded-2xl ring-1 ring-[#C9A97A]/50 shadow-[0_0_20px_rgba(201,169,122,0.2)] animate-pulse' : 'text-white/80'}`}>
+                                        <li key={i} className={`flex items-center gap-2 sm:gap-4 text-[12.5px] sm:text-base font-bold whitespace-nowrap tracking-tighter sm:tracking-normal transition-all duration-500 ${isHighlight ? 'sm:w-fit text-white bg-white/5 p-3 sm:p-4 sm:px-8 rounded-xl sm:rounded-2xl ring-1 ring-[#C9A97A]/50 shadow-[0_0_20px_rgba(201,169,122,0.2)] animate-pulse' : 'text-white/80'}`}>
                                             <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${isHighlight ? 'bg-[#C9A97A]' : 'bg-[#C9A97A]/20'}`}>
                                                 <Check size={14} className={isHighlight ? 'text-black' : 'text-[#C9A97A]'} />
                                             </div>
@@ -1480,11 +1503,11 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                 })}
                             </ul>
                         </div>
-                        
+
                         <div className="relative z-10 w-full md:w-[350px] lg:w-[400px] flex">
-                            <motion.div 
+                            <motion.div
                                 whileHover={{ scale: 1.02 }}
-                                className="bg-gradient-to-br from-[#1A1A1A] to-[#111] border border-white/10 rounded-3xl p-10 text-center shadow-xl relative overflow-hidden flex-1 flex flex-col justify-center"
+                                className="bg-gradient-to-br from-[#1A1A1A] to-[#111] border border-white/10 rounded-3xl p-6 sm:p-10 text-center shadow-xl relative overflow-hidden flex-1 flex flex-col justify-center"
                             >
                                 <div className="absolute top-0 left-0 w-full h-1 bg-[#C9A97A]" />
                                 <span className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] mb-4 block">Monthly Fee Starts From</span>
@@ -1493,9 +1516,9 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     <span className="text-xl lg:text-2xl font-bold opacity-30 ml-1">원/월<span className="text-lg font-light ml-0.5 opacity-50">~</span></span>
                                 </div>
                                 <p className="text-[11px] text-white/30 mb-8 leading-tight">주방 스펙 및 현장 상황에 따라<br />월 구독료는 변동될 수 있습니다.</p>
-                                <button 
+                                <button
                                     onClick={handleConsultClick}
-                                    className="w-full bg-white text-black py-4 rounded-xl font-black text-sm tracking-wide hover:bg-[#C9A97A] transition-colors"
+                                    className="w-full bg-white text-black py-4 rounded-xl font-black text-[13px] sm:text-sm tracking-tighter sm:tracking-wide hover:bg-[#C9A97A] transition-colors"
                                 >
                                     지금 신청하고 월 비용 확인
                                 </button>
@@ -1531,18 +1554,29 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="relative w-full md:w-[400px] aspect-square">
                         <div className="absolute inset-0 bg-[#C9A97A]/5 blur-[120px] rounded-full" />
-                        <div className="relative z-10 w-full h-full border border-[#C9A97A]/20 rounded-full flex flex-col items-center justify-center p-12 text-center group overflow-hidden">
-                            <motion.div 
+                        <div className="relative z-10 w-full h-full border border-[#C9A97A]/20 rounded-full flex flex-col items-center justify-center p-8 sm:p-12 text-center group overflow-hidden">
+                            <motion.div
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                className="absolute inset-0 border-t-2 border-l-2 border-[#C9A97A]/10 rounded-full" 
+                                className="absolute inset-0 border-t-2 border-l-2 border-[#C9A97A]/10 rounded-full"
                             />
-                            <Trophy size={48} className="text-[#C9A97A] mb-6" />
-                            <h3 className="text-xl font-black mb-4">대한민국 브랜드 파워<br />11년 연속 No.1</h3>
-                            <p className="text-white/30 text-xs leading-loose font-bold tracking-widest">KCC GLASS WARRANTY</p>
+                            <div className="relative w-40 h-14 mb-8">
+                                <Image
+                                    src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png"
+                                    alt="KCC HomeCC Logo"
+                                    fill
+                                    className="object-contain"
+                                    unoptimized
+                                />
+                            </div>
+                            <div className="space-y-2 mb-2">
+                                <p className="text-white/50 text-sm sm:text-base font-bold tracking-tight">대한민국 창호 名家,</p>
+                                <p className="text-white/50 text-sm sm:text-base font-bold tracking-tight">KCC글라스 홈씨씨가 만든</p>
+                            </div>
+                            <h3 className="text-xl sm:text-3xl font-black text-white mt-4">프리미엄 맞춤 주방</h3>
                         </div>
                     </div>
                 </div>
@@ -1551,7 +1585,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             {/* Section 13: Final CTA */}
             <section className="relative min-h-[80vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <Image 
+                    <Image
                         src="https://hcc.kccglass.co.kr/interior/editor/images/000042/08_(3).jpg"
                         alt="Final CTA Background"
                         fill
@@ -1560,7 +1594,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-[#0D0D0D] via-transparent to-[#0D0D0D]" />
                 </div>
-                
+
                 <div className="relative z-10 max-w-4xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -1568,26 +1602,26 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                         viewport={{ once: true }}
                     >
                         <span className="text-[#C9A97A] font-serif text-2xl italic mb-6 block">Ready to Transform?</span>
-                        <h2 className="text-4xl sm:text-6xl md:text-7xl font-black mb-12 tracking-tight break-keep">
+                        <h2 className="text-[22px] sm:text-6xl md:text-7xl font-black mb-12 tracking-tighter sm:tracking-tight break-keep">
                             당신이 꿈꾸던 그 주방,<br />
-                            <span className="text-gradient-gold">현실이 되는 가장 빠른 길</span>
+                            <span className="text-gradient-gold block mt-2 sm:mt-0">현실이 되는 가장 빠른 길</span>
                         </h2>
-                        
+
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <button 
+                            <button
                                 onClick={handleConsultClick}
-                                className="w-full sm:w-auto bg-gradient-to-r from-[#E2C99A] via-[#C9A97A] to-[#B8944A] text-black px-16 py-6 rounded-full font-black text-xl hover:scale-105 transition-all glow-gold shadow-2xl"
+                                className="w-full sm:w-auto bg-gradient-to-r from-[#E2C99A] via-[#C9A97A] to-[#B8944A] text-black px-10 py-5 sm:px-16 sm:py-6 rounded-full font-black text-base sm:text-xl whitespace-nowrap hover:scale-105 transition-all glow-gold shadow-2xl"
                             >
                                 지금 무료 상담 예약하기
                             </button>
-                            <button 
+                            <button
                                 onClick={handleCallClick}
-                                className="w-full sm:w-auto border border-white/20 hover:bg-white/5 text-white px-12 py-6 rounded-full font-bold text-lg transition-all"
+                                className="w-full sm:w-auto border border-white/20 hover:bg-white/5 text-white px-8 py-5 sm:px-12 sm:py-6 rounded-full font-bold text-sm sm:text-lg whitespace-nowrap transition-all"
                             >
-                                전화 상담 <span className="font-serif italic text-[#C9A97A] ml-2">1588-0883</span>
+                                전화 상담 <span className="font-serif italic text-[#C9A97A] ml-2 text-base sm:text-xl">1588-0883</span>
                             </button>
                         </div>
-                        
+
                         <div className="mt-20 flex flex-wrap justify-center gap-x-12 gap-y-6 opacity-30 font-bold tracking-[0.2em] text-[10px]">
                             <span>ESTIMATE FREE</span>
                             <span>DESIGN CUSTOM</span>
@@ -1602,10 +1636,10 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             <footer className="py-20 px-6 border-t border-white/5 bg-black">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12 sm:opacity-50 hover:opacity-100 transition-opacity">
                     <div>
-                        <img 
-                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png" 
-                            alt="Logo" 
-                            className="h-5 brightness-0 invert mb-8"
+                        <img
+                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png"
+                            alt="Logo"
+                            className="h-8 mb-8"
                         />
                         <div className="text-[11px] leading-relaxed text-white/50 space-y-1">
                             <p>서울특별시 광진구 천호대로 563 대한방직빌딩 (KCC 홈씨씨 공식 파트너사)</p>
@@ -1619,40 +1653,40 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
             {/* Consultation Modal */}
             <AnimatePresence>
                 {showConsultModal && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[1100] flex items-center justify-center p-6"
                     >
-                        <div 
-                            className="absolute inset-0 bg-black/90 backdrop-blur-md" 
+                        <div
+                            className="absolute inset-0 bg-black/90 backdrop-blur-md"
                             onClick={() => !isSubmitting && setShowConsultModal(false)}
                         />
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             className="relative z-10 w-full max-w-lg bg-[#111] border border-white/10 rounded-[40px] overflow-hidden shadow-2xl"
                         >
                             <div className="p-8 sm:p-12">
-                                <button 
+                                <button
                                     onClick={() => setShowConsultModal(false)}
                                     className="absolute top-8 right-8 text-white/40 hover:text-white transition-colors"
                                 >
                                     <X size={24} />
                                 </button>
-                                
+
                                 <div className="text-center mb-10">
                                     <h3 className="text-2xl font-black mb-2">프리미엄 맞춤 상담</h3>
                                     <p className="text-white/40 text-sm italic">H-LINE 마스터가 직접 연락드립니다.</p>
                                 </div>
-                                
+
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div>
                                         <label className="text-[10px] font-bold text-[#C9A97A] uppercase tracking-widest block mb-2 px-1">Customer Name</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             placeholder="성함을 입력하세요"
@@ -1662,8 +1696,8 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-bold text-[#C9A97A] uppercase tracking-widest block mb-2 px-1">Contact Number</label>
-                                        <input 
-                                            type="tel" 
+                                        <input
+                                            type="tel"
                                             value={contact}
                                             onChange={handleAutoHyphen}
                                             placeholder="연락처를 입력하세요"
@@ -1671,12 +1705,12 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
                                         <label className="flex items-start gap-3 cursor-pointer group">
                                             <div className="relative mt-1">
-                                                <input 
-                                                    type="checkbox" 
+                                                <input
+                                                    type="checkbox"
                                                     className="peer sr-only"
                                                     checked={isAgreed}
                                                     onChange={(e) => setIsAgreed(e.target.checked)}
@@ -1690,9 +1724,9 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "주�
                                             </span>
                                         </label>
                                     </div>
-                                    
-                                    <button 
-                                        type="submit" 
+
+                                    <button
+                                        type="submit"
                                         disabled={isSubmitting}
                                         className="w-full bg-[#C9A97A] text-black font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:glow-gold transition-all disabled:opacity-50 disabled:hover:scale-100"
                                     >
