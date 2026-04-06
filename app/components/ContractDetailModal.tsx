@@ -7,7 +7,9 @@ import { api } from "@/convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
 
 const EXTERNAL_CONVEX_URL = "https://beaming-elk-778.convex.cloud";
+const GREEN_EXTERNAL_CONVEX_URL = "https://giant-cow-962.convex.cloud";
 const externalClient = new ConvexHttpClient(EXTERNAL_CONVEX_URL);
+const greenExternalClient = new ConvexHttpClient(GREEN_EXTERNAL_CONVEX_URL);
 
 export interface Customer {
     id: string; // convex id
@@ -34,8 +36,11 @@ interface Appliance {
 }
 
 interface ExternalQuoteResult {
-    finalBenefit?: number;
-    kccPrice?: number;
+    finalBenefit?: number;  // 고객 실 부담금 (할인 후)
+    finalQuote?: number;    // 가견적가 (할인 전)
+    totalSum?: number;      // 총계 (가견적가 후보)
+    totalAmount?: number;   // 총계 (가견적가 후보)
+    kccPrice?: number;      // KCC 공급가 (VAT포함)
     [key: string]: unknown;
 }
 
@@ -61,6 +66,7 @@ interface ContractFormData {
     monthlySubscriptionFee?: string | number;
     installmentAgreementDate?: string;
     recordingAgreementDate?: string;
+    originalQuotePrice?: string | number;
     appliances?: string;
 }
 
@@ -157,7 +163,43 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 }
             }
         }
-    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.hasInterest, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
+
+        // 할부(그린): 잔금(구독원금) 기준 2% 연이자 방식
+        if (pm === '할부(그린)') {
+            // 그린 할부는 최종견적가가 아니라 할인 전 최초견적가(originalQuotePrice)를 기준으로 함
+            const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
+            const advance = Number(formData.advancePayment) || 0;
+            const months = Number(formData.subscriptionMonths) || 0;
+            const principal = principalBase - advance;
+
+            if (months > 0 && principal > 0) {
+                // 할부총액 = {잔금(구독원금) + 연2%이자 * 년수}
+                const years = months / 12;
+                const totalInterest = principal * 0.02 * years;
+                const totalAmount = principal + totalInterest;
+                const monthlyPayment = totalAmount / months;
+
+                const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
+                const roundedTotal = roundedMonthly * months;
+
+                if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
+                    setFormData(prev => ({
+                        ...prev,
+                        monthlySubscriptionFee: roundedMonthly,
+                        totalSubscriptionFee: roundedTotal
+                    }));
+                }
+            } else if (months > 0 && principal <= 0) {
+                if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
+                    setFormData(prev => ({
+                        ...prev,
+                        monthlySubscriptionFee: 0,
+                        totalSubscriptionFee: 0
+                    }));
+                }
+            }
+        }
+    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.originalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.hasInterest, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
 
     // 연동: 결제방법 선택 시 기본값 세팅
     useEffect(() => {
@@ -167,6 +209,12 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 ...prev,
                 hasInterest: '유',
                 subscriptionMonths: prev.subscriptionMonths || 24
+            }));
+        } else if (pm === '할부(그린)') {
+            setFormData(prev => ({
+                ...prev,
+                hasInterest: '무',
+                subscriptionMonths: prev.subscriptionMonths || 60
             }));
         } else if (pm === 'BSON') {
             setFormData(prev => ({
@@ -227,6 +275,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 monthlySubscriptionFee: formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee) : undefined,
                 installmentAgreementDate: formData.installmentAgreementDate,
                 recordingAgreementDate: formData.recordingAgreementDate,
+                originalQuotePrice: formData.originalQuotePrice ? Number(formData.originalQuotePrice) : undefined,
 
                 appliances: JSON.stringify(appliances),
             });
@@ -258,12 +307,17 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
 
             if (result) {
                 const updates: Partial<ContractFormData> = {};
-                // 최종견적가는 최종혜택가(고객 실 부담금)을 가져옴
+                // 최종견적가는 최종혜택가(고객 실 부담금)을 가져옴, 최초견적가는 할인전금액(가견적가)을 가져옴
                 if (result.finalBenefit) updates.finalQuotePrice = Number(result.finalBenefit);
+                
+                // 가견적가(할인전) 후보 필드 시도 (finalQuote -> totalSum -> totalAmount)
+                const originalVal = result.finalQuote || result.totalSum || result.totalAmount;
+                if (originalVal) updates.originalQuotePrice = Number(originalVal);
+                
                 if (result.kccPrice) updates.kccSupplyPrice = Number(result.kccPrice);
 
                 setFormData((prev) => ({ ...prev, ...updates }));
-                alert('견적 시스템에서 데이터를 가져왔습니다.\n(최종혜택가 -> 최종견적가 연동됨)');
+                alert('견적 시스템에서 데이터를 가져왔습니다.\n(가견적가 및 고객 실부담금 연동됨)');
             } else {
                 alert('견적 시스템에서 해당 고객의 데이터를 찾을 수 없습니다.');
             }
@@ -275,10 +329,54 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
         }
     };
 
+    const handleSyncFromGreenEstimateSystem = async () => {
+        const name = customer.name || customer['고객명'];
+        const phone = customer.contact || customer['연락처'];
+
+        if (!name || !phone) {
+            return alert('고객명과 연락처가 있어야 조회 가능합니다.');
+        }
+
+        setLoading(true);
+        try {
+            // @ts-expect-error - greenExternalClient.query expects a specific type
+            const result = await greenExternalClient.query("quotes:searchQuote", {
+                name: String(name),
+                phone: String(phone)
+            }) as ExternalQuoteResult | null;
+
+            if (result) {
+                const updates: Partial<ContractFormData> = {};
+                // 그린리모델링 PLUS 연동: 최종견적가는 고객실부담금, KCC공급가는 공급가(VAT포함), 최초견적가는 할인전금액
+                if (result.finalBenefit) updates.finalQuotePrice = Number(result.finalBenefit);
+                
+                // 가견적가(할인전) 후보 필드 시도
+                const originalVal = result.finalQuote || result.totalSum || result.totalAmount;
+                if (originalVal) updates.originalQuotePrice = Number(originalVal);
+                
+                if (result.kccPrice) updates.kccSupplyPrice = Number(result.kccPrice);
+                
+                updates.paymentMethod = '할부(그린)';
+                updates.hasInterest = '무';
+
+                setFormData((prev) => ({ ...prev, ...updates }));
+                alert('그린 견적 시스템에서 데이터를 가져왔습니다.\n(할인 전 금액 및 고객 실부담금 연동 완료)');
+            } else {
+                alert('그린 견적 시스템에서 해당 고객의 데이터를 찾을 수 없습니다.');
+            }
+        } catch (e: unknown) {
+            console.error('Green Sync Error:', e);
+            alert('연동 실패: ' + (e instanceof Error ? e.message : '오류 발생'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const isReadOnly = userRole === 'partner';
 
     const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(formData.paymentMethod || '');
-    const isSubscription = ['현금+구독', '카드+구독', '구독(할부)'].includes(formData.paymentMethod || '');
+    const isSubscription = ['현금+구독', '카드+구독', '구독(할부)', '할부(그린)'].includes(formData.paymentMethod || '');
+    const isGreenInstallment = formData.paymentMethod === '할부(그린)';
     const isRental = formData.paymentMethod === 'BSON';
 
     return (
@@ -359,30 +457,46 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
                         <div className="flex items-center justify-between border-b pb-2">
                             <h3 className="font-bold text-gray-800">계약 정보</h3>
-                            {userRole === 'admin' && (
-                                <button
-                                    onClick={handleSyncFromEstimateSystem}
-                                    className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 font-bold hover:bg-blue-100 transition-colors"
-                                >
-                                    견적금액 연동
-                                </button>
-                            )}
+                            <div className="flex items-center gap-2">
+                                {userRole === 'admin' && (
+                                    <>
+                                        <button
+                                            onClick={handleSyncFromEstimateSystem}
+                                            className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 font-bold hover:bg-blue-100 transition-colors"
+                                        >
+                                            견적금액 연동
+                                        </button>
+                                        <button
+                                            onClick={handleSyncFromGreenEstimateSystem}
+                                            className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded border border-green-100 font-bold hover:bg-green-100 transition-colors"
+                                        >
+                                            견적금액 연동(그린)
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">시공일</label>
                                 <input type="date" disabled={isReadOnly} className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
                                     value={formData.constructionDate || ''} onChange={(e) => setFormData({ ...formData, constructionDate: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">최종견적가</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">최종견적가 (할인 전)</label>
+                                <input type="text" disabled={isReadOnly} placeholder="0" className="w-full bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500 tabular-nums text-right font-bold text-amber-700 disabled:bg-gray-100"
+                                    value={formData.originalQuotePrice ? Number(formData.originalQuotePrice).toLocaleString() : ''}
+                                    onChange={(e) => setFormData({ ...formData, originalQuotePrice: e.target.value.replace(/[^0-9]/g, '') })} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">고객 실 부담금 (할인 후)</label>
                                 <input type="text" disabled={isReadOnly} placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 tabular-nums text-right disabled:bg-gray-100"
                                     value={formData.finalQuotePrice ? Number(formData.finalQuotePrice).toLocaleString() : ''}
                                     onChange={(e) => setFormData({ ...formData, finalQuotePrice: e.target.value.replace(/[^0-9]/g, '') })} />
                             </div>
                             {userRole === 'admin' && (
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">KCC공급가</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">공급가 (VAT포함)</label>
                                     <input type="text" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 tabular-nums text-right font-bold text-blue-600"
                                         value={formData.kccSupplyPrice ? Number(formData.kccSupplyPrice).toLocaleString() : ''}
                                         onChange={(e) => setFormData({ ...formData, kccSupplyPrice: e.target.value.replace(/[^0-9]/g, '') })} />
@@ -411,11 +525,11 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     <option value="계약취소">계약취소</option>
                                 </select>
                             </div>
-                            <div>
+                            <div className="md:col-span-2">
                                 <label className="block text-xs font-medium text-gray-500 mb-1">결제방법</label>
                                 <select disabled={isReadOnly} className="w-full bg-blue-50 border border-blue-200 text-blue-800 font-bold rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
                                     value={formData.paymentMethod || '현금'} onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}>
-                                    {['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금', '구독(할부)', '현금+구독', '카드+구독', 'BSON'].map(pm => (
+                                    {['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금', '구독(할부)', '현금+구독', '카드+구독', '할부(그린)', 'BSON'].map(pm => (
                                         <option key={pm} value={pm}>{pm}</option>
                                     ))}
                                 </select>
@@ -428,7 +542,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                         <h3 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
                             결제 정보
                             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-normal">
-                                {isCashOrCard ? '현금/카드' : isSubscription ? '구독(할부)' : isRental ? '렌탈패키지' : ''}
+                                {isCashOrCard ? '현금/카드' : isGreenInstallment ? '할부(그린)' : isSubscription ? '구독(할부)' : isRental ? '렌탈패키지' : ''}
                             </span>
                         </h3>
 
@@ -470,7 +584,10 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1 text-blue-600">잔금(구독원금)</label>
                                     <div className="w-full bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700">
-                                        {((Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0)).toLocaleString()} 원
+                                        {isGreenInstallment 
+                                            ? ((Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0)).toLocaleString()
+                                            : ((Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0)).toLocaleString()
+                                        } 원
                                     </div>
                                 </div>
                                 <div>
@@ -494,13 +611,13 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">월구독료</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isGreenInstallment ? '월할부금' : '월구독료'}</label>
                                     <div className="w-full bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700">
                                         {formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : '0'} 원
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">총구독료</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isGreenInstallment ? '할부총액' : '총구독료'}</label>
                                     <div className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-medium text-gray-600">
                                         {formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee).toLocaleString() : '0'} 원
                                     </div>

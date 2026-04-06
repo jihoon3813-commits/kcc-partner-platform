@@ -44,7 +44,7 @@ export const saveContract = mutation({
         monthlySubscriptionFee: v.optional(v.float64()),
         installmentAgreementDate: v.optional(v.string()),
         recordingAgreementDate: v.optional(v.string()),
-
+        originalQuotePrice: v.optional(v.float64()),
         appliances: v.optional(v.string()),
     },
     handler: async (ctx, args) => {

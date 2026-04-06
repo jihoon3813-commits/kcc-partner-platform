@@ -126,7 +126,7 @@ export default defineSchema({
         monthlySubscriptionFee: v.optional(v.float64()), // 월구독료
         installmentAgreementDate: v.optional(v.string()), // 할부약정일(모바일)
         recordingAgreementDate: v.optional(v.string()), // 녹취약정일
-
+        originalQuotePrice: v.optional(v.float64()), // 가견적가(할인 전)
         appliances: v.optional(v.string()), // JSON string of PLUS 가전
 
         createdAt: v.optional(v.number()),
