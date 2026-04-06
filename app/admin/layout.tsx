@@ -122,6 +122,7 @@ export default function AdminLayout({
                         { href: '/admin/customers', icon: UserCheck, label: '고객 관리', roles: ['admin', 'tm'] },
                         { href: '/admin/contracts', icon: FileText, label: '계약 관리', roles: ['admin'] },
                         { href: 'https://kcc-estimate2.vercel.app/admin', icon: Calculator, label: '견적 관리', roles: ['admin'], external: true },
+                        { href: 'https://kcc-estimate3.vercel.app/admin', icon: Calculator, label: '견적 관리(그린)', roles: ['admin'], external: true },
                         { href: 'https://glosign.com/index', icon: FileSignature, label: '전자계약서', roles: ['admin'], external: true },
                         { href: '/admin/products', icon: ShoppingBag, label: '상품 관리', roles: ['admin'] },
                         { href: '/admin/resources', icon: FolderDown, label: '자료실 관리', roles: ['admin'] },

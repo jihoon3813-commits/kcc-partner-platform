@@ -114,6 +114,7 @@ function PartnerContractsContent() {
                 advancePayment: contract?.advancePayment,
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
+                originalQuotePrice: contract?.originalQuotePrice,
                 contractCreationTime: contract?._creationTime || 0,
                 category: c.category,
                 alerts: alerts
@@ -436,9 +437,15 @@ function PartnerContractsContent() {
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-bold text-gray-400">최종견적가</span>
                                             <span className="text-xs font-black text-blue-600 mt-0.5">
-                                                {(customer.finalQuotePrice || customer['최종견적 금액'])
-                                                    ? Number(customer.finalQuotePrice || customer['최종견적 금액']).toLocaleString() + '원'
-                                                    : '-'}
+                                                {(() => {
+                                                    const pm = customer.paymentMethod || '';
+                                                    const useOriginal = pm === '구독(할부)' || pm === '할부(그린)';
+                                                    const displayPrice = useOriginal 
+                                                        ? (customer.originalQuotePrice || customer.finalQuotePrice || customer['최종견적 금액'])
+                                                        : (customer.finalQuotePrice || customer['최종견적 금액']);
+                                                    
+                                                    return displayPrice ? Number(displayPrice).toLocaleString() + '원' : '-';
+                                                })()}
                                             </span>
                                         </div>
                                         <div className="flex flex-col md:col-span-2">
