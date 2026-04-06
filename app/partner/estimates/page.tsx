@@ -113,7 +113,7 @@ export default function PartnerEstimatesPage() {
         const discountAmt = Math.floor((finalQuote * (discountRate / 100)) / 100) * 100;
         const finalBenefit = finalQuote - discountAmt - extraDiscount;
 
-        const marginAmount = finalBenefit - baseCost;
+        const marginAmount = finalQuote - baseCost;
         const marginRate = baseCost > 0 ? (marginAmount / finalBenefit) * 100 : 0;
 
         const annualRate = 0.1;
