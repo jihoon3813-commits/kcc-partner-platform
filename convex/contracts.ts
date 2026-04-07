@@ -48,24 +48,51 @@ export const saveContract = mutation({
         appliances: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, ...data } = args;
-        const existing = await ctx.db
-            .query("contracts")
-            .withIndex("by_customer", (q) => q.eq("customerId", data.customerId))
-            .first();
+        try {
+            const { id, ...data } = args;
+            
+            // Clean up data: ensure no NaN values and remove undefined
+            const cleanData: any = {};
+            for (const [key, value] of Object.entries(data)) {
+                if (value !== undefined) {
+                    if (typeof value === 'number' && isNaN(value)) {
+                        continue;
+                    }
+                    cleanData[key] = value;
+                }
+            }
 
-        if (existing) {
-            await ctx.db.patch(existing._id, {
-                ...data,
-                updatedAt: Date.now(),
-            });
-            return existing._id;
-        } else {
-            return await ctx.db.insert("contracts", {
-                ...data,
-                createdAt: Date.now(),
-            });
+            // If id is provided, use it directly for patching
+            if (id) {
+                await ctx.db.patch(id, {
+                    ...cleanData,
+                    updatedAt: Date.now(),
+                });
+                return id;
+            }
+
+            // Otherwise, look up by customerId
+            const existing = await ctx.db
+                .query("contracts")
+                .withIndex("by_customer", (q) => q.eq("customerId", data.customerId))
+                .first();
+
+            if (existing) {
+                await ctx.db.patch(existing._id, {
+                    ...cleanData,
+                    updatedAt: Date.now(),
+                });
+                return existing._id;
+            } else {
+                return await ctx.db.insert("contracts", {
+                    ...cleanData,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                });
+            }
+        } catch (error: any) {
+            console.error("Error in saveContract:", error);
+            throw new Error(`[Server Error] ${error.message || 'Unknown error'}`);
         }
     },
 });

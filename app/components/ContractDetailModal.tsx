@@ -250,32 +250,39 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
         if (userRole === 'partner') return;
         setLoading(true);
         try {
+            const cleanNumber = (val: string | number | undefined) => {
+                if (val === undefined || val === '') return undefined;
+                const num = Number(val);
+                return isNaN(num) ? undefined : num;
+            };
+
             await saveContractMutation({
+                id: (formData as any)._id,
                 customerId: customer.id,
                 contractStatus: formData.contractStatus,
                 contractDate: formData.contractDate,
                 applicationDate: formData.applicationDate,
 
                 constructionDate: formData.constructionDate,
-                finalQuotePrice: formData.finalQuotePrice ? Number(formData.finalQuotePrice) : undefined,
-                kccSupplyPrice: formData.kccSupplyPrice ? Number(formData.kccSupplyPrice) : undefined,
+                finalQuotePrice: cleanNumber(formData.finalQuotePrice),
+                kccSupplyPrice: cleanNumber(formData.kccSupplyPrice),
                 kccDepositStatus: formData.kccDepositStatus,
                 constructionContractStatus: formData.constructionContractStatus,
                 paymentMethod: formData.paymentMethod,
 
-                paymentAmount1: formData.paymentAmount1 ? Number(formData.paymentAmount1) : undefined,
+                paymentAmount1: cleanNumber(formData.paymentAmount1),
                 paymentDate1: formData.paymentDate1,
-                remainingBalance: formData.remainingBalance ? Number(formData.remainingBalance) : undefined,
+                remainingBalance: cleanNumber(formData.remainingBalance),
                 remainingBalanceDate: formData.remainingBalanceDate,
 
-                advancePayment: formData.advancePayment ? Number(formData.advancePayment) : undefined,
+                advancePayment: cleanNumber(formData.advancePayment),
                 hasInterest: formData.hasInterest,
-                totalSubscriptionFee: formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee) : undefined,
-                subscriptionMonths: formData.subscriptionMonths ? Number(formData.subscriptionMonths) : undefined,
-                monthlySubscriptionFee: formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee) : undefined,
+                totalSubscriptionFee: cleanNumber(formData.totalSubscriptionFee),
+                subscriptionMonths: cleanNumber(formData.subscriptionMonths),
+                monthlySubscriptionFee: cleanNumber(formData.monthlySubscriptionFee),
                 installmentAgreementDate: formData.installmentAgreementDate,
                 recordingAgreementDate: formData.recordingAgreementDate,
-                originalQuotePrice: formData.originalQuotePrice ? Number(formData.originalQuotePrice) : undefined,
+                originalQuotePrice: cleanNumber(formData.originalQuotePrice),
 
                 appliances: JSON.stringify(appliances),
             });
