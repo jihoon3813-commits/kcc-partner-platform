@@ -11,13 +11,15 @@ interface ExcelDownloadModalProps {
     data: any[];
     filename: string;
     dateField: string; // The field to use for date filtering (e.g., '신청일' or 'contractDate')
+    initialStartDate?: string;
+    initialEndDate?: string;
 }
 
-export default function ExcelDownloadModal({ isOpen, onClose, data, filename, dateField }: ExcelDownloadModalProps) {
+export default function ExcelDownloadModal({ isOpen, onClose, data, filename, dateField, initialStartDate, initialEndDate }: ExcelDownloadModalProps) {
     const today = new Date();
-    const [startDate, setStartDate] = useState(format(startOfMonth(today), 'yyyy-MM-dd'));
-    const [endDate, setEndDate] = useState(format(endOfMonth(today), 'yyyy-MM-dd'));
-    const [quickFilter, setQuickFilter] = useState('currentMonth');
+    const [startDate, setStartDate] = useState(initialStartDate || format(startOfMonth(today), 'yyyy-MM-dd'));
+    const [endDate, setEndDate] = useState(initialEndDate || format(endOfMonth(today), 'yyyy-MM-dd'));
+    const [quickFilter, setQuickFilter] = useState(initialStartDate ? '' : 'currentMonth');
 
     if (!isOpen) return null;
 

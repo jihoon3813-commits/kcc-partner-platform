@@ -187,7 +187,7 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
         return { labels, statuses, partners };
     }, [sortedCustomers]);
 
-    const filteredCustomers = useMemo(() => {
+    const { currentStartDateEffective, currentEndDateEffective } = useMemo(() => {
         const now = new Date();
         let start: Date;
         let end: Date = endOfMonth(now);
@@ -204,6 +204,18 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
                 break;
             default: start = subMonths(now, 3);
         }
+        return { 
+            currentStartDateEffective: format(start, 'yyyy-MM-dd'), 
+            currentEndDateEffective: format(end, 'yyyy-MM-dd'),
+            startDateObj: start,
+            endDateObj: end
+        };
+    }, [dateFilter, customStartDate, customEndDate]);
+
+    const filteredCustomers = useMemo(() => {
+        const start = parseISO(currentStartDateEffective);
+        const end = parseISO(currentEndDateEffective);
+        end.setHours(23, 59, 59, 999);
 
         return sortedCustomers.filter(c => {
             // Category Filtering
@@ -728,7 +740,17 @@ export function CustomerList({ category: initialCategory }: { category?: 'kitche
                 isOpen={isDirectModalOpen} 
                 onClose={() => setIsDirectModalOpen(false)} 
             />
-            <ExcelDownloadModal isOpen={isExcelModalOpen} onClose={() => setIsExcelModalOpen(false)} data={allMappedCustomers} filename="고객관리리스트" dateField="신청일" />
+            {isExcelModalOpen && (
+                <ExcelDownloadModal 
+                    isOpen={isExcelModalOpen} 
+                    onClose={() => setIsExcelModalOpen(false)} 
+                    data={filteredCustomers} 
+                    filename="고객관리리스트" 
+                    dateField="신청일" 
+                    initialStartDate={currentStartDateEffective}
+                    initialEndDate={currentEndDateEffective}
+                />
+            )}
             {isRefreshing && (
                 <div className="fixed inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
                     <div className="relative">

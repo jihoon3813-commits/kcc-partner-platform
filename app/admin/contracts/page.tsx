@@ -482,13 +482,15 @@ function AdminContractsContent() {
                 customer={selectedCustomer}
             />
 
-            <ExcelDownloadModal
-                isOpen={isExcelModalOpen}
-                onClose={() => setIsExcelModalOpen(false)}
-                data={allMappedCustomers}
-                filename="계약관리리스트"
-                dateField="contractDate"
-            />
+            {isExcelModalOpen && (
+                <ExcelDownloadModal
+                    isOpen={isExcelModalOpen}
+                    onClose={() => setIsExcelModalOpen(false)}
+                    data={filteredCustomers}
+                    filename="계약관리리스트"
+                    dateField="contractDate"
+                />
+            )}
 
             {isRefreshing && (
                 <div className="fixed inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in duration-300">
