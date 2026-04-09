@@ -669,17 +669,18 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isKitchenType || isGreenType ? '월할부금' : '월구독료'}</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isKitchenSubscription || isGreenInstallment ? '월할부금' : '월구독료'}</label>
                                     <input type="text" placeholder="0" className="w-full bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700 outline-none focus:border-blue-400"
                                         value={formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : ''}
                                         onChange={(e) => setFormData({ ...formData, monthlySubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isKitchenType || isGreenType ? '할부총액' : '총구독료'}</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isKitchenSubscription || isGreenInstallment ? '할부총액' : '총구독료'}</label>
                                     <input type="text" placeholder="0" className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-medium text-gray-600 outline-none focus:border-gray-400"
                                         value={formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee).toLocaleString() : ''}
                                         onChange={(e) => setFormData({ ...formData, totalSubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
                                 </div>
+
 
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">할부약정일(모바일)</label>
