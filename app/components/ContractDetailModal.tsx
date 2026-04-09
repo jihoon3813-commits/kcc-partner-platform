@@ -199,6 +199,43 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 }
             }
         }
+
+        // 구독(할부/주방): 만기일시상환 기준 연 3.9%
+        if (pm === '구독(할부/주방)') {
+            // 이자 계산 기준은 할인 전 최종견적가(originalQuotePrice)로 함
+            const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
+            const advance = Number(formData.advancePayment) || 0;
+            const months = Number(formData.subscriptionMonths) || 0;
+            const principal = principalBase - advance;
+
+            if (months > 0 && principal > 0) {
+                // 연 3.9% 이자 (만기일시상환 방식의 이자 계산 후 균등분할)
+                const years = months / 12;
+                const totalInterest = principal * 0.039 * years;
+                const totalAmount = principal + totalInterest;
+                const monthlyPayment = totalAmount / months;
+
+                const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
+                const roundedTotal = roundedMonthly * months;
+
+                if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
+                    setFormData(prev => ({
+                        ...prev,
+                        monthlySubscriptionFee: roundedMonthly,
+                        totalSubscriptionFee: roundedTotal
+                    }));
+                }
+            } else if (months > 0 && principal <= 0) {
+                if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
+                    setFormData(prev => ({
+                        ...prev,
+                        monthlySubscriptionFee: 0,
+                        totalSubscriptionFee: 0
+                    }));
+                }
+            }
+        }
+
     }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.originalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.hasInterest, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
 
     // 연동: 결제방법 선택 시 기본값 세팅
@@ -216,7 +253,14 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 hasInterest: '무',
                 subscriptionMonths: prev.subscriptionMonths || 60
             }));
+        } else if (pm === '구독(할부/주방)') {
+            setFormData(prev => ({
+                ...prev,
+                hasInterest: '무',
+                subscriptionMonths: prev.subscriptionMonths || 60
+            }));
         } else if (pm === 'BSON') {
+
             setFormData(prev => ({
                 ...prev,
                 subscriptionMonths: 60,
@@ -382,9 +426,11 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
     const isReadOnly = userRole === 'partner';
 
     const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(formData.paymentMethod || '');
-    const isSubscription = ['현금+구독', '카드+구독', '구독(할부)', '할부(그린)'].includes(formData.paymentMethod || '');
+    const isSubscription = ['현금+구독', '카드+구독', '구독(할부)', '구독(할부/주방)', '할부(그린)'].includes(formData.paymentMethod || '');
     const isGreenInstallment = formData.paymentMethod === '할부(그린)';
+    const isKitchenSubscription = formData.paymentMethod === '구독(할부/주방)';
     const isRental = formData.paymentMethod === 'BSON';
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
@@ -536,10 +582,11 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                 <label className="block text-xs font-medium text-gray-500 mb-1">결제방법</label>
                                 <select disabled={isReadOnly} className="w-full bg-blue-50 border border-blue-200 text-blue-800 font-bold rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
                                     value={formData.paymentMethod || '현금'} onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}>
-                                    {['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금', '구독(할부)', '현금+구독', '카드+구독', '할부(그린)', 'BSON'].map(pm => (
+                                    {['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금', '구독(할부)', '구독(할부/주방)', '현금+구독', '카드+구독', '할부(그린)', 'BSON'].map(pm => (
                                         <option key={pm} value={pm}>{pm}</option>
                                     ))}
                                 </select>
+
                             </div>
                         </div>
                     </div>
@@ -549,8 +596,9 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                         <h3 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
                             결제 정보
                             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-normal">
-                                {isCashOrCard ? '현금/카드' : isGreenInstallment ? '할부(그린)' : isSubscription ? '구독(할부)' : isRental ? '렌탈패키지' : ''}
+                                {isCashOrCard ? '현금/카드' : isGreenInstallment ? '할부(그린)' : isKitchenSubscription ? '구독(할부/주방)' : isSubscription ? '구독(할부)' : isRental ? '렌탈패키지' : ''}
                             </span>
+
                         </h3>
 
                         {isCashOrCard && (
@@ -591,11 +639,12 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1 text-blue-600">잔금(구독원금)</label>
                                     <div className="w-full bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700">
-                                        {isGreenInstallment 
+                                        {(isGreenInstallment || isKitchenSubscription)
                                             ? ((Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0)).toLocaleString()
                                             : ((Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0)).toLocaleString()
                                         } 원
                                     </div>
+
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">이자유무</label>

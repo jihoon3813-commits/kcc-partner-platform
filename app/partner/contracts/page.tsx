@@ -69,8 +69,9 @@ function PartnerContractsContent() {
             const remaining = (contract?.remainingBalance !== undefined) ? Number(contract?.remainingBalance) : (finalQuote - paid);
 
             const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(pm);
-            const isSubscription = ['현금+구독', '카드+구독', '구독(할부)'].includes(pm);
+            const isSubscription = ['현금+구독', '카드+구독', '구독(할부)', '구독(할부/주방)'].includes(pm);
             const isRental = pm === 'BSON';
+
 
             // Alerts logic
             const alerts = [];
@@ -439,7 +440,7 @@ function PartnerContractsContent() {
                                             <span className="text-xs font-black text-blue-600 mt-0.5">
                                                 {(() => {
                                                     const pm = customer.paymentMethod || '';
-                                                    const useOriginal = pm === '구독(할부)' || pm === '할부(그린)';
+                                                    const useOriginal = pm === '구독(할부)' || pm === '구독(할부/주방)' || pm === '할부(그린)';
                                                     const displayPrice = useOriginal 
                                                         ? (customer.originalQuotePrice || customer.finalQuotePrice || customer['최종견적 금액'])
                                                         : (customer.finalQuotePrice || customer['최종견적 금액']);
