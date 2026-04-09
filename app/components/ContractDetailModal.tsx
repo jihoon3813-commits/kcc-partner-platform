@@ -1,6 +1,7 @@
 'use client'; 
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
 import { X, Save, FileText } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -87,6 +88,19 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
     // PLUS 가전
     const [appliances, setAppliances] = useState<Appliance[]>([]);
 
+    // 자동 계산을 위한 이전 상태 저장 (수동 수정 허용을 위함)
+    const prevBaseRef = useRef({
+        finalQuotePrice: formData.finalQuotePrice,
+        originalQuotePrice: formData.originalQuotePrice,
+        paymentAmount1: formData.paymentAmount1,
+        advancePayment: formData.advancePayment,
+        subscriptionMonths: formData.subscriptionMonths,
+        hasInterest: formData.hasInterest,
+        paymentMethod: formData.paymentMethod,
+        monthlySubscriptionFee: formData.monthlySubscriptionFee
+    });
+
+
     useEffect(() => {
         if (isOpen && customer) {
             if (existingContract) {
@@ -111,132 +125,113 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
 
     useEffect(() => {
         if (!isOpen) return;
+        
         const pm = formData.paymentMethod || '';
+        const prev = prevBaseRef.current;
 
-        // 현금/카드 잔금 계산
-        const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(pm);
-        if (isCashOrCard) {
-            const finalQuote = Number(formData.finalQuotePrice) || 0;
-            const paid = Number(formData.paymentAmount1) || 0;
-            const balance = finalQuote - paid;
-            if (formData.remainingBalance !== balance) {
-                setFormData((prev) => ({ ...prev, remainingBalance: balance }));
-            }
-        }
+        // 베이스 필드 변경 여부 확인
+        const finalQuoteChanged = formData.finalQuotePrice !== prev.finalQuotePrice;
+        const originalQuoteChanged = formData.originalQuotePrice !== prev.originalQuotePrice;
+        const paymentAmount1Changed = formData.paymentAmount1 !== prev.paymentAmount1;
+        const advancePaymentChanged = formData.advancePayment !== prev.advancePayment;
+        const monthsChanged = formData.subscriptionMonths !== prev.subscriptionMonths;
+        const interestChanged = formData.hasInterest !== prev.hasInterest;
+        const pmChanged = formData.paymentMethod !== prev.paymentMethod;
 
-        // 구독(할부계산): 원리금균등상환 연 10% (현금+구독, 카드+구독 포함)
-        if (['구독(할부)', '현금+구독', '카드+구독'].includes(pm)) {
-            const finalQuote = Number(formData.finalQuotePrice) || 0;
-            const advance = Number(formData.advancePayment) || 0;
-            const months = Number(formData.subscriptionMonths) || 0;
-            const principal = finalQuote - advance;
-
-            if (months > 0 && principal > 0) {
-                const annualRate = formData.hasInterest === '무' ? 0 : 0.10;
-                let monthlyPayment = 0;
-                
-                if (annualRate > 0) {
-                    const monthlyRate = annualRate / 12;
-                    // PMT = P * [r(1+r)^n] / [(1+r)^n - 1]
-                    monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
-                } else {
-                    monthlyPayment = principal / months;
-                }
-
-                const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
-                const roundedTotal = roundedMonthly * months;
-
-                if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
-                    setFormData(prev => ({
-                        ...prev,
-                        monthlySubscriptionFee: roundedMonthly,
-                        totalSubscriptionFee: roundedTotal
-                    }));
-                }
-            } else if (months > 0 && principal <= 0) {
-                if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
-                    setFormData(prev => ({
-                        ...prev,
-                        monthlySubscriptionFee: 0,
-                        totalSubscriptionFee: 0
-                    }));
+        // 1. 현금/카드 잔금 계산 (기반 값이 바뀔 때만)
+        if (['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(pm)) {
+            if (finalQuoteChanged || paymentAmount1Changed || pmChanged) {
+                const finalQuote = Number(formData.finalQuotePrice) || 0;
+                const paid = Number(formData.paymentAmount1) || 0;
+                const balance = finalQuote - paid;
+                if (formData.remainingBalance !== balance) {
+                    setFormData(prevData => ({ ...prevData, remainingBalance: balance }));
                 }
             }
         }
 
-        // 할부(그린): 잔금(구독원금) 기준 2% 연이자 방식
-        if (pm === '할부(그린)') {
-            // 그린 할부는 최종견적가가 아니라 할인 전 최초견적가(originalQuotePrice)를 기준으로 함
-            const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
-            const advance = Number(formData.advancePayment) || 0;
-            const months = Number(formData.subscriptionMonths) || 0;
-            const principal = principalBase - advance;
+        // 2. 구독/할부 계산 (기반 값이 바뀔 때만)
+        const isSubscriptionType = ['구독(할부)', '현금+구독', '카드+구독'].includes(pm);
+        const isGreenType = pm === '할부(그린)';
+        const isKitchenType = pm === '구독(할부/주방)';
 
-            if (months > 0 && principal > 0) {
-                // 할부총액 = {잔금(구독원금) + 연2%이자 * 년수}
-                const years = months / 12;
-                const totalInterest = principal * 0.02 * years;
-                const totalAmount = principal + totalInterest;
-                const monthlyPayment = totalAmount / months;
+        if (isSubscriptionType || isGreenType || isKitchenType) {
+            if (finalQuoteChanged || originalQuoteChanged || advancePaymentChanged || monthsChanged || interestChanged || pmChanged) {
+                let principal = 0;
+                let annualRate = 0;
+                let months = Number(formData.subscriptionMonths) || 0;
 
-                const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
-                const roundedTotal = roundedMonthly * months;
-
-                if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
-                    setFormData(prev => ({
-                        ...prev,
-                        monthlySubscriptionFee: roundedMonthly,
-                        totalSubscriptionFee: roundedTotal
-                    }));
+                if (isSubscriptionType) {
+                    principal = (Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0);
+                    annualRate = formData.hasInterest === '무' ? 0 : 0.10;
+                } else if (isGreenType) {
+                    const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
+                    principal = principalBase - (Number(formData.advancePayment) || 0);
+                    annualRate = 0.02; // 그린리모델링 2%
+                } else if (isKitchenType) {
+                    const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
+                    principal = principalBase - (Number(formData.advancePayment) || 0);
+                    annualRate = 0.039; // 주방 구독 3.9%
                 }
-            } else if (months > 0 && principal <= 0) {
-                if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
-                    setFormData(prev => ({
-                        ...prev,
-                        monthlySubscriptionFee: 0,
-                        totalSubscriptionFee: 0
-                    }));
-                }
-            }
-        }
 
-        // 구독(할부/주방): 만기일시상환 기준 연 3.9%
-        if (pm === '구독(할부/주방)') {
-            // 이자 계산 기준은 할인 전 최종견적가(originalQuotePrice)로 함
-            const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
-            const advance = Number(formData.advancePayment) || 0;
-            const months = Number(formData.subscriptionMonths) || 0;
-            const principal = principalBase - advance;
+                if (months > 0 && principal > 0) {
+                    let monthlyPayment = 0;
+                    if (isSubscriptionType && annualRate > 0) {
+                        const monthlyRate = annualRate / 12;
+                        monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+                    } else {
+                        // 단순 이자 계산 (할부 그린 및 주방 구독)
+                        const years = months / 12;
+                        const totalInterest = principal * annualRate * years;
+                        const totalAmount = principal + totalInterest;
+                        monthlyPayment = totalAmount / months;
+                    }
 
-            if (months > 0 && principal > 0) {
-                // 연 3.9% 이자 (만기일시상환 방식의 이자 계산 후 균등분할)
-                const years = months / 12;
-                const totalInterest = principal * 0.039 * years;
-                const totalAmount = principal + totalInterest;
-                const monthlyPayment = totalAmount / months;
+                    const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
+                    const roundedTotal = roundedMonthly * months;
 
-                const roundedMonthly = Math.round(monthlyPayment / 10) * 10;
-                const roundedTotal = roundedMonthly * months;
-
-                if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
-                    setFormData(prev => ({
-                        ...prev,
-                        monthlySubscriptionFee: roundedMonthly,
-                        totalSubscriptionFee: roundedTotal
-                    }));
-                }
-            } else if (months > 0 && principal <= 0) {
-                if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
-                    setFormData(prev => ({
-                        ...prev,
-                        monthlySubscriptionFee: 0,
-                        totalSubscriptionFee: 0
-                    }));
+                    if (formData.monthlySubscriptionFee !== roundedMonthly || formData.totalSubscriptionFee !== roundedTotal) {
+                        setFormData(prevData => ({
+                            ...prevData,
+                            monthlySubscriptionFee: roundedMonthly,
+                            totalSubscriptionFee: roundedTotal
+                        }));
+                    }
+                } else if (months > 0 && principal <= 0) {
+                    if (formData.monthlySubscriptionFee !== 0 || formData.totalSubscriptionFee !== 0) {
+                        setFormData(prevData => ({
+                            ...prevData,
+                            monthlySubscriptionFee: 0,
+                            totalSubscriptionFee: 0
+                        }));
+                    }
                 }
             }
         }
 
-    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.originalQuotePrice, formData.paymentAmount1, formData.advancePayment, formData.subscriptionMonths, formData.hasInterest, formData.monthlySubscriptionFee, formData.totalSubscriptionFee, formData.remainingBalance]);
+        // Ref 업데이트
+        prevBaseRef.current = {
+            finalQuotePrice: formData.finalQuotePrice,
+            originalQuotePrice: formData.originalQuotePrice,
+            paymentAmount1: formData.paymentAmount1,
+            advancePayment: formData.advancePayment,
+            subscriptionMonths: formData.subscriptionMonths,
+            hasInterest: formData.hasInterest,
+            paymentMethod: formData.paymentMethod,
+            monthlySubscriptionFee: formData.monthlySubscriptionFee
+        };
+
+    }, [
+        isOpen, 
+        formData.paymentMethod, 
+        formData.finalQuotePrice, 
+        formData.originalQuotePrice, 
+        formData.paymentAmount1, 
+        formData.advancePayment, 
+        formData.subscriptionMonths, 
+        formData.hasInterest
+    ]);
+
 
     // 연동: 결제방법 선택 시 기본값 세팅
     useEffect(() => {
@@ -271,22 +266,29 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
 
     // BSON 계산: 월구독료 선택에 따른 선납금 자동 계산
     useEffect(() => {
+        if (!isOpen) return;
         if (formData.paymentMethod === 'BSON') {
-            const finalQuote = Number(formData.finalQuotePrice) || 0;
-            const monthlyFee = Number(formData.monthlySubscriptionFee) || 0;
-            let advance = 0;
+            const MonthlyFeeChanged = formData.monthlySubscriptionFee !== prevBaseRef.current.monthlySubscriptionFee;
+            const finalQuoteChanged = formData.finalQuotePrice !== prevBaseRef.current.finalQuotePrice;
 
-            if (monthlyFee === 111000) advance = finalQuote - 5000000;
-            else if (monthlyFee === 222000) advance = finalQuote - 10000000;
-            else if (monthlyFee === 333000) advance = finalQuote - 15000000;
+            if (MonthlyFeeChanged || finalQuoteChanged) {
+                const finalQuote = Number(formData.finalQuotePrice) || 0;
+                const monthlyFee = Number(formData.monthlySubscriptionFee) || 0;
+                let advance = 0;
 
-            if (advance < 0) advance = 0;
+                if (monthlyFee === 111000) advance = finalQuote - 5000000;
+                else if (monthlyFee === 222000) advance = finalQuote - 10000000;
+                else if (monthlyFee === 333000) advance = finalQuote - 15000000;
 
-            if (formData.advancePayment !== advance) {
-                setFormData(prev => ({ ...prev, advancePayment: advance }));
+                if (advance < 0) advance = 0;
+
+                if (formData.advancePayment !== advance) {
+                    setFormData(prevData => ({ ...prevData, advancePayment: advance }));
+                }
             }
         }
-    }, [formData.paymentMethod, formData.finalQuotePrice, formData.monthlySubscriptionFee]);
+    }, [isOpen, formData.paymentMethod, formData.finalQuotePrice, formData.monthlySubscriptionFee]);
+
 
     if (!isOpen || !customer) return null;
 
@@ -667,17 +669,18 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isGreenInstallment ? '월할부금' : '월구독료'}</label>
-                                    <div className="w-full bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700">
-                                        {formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : '0'} 원
-                                    </div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isKitchenType || isGreenType ? '월할부금' : '월구독료'}</label>
+                                    <input type="text" placeholder="0" className="w-full bg-blue-50/50 border border-blue-100 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700 outline-none focus:border-blue-400"
+                                        value={formData.monthlySubscriptionFee ? Number(formData.monthlySubscriptionFee).toLocaleString() : ''}
+                                        onChange={(e) => setFormData({ ...formData, monthlySubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isGreenInstallment ? '할부총액' : '총구독료'}</label>
-                                    <div className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-medium text-gray-600">
-                                        {formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee).toLocaleString() : '0'} 원
-                                    </div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{isKitchenType || isGreenType ? '할부총액' : '총구독료'}</label>
+                                    <input type="text" placeholder="0" className="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-medium text-gray-600 outline-none focus:border-gray-400"
+                                        value={formData.totalSubscriptionFee ? Number(formData.totalSubscriptionFee).toLocaleString() : ''}
+                                        onChange={(e) => setFormData({ ...formData, totalSubscriptionFee: e.target.value.replace(/[^0-9]/g, '') })} />
                                 </div>
+
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">할부약정일(모바일)</label>
                                     <input type="date" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
