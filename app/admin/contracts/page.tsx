@@ -126,18 +126,18 @@ function AdminContractsContent() {
                 if (aHasAlert && !bHasAlert) return -1;
                 if (!aHasAlert && bHasAlert) return 1;
 
-                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
+                const timeA = a.contractCreationTime || a._creationTime || 0;
+                const timeB = b.contractCreationTime || b._creationTime || 0;
                 return timeB - timeA;
             }
             if (sortOption === 'reg_desc') {
-                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
+                const timeA = a.contractCreationTime || a._creationTime || 0;
+                const timeB = b.contractCreationTime || b._creationTime || 0;
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
-                const timeA = Math.max(a.contractCreationTime || 0, a.updatedAt || 0, a._creationTime || 0);
-                const timeB = Math.max(b.contractCreationTime || 0, b.updatedAt || 0, b._creationTime || 0);
+                const timeA = a.contractCreationTime || a._creationTime || 0;
+                const timeB = b.contractCreationTime || b._creationTime || 0;
                 return timeA - timeB;
             }
             if (sortOption === 'no_asc') {
