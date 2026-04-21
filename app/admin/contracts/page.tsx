@@ -27,6 +27,39 @@ function AdminContractsContent() {
     const [categoryFilter, setCategoryFilter] = useState('');
     const [checklistFilter, setChecklistFilter] = useState('');
     const [sortOption, setSortOption] = useState<'reg_desc' | 'reg_asc' | 'no_asc' | 'no_desc' | 'reception_asc' | 'reception_desc' | 'checklist_desc'>('reg_desc');
+    const [datePreset, setDatePreset] = useState<string>('all');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    const handleDatePresetChange = (preset: string) => {
+        setDatePreset(preset);
+        const now = new Date();
+        let start = '';
+        let end = now.toISOString().split('T')[0];
+
+        if (preset === 'thisMonth') {
+            start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        } else if (preset === 'lastMonth') {
+            const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            start = firstOfLastMonth.toISOString().split('T')[0];
+            end = lastOfLastMonth.toISOString().split('T')[0];
+        } else if (preset === '3months') {
+            start = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString().split('T')[0];
+        } else if (preset === '6months') {
+            start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()).toISOString().split('T')[0];
+        } else if (preset === '1year') {
+            start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+        } else if (preset === 'all') {
+            start = '';
+            end = '';
+        }
+
+        if (preset !== 'custom') {
+            setStartDate(start);
+            setEndDate(end);
+        }
+    };
 
     const allMappedCustomers = useMemo(() => {
         if (!convexCustomers || !convexContracts) return [];
@@ -82,7 +115,7 @@ function AdminContractsContent() {
                 '시공일자': contract?.constructionDate || c.construct_date || '',
                 '가견적 금액': c.price_pre || 0,
                 '최종견적 금액': contract?.finalQuotePrice || c.price_final || 0,
-                '신청일': c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
+                '신청일': contract?.applicationDate || c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
                 'id': c._id,
                 'category': c.category,
                 '_creationTime': c._creationTime,
@@ -126,18 +159,18 @@ function AdminContractsContent() {
                 if (aHasAlert && !bHasAlert) return -1;
                 if (!aHasAlert && bHasAlert) return 1;
 
-                const timeA = a.contractCreationTime || a._creationTime || 0;
-                const timeB = b.contractCreationTime || b._creationTime || 0;
+                const timeA = (a.contractDate ? new Date(a.contractDate).getTime() : 0) || a.contractCreationTime || a._creationTime || 0;
+                const timeB = (b.contractDate ? new Date(b.contractDate).getTime() : 0) || b.contractCreationTime || b._creationTime || 0;
                 return timeB - timeA;
             }
             if (sortOption === 'reg_desc') {
-                const timeA = a.contractCreationTime || a._creationTime || 0;
-                const timeB = b.contractCreationTime || b._creationTime || 0;
+                const timeA = (a.contractDate ? new Date(a.contractDate).getTime() : 0) || a.contractCreationTime || a._creationTime || 0;
+                const timeB = (b.contractDate ? new Date(b.contractDate).getTime() : 0) || b.contractCreationTime || b._creationTime || 0;
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
-                const timeA = a.contractCreationTime || a._creationTime || 0;
-                const timeB = b.contractCreationTime || b._creationTime || 0;
+                const timeA = (a.contractDate ? new Date(a.contractDate).getTime() : 0) || a.contractCreationTime || a._creationTime || 0;
+                const timeB = (b.contractDate ? new Date(b.contractDate).getTime() : 0) || b.contractCreationTime || b._creationTime || 0;
                 return timeA - timeB;
             }
             if (sortOption === 'no_asc') {
@@ -192,6 +225,17 @@ function AdminContractsContent() {
             if (statusFilter && c.contractStatus !== statusFilter) return false;
             if (partnerFilter && c['유입채널'] !== partnerFilter) return false;
             if (checklistFilter && !c.alerts.includes(checklistFilter)) return false;
+
+            // Date Range Filter
+            if (startDate || endDate) {
+                const regDate = c.contractDate || c['신청일'];
+                if (regDate) {
+                    if (startDate && regDate < startDate) return false;
+                    if (endDate && regDate > endDate) return false;
+                } else {
+                    return false;
+                }
+            }
 
             return true;
         });
@@ -248,6 +292,59 @@ function AdminContractsContent() {
                             엑셀 다운로드
                         </button>
                     </div>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-gray-400 whitespace-nowrap">등록일 기간</span>
+                        <div className="flex items-center bg-white border border-gray-200 rounded-lg p-1 gap-1">
+                            {[
+                                { label: '전체', value: 'all' },
+                                { label: '당월', value: 'thisMonth' },
+                                { label: '전월', value: 'lastMonth' },
+                                { label: '3개월', value: '3months' },
+                                { label: '6개월', value: '6months' },
+                                { label: '1년', value: '1year' },
+                                { label: '선택', value: 'custom' },
+                            ].map((p) => (
+                                <button
+                                    key={p.value}
+                                    onClick={() => handleDatePresetChange(p.value)}
+                                    className={`px-3 py-1.5 rounded-md text-[11px] font-black transition-all ${
+                                        datePreset === p.value
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'text-gray-500 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {(datePreset === 'custom' || startDate || endDate) && (
+                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
+                            <input
+                                type="date"
+                                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[11px] font-bold outline-none focus:border-blue-500"
+                                value={startDate}
+                                onChange={(e) => {
+                                    setStartDate(e.target.value);
+                                    setDatePreset('custom');
+                                }}
+                            />
+                            <span className="text-gray-400 text-xs">~</span>
+                            <input
+                                type="date"
+                                className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[11px] font-bold outline-none focus:border-blue-500"
+                                value={endDate}
+                                onChange={(e) => {
+                                    setEndDate(e.target.value);
+                                    setDatePreset('custom');
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
@@ -389,11 +486,16 @@ function AdminContractsContent() {
                                                 })()}
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black text-gray-400 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-100 tracking-tighter whitespace-nowrap" title="접수일">
                                                     {customer['신청일'] ? String(customer['신청일']).substring(0, 10) : '-'}
+                                                </span>
+                                                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100 tracking-tighter whitespace-nowrap" title="계약등록일">
+                                                    {customer.contractDate || (customer.contractCreationTime ? new Date(customer.contractCreationTime).toISOString().substring(0, 10) : '-')}
                                                 </span>
                                                 <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg whitespace-nowrap">No.{customer['No.']}</span>
                                                 <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg whitespace-nowrap">{customer['유입채널']}</span>
+                                            </div>
                                             </div>
                                         </div>
 
