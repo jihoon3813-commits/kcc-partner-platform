@@ -46,6 +46,12 @@ export const saveContract = mutation({
         recordingAgreementDate: v.optional(v.string()),
         originalQuotePrice: v.optional(v.float64()),
         appliances: v.optional(v.string()),
+
+        greenGovAdvancePayment: v.optional(v.float64()),
+        greenGovPaymentMethod: v.optional(v.string()),
+        greenGovPaymentDate: v.optional(v.string()),
+        greenGovApplicationAmount: v.optional(v.float64()),
+        greenGovStatus: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         try {

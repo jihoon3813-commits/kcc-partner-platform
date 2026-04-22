@@ -129,6 +129,13 @@ export default defineSchema({
         originalQuotePrice: v.optional(v.float64()), // 가견적가(할인 전)
         appliances: v.optional(v.string()), // JSON string of PLUS 가전
 
+        // 그린리모델링(정부)
+        greenGovAdvancePayment: v.optional(v.float64()),
+        greenGovPaymentMethod: v.optional(v.string()), // 카드/현금
+        greenGovPaymentDate: v.optional(v.string()),
+        greenGovApplicationAmount: v.optional(v.float64()),
+        greenGovStatus: v.optional(v.string()), // 신청중/신청완료/진행가능/진행불가
+
         createdAt: v.optional(v.number()),
         updatedAt: v.optional(v.number()),
     }).index("by_customer", ["customerId"]),

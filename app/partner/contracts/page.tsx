@@ -104,6 +104,7 @@ function PartnerContractsContent() {
             const isCashOrCard = ['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금'].includes(pm);
             const isSubscription = ['현금+구독', '카드+구독', '구독(할부)', '구독(할부/주방)'].includes(pm);
             const isRental = pm === 'BSON';
+            const isGreenGov = pm === '그린리모델링(정부)';
 
 
             // Alerts logic
@@ -184,18 +185,30 @@ function PartnerContractsContent() {
                 if (aHasAlert && !bHasAlert) return -1;
                 if (!aHasAlert && bHasAlert) return 1;
 
-                const timeA = (a.contractDate ? new Date(a.contractDate).getTime() : 0) || a.contractCreationTime || a._creationTime || 0;
-                const timeB = (b.contractDate ? new Date(b.contractDate).getTime() : 0) || b.contractCreationTime || b._creationTime || 0;
+                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : 0;
+                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : 0;
+                if (dateB !== dateA) return dateB - dateA;
+
+                const timeA = a.contractCreationTime || a._creationTime || 0;
+                const timeB = b.contractCreationTime || b._creationTime || 0;
                 return timeB - timeA;
             }
             if (sortOption === 'reg_desc') {
-                const timeA = (a.contractDate ? new Date(a.contractDate).getTime() : 0) || a.contractCreationTime || a._creationTime || 0;
-                const timeB = (b.contractDate ? new Date(b.contractDate).getTime() : 0) || b.contractCreationTime || b._creationTime || 0;
+                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : 0;
+                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : 0;
+                if (dateB !== dateA) return dateB - dateA;
+
+                const timeA = a.contractCreationTime || a._creationTime || 0;
+                const timeB = b.contractCreationTime || b._creationTime || 0;
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
-                const timeA = (a.contractDate ? new Date(a.contractDate).getTime() : 0) || a.contractCreationTime || a._creationTime || 0;
-                const timeB = (b.contractDate ? new Date(b.contractDate).getTime() : 0) || b.contractCreationTime || b._creationTime || 0;
+                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : 0;
+                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : 0;
+                if (dateA !== dateB) return dateA - dateB;
+
+                const timeA = a.contractCreationTime || a._creationTime || 0;
+                const timeB = b.contractCreationTime || b._creationTime || 0;
                 return timeA - timeB;
             }
             if (sortOption === 'no_asc') {
@@ -541,7 +554,7 @@ function PartnerContractsContent() {
                                             <span className="text-xs font-black text-blue-600 mt-0.5">
                                                 {(() => {
                                                     const pm = customer.paymentMethod || '';
-                                                    const useOriginal = pm === '구독(할부)' || pm === '구독(할부/주방)' || pm === '할부(그린)';
+                                                    const useOriginal = ['구독(할부)', '구독(할부/주방)', '할부(그린)', '그린리모델링(정부)'].includes(pm);
                                                     const displayPrice = useOriginal 
                                                         ? (customer.originalQuotePrice || customer.finalQuotePrice || customer['최종견적 금액'])
                                                         : (customer.finalQuotePrice || customer['최종견적 금액']);

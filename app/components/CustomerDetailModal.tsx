@@ -88,6 +88,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
     const scrollBottomRef = useRef<HTMLDivElement>(null);
     const updateCustomerMutation = useMutation(api.customers.updateCustomer);
+    const updateContractStatusMutation = useMutation(api.contracts.updateContractStatus);
 
     useEffect(() => {
         if (isOpen && customer) {
@@ -161,6 +162,13 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     price_final: formData['최종견적 금액'] ? Number(formData['최종견적 금액']) : undefined,
                 }
             });
+            if (formData['진행구분'] === '계약등록') {
+                await updateContractStatusMutation({
+                    // @ts-expect-error - id format coming from external data vs convex internal type
+                    customerId: customer.id,
+                    contractStatus: '계약등록'
+                });
+            }
             alert('저장되었습니다.');
             setIsHeaderEditing(false); // 헤더 수정모드 종료
             onUpdate();
@@ -184,6 +192,11 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                 updates: {
                     status: '계약등록'
                 }
+            });
+            await updateContractStatusMutation({
+                // @ts-expect-error - id format coming from external data vs convex internal type
+                customerId: customer.id,
+                contractStatus: '계약등록'
             });
             alert('계약등록 상태로 변경되었습니다.');
             onUpdate();

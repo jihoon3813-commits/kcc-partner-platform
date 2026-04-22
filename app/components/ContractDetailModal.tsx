@@ -69,6 +69,11 @@ interface ContractFormData {
     recordingAgreementDate?: string;
     originalQuotePrice?: string | number;
     appliances?: string;
+    greenGovAdvancePayment?: string | number;
+    greenGovPaymentMethod?: string;
+    greenGovPaymentDate?: string;
+    greenGovApplicationAmount?: string | number;
+    greenGovStatus?: string;
 }
 
 interface ContractDetailModalProps {
@@ -97,7 +102,8 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
         subscriptionMonths: formData.subscriptionMonths,
         hasInterest: formData.hasInterest,
         paymentMethod: formData.paymentMethod,
-        monthlySubscriptionFee: formData.monthlySubscriptionFee
+        monthlySubscriptionFee: formData.monthlySubscriptionFee,
+        greenGovAdvancePayment: formData.greenGovAdvancePayment
     });
 
 
@@ -133,8 +139,9 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
         const finalQuoteChanged = formData.finalQuotePrice !== prev.finalQuotePrice;
         const originalQuoteChanged = formData.originalQuotePrice !== prev.originalQuotePrice;
         const paymentAmount1Changed = formData.paymentAmount1 !== prev.paymentAmount1;
-        const advancePaymentChanged = formData.advancePayment !== prev.advancePayment;
-        const monthsChanged = formData.subscriptionMonths !== prev.subscriptionMonths;
+        const advancePaymentChanged = formData.advancePayment !== prevBaseRef.current.advancePayment;
+        const greenGovAdvancePaymentChanged = formData.greenGovAdvancePayment !== prevBaseRef.current.greenGovAdvancePayment;
+        const monthsChanged = formData.subscriptionMonths !== prevBaseRef.current.subscriptionMonths;
         const interestChanged = formData.hasInterest !== prev.hasInterest;
         const pmChanged = formData.paymentMethod !== prev.paymentMethod;
 
@@ -209,6 +216,18 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
             }
         }
 
+        // 3. 그린리모델링(정부) 신청금액 계산: 고객 실부담금 - 선금
+        if (pm === '그린리모델링(정부)') {
+            if (finalQuoteChanged || greenGovAdvancePaymentChanged || pmChanged) {
+                const finalQuote = Number(formData.finalQuotePrice) || 0;
+                const greenAdvance = Number(formData.greenGovAdvancePayment) || 0;
+                const appAmount = finalQuote - greenAdvance;
+                if (formData.greenGovApplicationAmount !== appAmount) {
+                    setFormData(prev => ({ ...prev, greenGovApplicationAmount: appAmount }));
+                }
+            }
+        }
+
         // Ref 업데이트
         prevBaseRef.current = {
             finalQuotePrice: formData.finalQuotePrice,
@@ -218,7 +237,8 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
             subscriptionMonths: formData.subscriptionMonths,
             hasInterest: formData.hasInterest,
             paymentMethod: formData.paymentMethod,
-            monthlySubscriptionFee: formData.monthlySubscriptionFee
+            monthlySubscriptionFee: formData.monthlySubscriptionFee,
+            greenGovAdvancePayment: formData.greenGovAdvancePayment
         };
 
     }, [
@@ -228,6 +248,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
         formData.originalQuotePrice, 
         formData.paymentAmount1, 
         formData.advancePayment, 
+        formData.greenGovAdvancePayment,
         formData.subscriptionMonths, 
         formData.hasInterest
     ]);
@@ -331,6 +352,11 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                 originalQuotePrice: cleanNumber(formData.originalQuotePrice),
 
                 appliances: JSON.stringify(appliances),
+                greenGovAdvancePayment: cleanNumber(formData.greenGovAdvancePayment),
+                greenGovPaymentMethod: formData.greenGovPaymentMethod,
+                greenGovPaymentDate: formData.greenGovPaymentDate,
+                greenGovApplicationAmount: cleanNumber(formData.greenGovApplicationAmount),
+                greenGovStatus: formData.greenGovStatus,
             });
             alert('계약 정보가 저장되었습니다.');
             onClose();
@@ -432,6 +458,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
     const isGreenInstallment = formData.paymentMethod === '할부(그린)';
     const isKitchenSubscription = formData.paymentMethod === '구독(할부/주방)';
     const isRental = formData.paymentMethod === 'BSON';
+    const isGreenGov = formData.paymentMethod === '그린리모델링(정부)';
 
 
     return (
@@ -584,7 +611,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                 <label className="block text-xs font-medium text-gray-500 mb-1">결제방법</label>
                                 <select disabled={isReadOnly} className="w-full bg-blue-50 border border-blue-200 text-blue-800 font-bold rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:bg-gray-100"
                                     value={formData.paymentMethod || '현금'} onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}>
-                                    {['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금', '구독(할부)', '구독(할부/주방)', '현금+구독', '카드+구독', '할부(그린)', 'BSON'].map(pm => (
+                                    {['현금', '카드', '50/50(현금)', '50/50(카드)', '카드+현금', '구독(할부)', '구독(할부/주방)', '현금+구독', '카드+구독', '할부(그린)', '그린리모델링(정부)', 'BSON'].map(pm => (
                                         <option key={pm} value={pm}>{pm}</option>
                                     ))}
                                 </select>
@@ -598,7 +625,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                         <h3 className="font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
                             결제 정보
                             <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-normal">
-                                {isCashOrCard ? '현금/카드' : isGreenInstallment ? '할부(그린)' : isKitchenSubscription ? '구독(할부/주방)' : isSubscription ? '구독(할부)' : isRental ? '렌탈패키지' : ''}
+                                {isCashOrCard ? '현금/카드' : isGreenInstallment ? '할부(그린)' : isKitchenSubscription ? '구독(할부/주방)' : isSubscription ? '구독(할부)' : isRental ? '렌탈패키지' : isGreenGov ? '그린리모델링(정부)' : ''}
                             </span>
 
                         </h3>
@@ -723,6 +750,51 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                                     <label className="block text-xs font-medium text-gray-500 mb-1">녹취약정일</label>
                                     <input type="date" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
                                         value={formData.recordingAgreementDate || ''} onChange={(e) => setFormData({ ...formData, recordingAgreementDate: e.target.value })} />
+                                </div>
+                            </div>
+                        )}
+
+                        {isGreenGov && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in fade-in">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">선금</label>
+                                    <input type="text" placeholder="0" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums focus:border-blue-500 outline-none"
+                                        value={formData.greenGovAdvancePayment ? Number(formData.greenGovAdvancePayment).toLocaleString() : ''}
+                                        onChange={(e) => setFormData({ ...formData, greenGovAdvancePayment: e.target.value.replace(/[^0-9]/g, '') })} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">결제방법 (선금)</label>
+                                    <select className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-bold text-blue-600"
+                                        value={formData.greenGovPaymentMethod || ''} 
+                                        onChange={(e) => setFormData({ ...formData, greenGovPaymentMethod: e.target.value })}>
+                                        <option value="">선택</option>
+                                        <option value="카드">카드</option>
+                                        <option value="현금">현금</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">결제일 (선금)</label>
+                                    <input type="date" className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        value={formData.greenGovPaymentDate || ''} 
+                                        onChange={(e) => setFormData({ ...formData, greenGovPaymentDate: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">그린리모델링 신청금액</label>
+                                    <input type="text" placeholder="0" className="w-full bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm text-right tabular-nums font-bold text-blue-700 outline-none focus:border-blue-500"
+                                        value={formData.greenGovApplicationAmount ? Number(formData.greenGovApplicationAmount).toLocaleString() : ''}
+                                        onChange={(e) => setFormData({ ...formData, greenGovApplicationAmount: e.target.value.replace(/[^0-9]/g, '') })} />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">진행여부</label>
+                                    <select className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-bold"
+                                        value={formData.greenGovStatus || ''} 
+                                        onChange={(e) => setFormData({ ...formData, greenGovStatus: e.target.value })}>
+                                        <option value="">선택</option>
+                                        <option value="신청중">신청중</option>
+                                        <option value="신청완료">신청완료</option>
+                                        <option value="진행가능">진행가능</option>
+                                        <option value="진행불가">진행불가</option>
+                                    </select>
                                 </div>
                             </div>
                         )}
