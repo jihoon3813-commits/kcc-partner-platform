@@ -33,23 +33,30 @@ function AdminContractsContent() {
 
     const handleDatePresetChange = (preset: string) => {
         setDatePreset(preset);
+        const formatDate = (date: Date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
         const now = new Date();
         let start = '';
-        let end = now.toISOString().split('T')[0];
+        let end = formatDate(now);
 
         if (preset === 'thisMonth') {
-            start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            start = formatDate(new Date(now.getFullYear(), now.getMonth(), 1));
         } else if (preset === 'lastMonth') {
             const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
             const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-            start = firstOfLastMonth.toISOString().split('T')[0];
-            end = lastOfLastMonth.toISOString().split('T')[0];
+            start = formatDate(firstOfLastMonth);
+            end = formatDate(lastOfLastMonth);
         } else if (preset === '3months') {
-            start = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString().split('T')[0];
+            start = formatDate(new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()));
         } else if (preset === '6months') {
-            start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()).toISOString().split('T')[0];
+            start = formatDate(new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()));
         } else if (preset === '1year') {
-            start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+            start = formatDate(new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()));
         } else if (preset === 'all') {
             start = '';
             end = '';
@@ -258,7 +265,7 @@ function AdminContractsContent() {
 
             return true;
         });
-    }, [sortedCustomers, searchTerm, statusFilter, partnerFilter, categoryFilter, checklistFilter]);
+    }, [sortedCustomers, searchTerm, statusFilter, partnerFilter, categoryFilter, checklistFilter, startDate, endDate]);
 
     const loading = convexCustomers === undefined;
 
