@@ -111,19 +111,20 @@ export const updateContractStatus = mutation({
             .withIndex("by_customer", (q) => q.eq("customerId", args.customerId))
             .first();
 
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
         if (existing) {
             await ctx.db.patch(existing._id, {
                 contractStatus: args.contractStatus,
+                contractDate: existing.contractDate || dateStr,
                 updatedAt: Date.now(),
             });
             return existing._id;
         } else {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-
             return await ctx.db.insert("contracts", {
                 customerId: args.customerId,
                 contractStatus: args.contractStatus,

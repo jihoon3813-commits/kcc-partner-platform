@@ -159,6 +159,8 @@ function AdminContractsContent() {
 
     const sortedCustomers = useMemo(() => {
         return [...allMappedCustomers].sort((a, b) => {
+    const sortedCustomers = useMemo(() => {
+        return [...allMappedCustomers].sort((a, b) => {
             if (sortOption === 'checklist_desc') {
                 const aHasAlert = a.alerts && a.alerts.length > 0;
                 const bHasAlert = b.alerts && b.alerts.length > 0;
@@ -166,8 +168,8 @@ function AdminContractsContent() {
                 if (aHasAlert && !bHasAlert) return -1;
                 if (!aHasAlert && bHasAlert) return 1;
 
-                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : 0;
-                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : 0;
+                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : (a.contractCreationTime || a._creationTime || 0);
+                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : (b.contractCreationTime || b._creationTime || 0);
                 if (dateB !== dateA) return dateB - dateA;
 
                 const timeA = a.contractCreationTime || a._creationTime || 0;
@@ -175,8 +177,8 @@ function AdminContractsContent() {
                 return timeB - timeA;
             }
             if (sortOption === 'reg_desc') {
-                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : 0;
-                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : 0;
+                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : (a.contractCreationTime || a._creationTime || 0);
+                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : (b.contractCreationTime || b._creationTime || 0);
                 if (dateB !== dateA) return dateB - dateA;
 
                 const timeA = a.contractCreationTime || a._creationTime || 0;
@@ -184,8 +186,8 @@ function AdminContractsContent() {
                 return timeB - timeA;
             }
             if (sortOption === 'reg_asc') {
-                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : 0;
-                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : 0;
+                const dateA = a.contractDate ? new Date(a.contractDate).getTime() : (a.contractCreationTime || a._creationTime || 0);
+                const dateB = b.contractDate ? new Date(b.contractDate).getTime() : (b.contractCreationTime || b._creationTime || 0);
                 if (dateA !== dateB) return dateA - dateB;
 
                 const timeA = a.contractCreationTime || a._creationTime || 0;
