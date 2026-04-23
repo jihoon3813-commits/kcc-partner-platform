@@ -159,8 +159,6 @@ function AdminContractsContent() {
 
     const sortedCustomers = useMemo(() => {
         return [...allMappedCustomers].sort((a, b) => {
-    const sortedCustomers = useMemo(() => {
-        return [...allMappedCustomers].sort((a, b) => {
             if (sortOption === 'checklist_desc') {
                 const aHasAlert = a.alerts && a.alerts.length > 0;
                 const bHasAlert = b.alerts && b.alerts.length > 0;
