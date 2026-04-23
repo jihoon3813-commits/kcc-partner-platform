@@ -97,6 +97,12 @@ function AdminContractsContent() {
             if (isRental && !isCanceled && !contract?.recordingAgreementDate) alerts.push("렌탈 녹취약정 완료 체크");
             if (!isCanceled && contract?.constructionContractStatus !== '서명완료') alerts.push("시공계약서 서명 확인");
 
+            const normalizeDate = (d: any) => {
+                if (!d) return '';
+                const s = String(d).replace(/[\.\/]/g, '-');
+                return s.length >= 10 ? s.substring(0, 10) : s;
+            };
+
             return {
                 'No.': c.no || '',
                 '라벨': c.label || '일반',
@@ -111,11 +117,11 @@ function AdminContractsContent() {
                 '최종 견적 링크': c.link_final_kcc || '',
                 '고객견적서(가)': c.link_pre_cust || '',
                 '고객견적서(최종)': c.link_final_cust || '',
-                '실측일자': c.measure_date || '',
-                '시공일자': contract?.constructionDate || c.construct_date || '',
+                '실측일자': normalizeDate(c.measure_date),
+                '시공일자': normalizeDate(contract?.constructionDate || c.construct_date),
                 '가견적 금액': c.price_pre || 0,
                 '최종견적 금액': contract?.finalQuotePrice || c.price_final || 0,
-                '신청일': contract?.applicationDate || c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : ''),
+                '신청일': normalizeDate(contract?.applicationDate || c.created_at || (c._creationTime ? new Date(c._creationTime).toISOString().split('T')[0] : '')),
                 'id': c._id,
                 'category': c.category,
                 '_creationTime': c._creationTime,
@@ -133,7 +139,7 @@ function AdminContractsContent() {
                 installmentAgreementDate: contract?.installmentAgreementDate,
                 recordingAgreementDate: contract?.recordingAgreementDate,
                 originalQuotePrice: contract?.originalQuotePrice,
-                contractDate: contract?.contractDate || '',
+                contractDate: normalizeDate(contract?.contractDate),
                 contractCreationTime: contract?._creationTime || 0,
                 alerts: alerts
             };

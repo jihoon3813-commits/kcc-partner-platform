@@ -107,10 +107,25 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
     });
 
 
+    const normalizeDate = (dateStr: string | undefined | null) => {
+        if (!dateStr) return '';
+        const normalized = String(dateStr).replace(/[\.\/]/g, '-');
+        if (/^\d{4}-\d{2}-\d{2}/.test(normalized)) return normalized.substring(0, 10);
+        const d = new Date(normalized);
+        if (!isNaN(d.getTime())) {
+            return d.toISOString().substring(0, 10);
+        }
+        return '';
+    };
+
     useEffect(() => {
         if (isOpen && customer) {
             if (existingContract) {
-                setFormData(existingContract);
+                setFormData({
+                    ...existingContract,
+                    contractDate: normalizeDate(existingContract.contractDate) || new Date().toISOString().substring(0, 10),
+                    applicationDate: normalizeDate(existingContract.applicationDate) || normalizeDate(customer['신청일']) || (customer._creationTime ? new Date(customer._creationTime).toISOString().substring(0, 10) : ''),
+                });
                 try {
                     setAppliances(existingContract.appliances ? JSON.parse(existingContract.appliances) : []);
                 } catch {
@@ -121,7 +136,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
                     customerId: customer.id,
                     contractStatus: '계약등록',
                     contractDate: new Date().toISOString().substring(0, 10),
-                    applicationDate: customer['신청일'] || (customer._creationTime ? new Date(customer._creationTime).toISOString().substring(0, 10) : ''),
+                    applicationDate: normalizeDate(customer['신청일']) || (customer._creationTime ? new Date(customer._creationTime).toISOString().substring(0, 10) : ''),
                     paymentMethod: '현금',
                 });
                 setAppliances([]);
