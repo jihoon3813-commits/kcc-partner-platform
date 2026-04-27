@@ -185,7 +185,7 @@ export default function ContractDetailModal({ isOpen, onClose, customer, userRol
 
                 if (isSubscriptionType) {
                     principal = (Number(formData.finalQuotePrice) || 0) - (Number(formData.advancePayment) || 0);
-                    annualRate = formData.hasInterest === '무' ? 0 : 0.10;
+                    annualRate = formData.hasInterest === '무' ? 0 : 0.094;
                 } else if (isGreenType) {
                     const principalBase = Number(formData.originalQuotePrice) || Number(formData.finalQuotePrice) || 0;
                     principal = principalBase - (Number(formData.advancePayment) || 0);

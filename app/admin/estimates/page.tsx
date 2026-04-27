@@ -116,7 +116,7 @@ export default function AdminEstimatesPage() {
         const marginAmount = finalBenefit - baseCost;
         const marginRate = baseCost > 0 ? (marginAmount / finalBenefit) * 100 : 0;
 
-        const annualRate = 0.1;
+        const annualRate = 0.094;
         const subs: any = {};
         for (const m of [24, 36, 48, 60]) {
             const r = annualRate / 12;
