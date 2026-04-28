@@ -78,6 +78,7 @@ export const createCustomer = mutation({
         partner_benefit: v.optional(v.string()),
         created_at: v.optional(v.string()),
         category: v.optional(v.string()),
+        history: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         let finalNo = args.no;
@@ -145,6 +146,7 @@ export const updateCustomer = mutation({
             partner_benefit: v.optional(v.string()),
             created_at: v.optional(v.string()),
             category: v.optional(v.string()),
+            history: v.optional(v.string()),
         }),
     },
     handler: async (ctx, args) => {
@@ -194,6 +196,7 @@ export const batchCreate = mutation({
             partner_benefit: v.optional(v.string()),
             created_at: v.optional(v.string()),
             category: v.optional(v.string()),
+            history: v.optional(v.string()),
         }))
     },
     handler: async (ctx, args) => {

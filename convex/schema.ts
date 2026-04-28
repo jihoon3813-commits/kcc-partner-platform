@@ -25,6 +25,7 @@ export default defineSchema({
         updatedAt: v.optional(v.number()), // For sorting modified customers to the top
         assignedTm: v.optional(v.string()), // assigned TM
         category: v.optional(v.string()), // 'window' | 'kitchen' | 'bathroom'
+        history: v.optional(v.string()), // Automated change history
     }).index("by_no", ["no"]).index("by_channel", ["channel"]).index("by_category", ["category"]),
 
     customerLabels: defineTable({

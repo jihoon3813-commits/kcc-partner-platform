@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText, Star, Copy } from 'lucide-react';
+import { X, Save, Trash2, Edit2, Check, User, Phone, MapPin, Calendar, Link as LinkIcon, Send, Settings, ExternalLink, FileText, Star, Copy, History } from 'lucide-react';
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Cookies from 'js-cookie';
@@ -21,6 +21,7 @@ interface Customer {
     '고객견적서(최종)'?: string;
     '진행현황(상세)_최근'?: string;
     'KCC 피드백'?: string;
+    'history'?: string;
     [key: string]: string | number | boolean | undefined | null;
 }
 
@@ -141,26 +142,76 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         if (!customer?.id) return alert('고객 ID가 없습니다.');
         setLoading(true);
         try {
+            const updates: any = {
+                no: formData['No.'] as string,
+                channel: formData['유입채널'] as string,
+                label: formData['라벨'] as string,
+                status: formData['진행구분'] as string,
+                name: formData['고객명'] as string,
+                contact: formData['연락처'] as string,
+                address: formData['주소'] as string,
+                measure_date: formData['실측일자'] as string,
+                construct_date: formData['시공일자'] as string,
+                link_pre_kcc: formData['가견적 링크'] as string,
+                link_final_kcc: formData['최종 견적 링크'] as string,
+                link_pre_cust: formData['고객견적서(가)'] as string,
+                link_final_cust: formData['고객견적서(최종)'] as string,
+                price_pre: formData['가견적 금액'] ? Number(formData['가견적 금액']) : undefined,
+                price_final: formData['최종견적 금액'] ? Number(formData['최종견적 금액']) : undefined,
+                history: customer.history // Default to current history
+            };
+
+            // 자동 히스토리 기록 로직
+            const diffs: string[] = [];
+            const fieldsToTrack = [
+                { key: '고객명', label: '고객명' },
+                { key: '연락처', label: '연락처' },
+                { key: '주소', label: '주소' },
+                { key: '라벨', label: '라벨' },
+                { key: '진행구분', label: '진행상태' },
+                { key: '실측일자', label: '실측일자' },
+                { key: '시공일자', label: '시공일자' },
+                { key: '가견적 금액', label: '가견적가' },
+                { key: '최종견적 금액', label: '최종견적가' },
+                { key: '가견적 링크', label: '가견적 링크' },
+                { key: '최종 견적 링크', label: '최종견적 링크' },
+                { key: '고객견적서(최종)', label: '내관도 링크' },
+            ];
+
+            fieldsToTrack.forEach(field => {
+                const oldVal = String(customer[field.key] || '').trim();
+                const newVal = String(formData[field.key] || '').trim();
+                if (oldVal !== newVal) {
+                    if (field.key.includes('링크') || field.key.includes('고객견적서')) {
+                        const oldLinks = oldVal.split('\n').filter(Boolean).length;
+                        const newLinks = newVal.split('\n').filter(Boolean).length;
+                        const action = newLinks > oldLinks ? '추가' : '수정';
+                        diffs.push(`${field.label} ${action}`);
+                    } else {
+                        diffs.push(`${field.label} 수정(${oldVal || '없음'} → ${newVal || '없음'})`);
+                    }
+                }
+            });
+
+            if (diffs.length > 0) {
+                const auth = Cookies.get('admin_session');
+                const adminName = auth ? JSON.parse(auth).name : '관리자';
+                const now = new Date();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const timestamp = `${mm}-${dd} ${hh}:${min}`;
+                
+                const historyEntry = `[${timestamp}] [${adminName}] ${diffs.join(', ')}`;
+                const currentHistory = customer.history || '';
+                updates.history = currentHistory ? `${historyEntry}\n${currentHistory}` : historyEntry;
+            }
+
             await updateCustomerMutation({
                 // @ts-expect-error - id format coming from external data vs convex internal type
                 id: customer.id,
-                updates: {
-                    no: formData['No.'] as string,
-                    channel: formData['유입채널'] as string,
-                    label: formData['라벨'] as string,
-                    status: formData['진행구분'] as string,
-                    name: formData['고객명'] as string,
-                    contact: formData['연락처'] as string,
-                    address: formData['주소'] as string,
-                    measure_date: formData['실측일자'] as string,
-                    construct_date: formData['시공일자'] as string,
-                    link_pre_kcc: formData['가견적 링크'] as string,
-                    link_final_kcc: formData['최종 견적 링크'] as string,
-                    link_pre_cust: formData['고객견적서(가)'] as string,
-                    link_final_cust: formData['고객견적서(최종)'] as string,
-                    price_pre: formData['가견적 금액'] ? Number(formData['가견적 금액']) : undefined,
-                    price_final: formData['최종견적 금액'] ? Number(formData['최종견적 금액']) : undefined,
-                }
+                updates: updates
             });
             if (formData['진행구분'] === '계약등록') {
                 await updateContractStatusMutation({
@@ -285,20 +336,28 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
             const dateStr = `${mm}-${dd} ${hh}:${min}`;
 
             const current = formData[key] ? String(formData[key]) : '';
-            const updated = current ? `${current}\n${url.trim()}|${dateStr}` : `${url.trim()}|${dateStr}`;
+            const updated = current ? `${current}\n${url.trim()}|${dateStr}|reg` : `${url.trim()}|${dateStr}|reg`;
             setFormData({ ...formData, [key]: updated });
         }
     };
 
     // 링크 수정 핸들러
     const handleEditLinkItem = (key: string, index: number, linkStr: string) => {
-        const url = prompt('링크를 수정하세요 (빈칸 입력시 삭제)', linkStr);
+        const parts = linkStr.split('|');
+        const existingUrl = parts[0];
+        const url = prompt('링크를 수정하세요 (빈칸 입력시 삭제)', existingUrl);
         if (url !== null) {
             const currentLinks = String(formData[key] || '').split(/[\n,]/).map(s => s.trim()).filter(Boolean);
             if (url.trim() === '') {
                 currentLinks.splice(index, 1);
             } else {
-                currentLinks[index] = url.trim();
+                const now = new Date();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const dateStr = `${mm}-${dd} ${hh}:${min}`;
+                currentLinks[index] = `${url.trim()}|${dateStr}|edit`;
             }
             setFormData({ ...formData, [key]: currentLinks.join('\n') });
         }
@@ -364,6 +423,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             const parts = linkStr.split('|');
                             const link = parts[0];
                             let regDate = parts[1] || '';
+                            const type = parts[2] || 'reg';
 
                             // 소급 적용: 날짜가 없는 경우 진행로그에서 찾기
                             if (!regDate) {
@@ -411,7 +471,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                     {regDate && (
                                         <div className="text-[9px] text-gray-400 flex items-center gap-1 px-1">
                                             <Calendar className="w-2.5 h-2.5" />
-                                            {regDate} 등록됨
+                                            {regDate} {type === 'edit' ? '수정됨' : '등록됨'}
                                         </div>
                                     )}
                                 </div>
@@ -429,7 +489,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 sm:p-4 animate-in fade-in duration-200">
-            <div className="bg-gray-100 sm:rounded-xl shadow-2xl w-full max-w-6xl h-full sm:h-[85vh] flex flex-col overflow-hidden font-sans">
+            <div className="bg-gray-100 sm:rounded-xl shadow-2xl w-full max-w-7xl h-full sm:h-[85vh] flex flex-col overflow-hidden font-sans">
 
                 {/* 1. Header Area */}
                 <div className="bg-[#1e293b] text-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row justify-between items-start gap-4 shrink-0">
@@ -572,11 +632,13 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     </div>
                 </div>
 
-                {/* 2. Main Content */}
-                <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
-
-                    {/* Left Sidebar */}
-                    <div className="w-full lg:w-96 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 lg:overflow-y-auto p-4 sm:p-5 shrink-0 flex flex-col gap-4 sm:gap-5">
+                {/* 2. Main Content Area */}
+                <div className="flex-1 flex overflow-hidden bg-gray-50/30">
+                    {/* Left & Center: Info + Logs */}
+                    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+                        {/* 2-1. Info Panel (Left) */}
+                        <div className="w-full lg:w-80 overflow-y-auto border-r border-gray-200 bg-white/50 backdrop-blur-sm shrink-0 flex flex-col">
+                            <div className="p-4 sm:p-6 space-y-6">
 
                         {/* Status Card */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-4">
@@ -678,9 +740,10 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             </button>
                         )}
                     </div>
+                </div>
 
-                    {/* Right Content Area (Logs) */}
-                    <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0 min-h-[400px] lg:min-h-0">
+                {/* Right Content Area (Logs) */}
+                <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0 min-h-[400px] lg:min-h-0">
                         {/* Tabs */}
                         <div className="flex bg-white border-b border-gray-200 px-6">
                             {[
@@ -696,7 +759,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                         }`}
                                 >
                                     {tab.label}
-                                    {activeTab === tab.id && (
+                                            {activeTab === tab.id && (
                                         <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600"></div>
                                     )}
                                 </button>
@@ -790,6 +853,46 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                 </div>
                             </div>
                         )}
+                    </div>
+                    </div>
+
+                    {/* Right: History Panel (Automatic) */}
+                    <div className="w-72 border-l border-gray-200 bg-white flex flex-col shrink-0">
+                        <div className="p-4 border-b border-gray-100 flex items-center gap-2 bg-gray-50/50">
+                            <History className="w-4 h-4 text-blue-600" />
+                            <h3 className="text-sm font-black text-gray-900 tracking-tight">변경 히스토리</h3>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {customer.history ? (
+                                customer.history.split('\n').map((line, idx) => {
+                                    const match = line.match(/^\[(.*?)\] \[(.*?)\] (.*)$/);
+                                    if (match) {
+                                        const [, time, admin, content] = match;
+                                        return (
+                                            <div key={idx} className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md">{time}</span>
+                                                    <span className="text-[10px] font-bold text-gray-400">[{admin}]</span>
+                                                </div>
+                                                <p className="text-[11px] text-gray-600 font-medium leading-relaxed">
+                                                    {content}
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <div key={idx} className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                                            <p className="text-[11px] text-gray-600 font-medium leading-relaxed">{line}</p>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center space-y-2 opacity-40 py-20">
+                                    <History className="w-8 h-8 text-gray-300" />
+                                    <p className="text-xs font-bold text-gray-400">기록된 변경사항이 없습니다.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
