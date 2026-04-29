@@ -498,12 +498,12 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             {isHeaderEditing ? (
                                 <input
                                     type="text"
-                                    className="bg-slate-700 border-slate-600 text-white rounded px-2 py-1 font-bold text-xl outline-none focus:ring-1 w-full sm:w-48"
+                                    className="bg-slate-700 border-slate-600 text-white rounded px-2 py-1 font-bold text-lg sm:text-xl outline-none focus:ring-1 w-full sm:w-48"
                                     value={formData['고객명'] || ''}
                                     onChange={(e) => setFormData({ ...formData, '고객명': e.target.value })}
                                 />
                             ) : (
-                                <h2 className="text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap">{formData['고객명']}</h2>
+                                <h2 className="text-lg sm:text-2xl font-bold tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">{formData['고객명']}</h2>
                             )}
 
                             <div className="flex items-center gap-2 bg-slate-700/50 rounded-lg px-2 py-1 border border-slate-600">
@@ -633,11 +633,11 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                 </div>
 
                 {/* 2. Main Content Area */}
-                <div className="flex-1 flex overflow-hidden bg-gray-50/30">
+                <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-gray-50/30">
                     {/* Left & Center: Info + Logs */}
-                    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+                    <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden shrink-0 lg:shrink">
                         {/* 2-1. Info Panel (Left) */}
-                        <div className="w-full lg:w-80 overflow-y-auto border-r border-gray-200 bg-white/50 backdrop-blur-sm shrink-0 flex flex-col">
+                        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white/50 backdrop-blur-sm shrink-0 flex flex-col">
                             <div className="p-4 sm:p-6 space-y-6">
 
                         {/* Status Card */}
@@ -734,7 +734,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                             <button
                                 onClick={handleSaveLeftPanel}
                                 disabled={loading}
-                                className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 mt-auto shadow-md transition-all"
+                                className="hidden lg:flex w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 items-center justify-center gap-2 mt-auto shadow-md transition-all"
                             >
                                 {loading ? '저장 중...' : <><Save className="w-4 h-4" /> 변경사항 저장</>}
                             </button>
@@ -742,8 +742,8 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     </div>
                 </div>
 
-                {/* Right Content Area (Logs) */}
-                <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0 min-h-[400px] lg:min-h-0">
+                {/* Logs Area (Center) */}
+                <div className="flex-1 bg-[#F8FAFC] flex flex-col min-w-0 min-h-[500px] lg:min-h-0 border-b lg:border-b-0">
                         {/* Tabs */}
                         <div className="flex bg-white border-b border-gray-200 px-6">
                             {[
@@ -753,7 +753,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`px-6 py-4 text-sm font-semibold transition-all relative ${activeTab === tab.id
+                                    className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative ${activeTab === tab.id
                                         ? 'text-blue-600'
                                         : 'text-gray-400 hover:text-gray-600'
                                         }`}
@@ -857,19 +857,19 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     </div>
 
                     {/* Right: History Panel (Automatic) */}
-                    <div className="w-72 border-l border-gray-200 bg-white flex flex-col shrink-0">
+                    <div className="w-full lg:w-64 border-t lg:border-t-0 lg:border-l border-gray-200 bg-white flex flex-col shrink-0 min-h-[300px] lg:min-h-0">
                         <div className="p-4 border-b border-gray-100 flex items-center gap-2 bg-gray-50/50">
                             <History className="w-4 h-4 text-blue-600" />
                             <h3 className="text-sm font-black text-gray-900 tracking-tight">변경 히스토리</h3>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        <div className="flex-1 lg:overflow-y-auto p-4 space-y-3">
                             {customer.history ? (
                                 customer.history.split('\n').map((line, idx) => {
                                     const match = line.match(/^\[(.*?)\] \[(.*?)\] (.*)$/);
                                     if (match) {
                                         const [, time, admin, content] = match;
                                         return (
-                                            <div key={idx} className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-1">
+                                            <div key={idx} className="bg-white rounded-xl p-3 border border-gray-100 shadow-sm space-y-1">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md">{time}</span>
                                                     <span className="text-[10px] font-bold text-gray-400">[{admin}]</span>
@@ -895,6 +895,19 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                         </div>
                     </div>
                 </div>
+
+                {/* 3. Mobile Sticky Footer Save Button */}
+                {!readOnly && (
+                    <div className="lg:hidden p-4 bg-white border-t border-gray-200 shrink-0">
+                        <button
+                            onClick={handleSaveLeftPanel}
+                            disabled={loading}
+                            className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                        >
+                            {loading ? '저장 중...' : <><Save className="w-5 h-5" /> 변경사항 저장</>}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
