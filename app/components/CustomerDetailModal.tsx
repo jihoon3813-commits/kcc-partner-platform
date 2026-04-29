@@ -488,8 +488,8 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 sm:p-4 animate-in fade-in duration-200">
-            <div className="bg-gray-100 sm:rounded-xl shadow-2xl w-full max-w-7xl h-full sm:h-[85vh] flex flex-col overflow-hidden font-sans">
+        <div className="fixed inset-0 z-50 flex justify-center items-start sm:items-center bg-black/60 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+            <div className="bg-gray-100 sm:rounded-xl shadow-2xl w-full max-w-7xl h-full sm:h-[90vh] flex flex-col overflow-hidden font-sans my-auto">
 
                 {/* 1. Header Area */}
                 <div className="bg-[#1e293b] text-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row justify-between items-start gap-4 shrink-0">
@@ -637,7 +637,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                     {/* Left & Center: Info + Logs */}
                     <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden shrink-0 lg:shrink">
                         {/* 2-1. Info Panel (Left) */}
-                        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white/50 backdrop-blur-sm shrink-0 flex flex-col">
+                        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white/50 backdrop-blur-sm shrink-0 flex flex-col lg:overflow-y-auto">
                             <div className="p-4 sm:p-6 space-y-6">
 
                         {/* Status Card */}
