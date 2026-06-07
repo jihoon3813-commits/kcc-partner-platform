@@ -312,7 +312,11 @@ const HLine4Client: React.FC<HLine4ClientProps> = ({ partnerId, category = "주�
                             </div>
                         </div>
                         <div className="snap-center shrink-0 w-[260px] space-y-3">
-                            <ImagePlaceholder label="분당 전시장 쇼룸 이미지" heightClass="aspect-video" theme="light" />
+                            <img 
+                                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1780810711/cd901939-bbb9-4bd0-a407-db3c60826228.png" 
+                                alt="홈씨씨 인테리어 분당 전시관" 
+                                className="w-full aspect-video object-cover"
+                            />
                             <div className="text-center">
                                 <span className="text-xs font-black text-neutral-800">홈씨씨 인테리어 분당 전시관</span>
                                 <p className="text-[10px] font-semibold text-neutral-500 mt-0.5">빌트인 가전 결합 프리미엄 패키지 코너</p>
