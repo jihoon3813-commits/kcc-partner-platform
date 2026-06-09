@@ -404,7 +404,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
         const links = rawValue.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
 
         return (
-            <div className="space-y-1 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+            <div className="w-full space-y-1 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
                 <div className="flex items-center justify-between px-1 mb-2">
                     <span className="text-xs text-gray-700 font-bold">{label}</span>
                     {!readOnly && (
@@ -721,7 +721,7 @@ export default function CustomerDetailModal({ isOpen, onClose, customer, onUpdat
                                 <LinkIcon className="w-4 h-4 text-gray-500" />
                                 견적서 링크
                             </div>
-                            <div className="flex flex-wrap gap-2 max-h-[200px] overflow-y-auto p-1 rounded-xl bg-gray-50/30">
+                            <div className="flex flex-col gap-3 p-1 rounded-xl bg-gray-50/30">
                                 {renderLinkButtons('가견적', '가견적 링크', 'bg-blue-50 text-blue-600 border-blue-100')}
                                 {renderLinkButtons('최종견적', '최종 견적 링크', 'bg-indigo-50 text-indigo-600 border-indigo-100')}
                                 {renderLinkButtons('내관도', '고객견적서(최종)', 'bg-green-50 text-green-600 border-green-100')}
