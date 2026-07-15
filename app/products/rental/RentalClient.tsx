@@ -1273,7 +1273,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               { num: "01", title: "더블 로이유리 무료 업그레이드", desc: "일반 복층유리 가격 기준으로 초고단열 26mm 더블 로이유리를 무상 시공해 드립니다. (150만원 상당 혜택)", img: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927790/9a0de9fd-779b-4648-bcf1-3b48cc0117fc.png" },
               { num: "02", title: "프리미엄 기어 핸들 교체", desc: "닫는 즉시 자동 잠금 잠금 기능이 내장된 고품격 메탈릭 잠금 핸들을 외창 전구간에 적용합니다.", img: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927015/02d0c2ef-bdaf-40e1-b3ea-b8187703127e.png" },
               { num: "03", title: "철거/수거 폐기물 수수료 면제", desc: "공사 완료 후 수거되는 수백 킬로그램의 무거운 폐샷시 철거 및 폐기 수수료를 본사가 전액 면제합니다.", img: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927786/1da56507-79f1-4b9f-a5bf-884f3691d015.png" },
-              { num: "04", title: "고밀도 알루미늄 방충망 포함", desc: "여름철 모기 및 유해 해충 침입을 촘촘히 억제하는 고강도 정품 알루미늄 방충망을 전 구간 무상 연결합니다.", img: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927033/3e382d7e-d130-433e-8b35-4dec423f34e4.png" }
+              { num: "04", title: "블랙 STS 방충망 포함", desc: "촘촘하고 추락방지 기능이 있는 고강도 블랙 스테인리스 방충망을 전 구간 무상 시공해 드립니다.", img: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927033/3e382d7e-d130-433e-8b35-4dec423f34e4.png" }
             ].map((offer, idx) => (
               <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-[#D97706] hover:-translate-y-2 hover:shadow-xl transition-all duration-500 flex flex-col group">
                 {/* 이미지 영역 - 찌그러짐 방지 적용 */}
