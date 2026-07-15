@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
                     <div className="flex flex-col items-center mb-12">
                         <div className="h-10 w-48 relative mb-8 opacity-90">
                             <Image
-                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png"
+                                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
                                 alt="KCC HomeCC Logo"
                                 fill
                                 className="object-contain"

@@ -78,7 +78,7 @@ export default function AdminLayout({
                 <div className="h-16 flex items-center justify-between px-6 border-b shrink-0">
                     <Link href="/admin" className="relative h-8 w-32">
                         <Image
-                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                            src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
                             alt="KCC Admin Logo"
                             fill
                             className="object-contain"

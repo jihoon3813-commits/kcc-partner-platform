@@ -127,7 +127,7 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
             <nav className="sticky top-0 z-[900] bg-white/95 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-black/5 shadow-sm">
                 <div className="flex items-center">
                     <img 
-                        src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png" 
+                        src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png" 
                         alt="HomeCC Logo" 
                         className="h-7 w-auto object-contain"
                     />
@@ -822,7 +822,7 @@ const HLineClient: React.FC<HLineClientProps> = ({ partnerId, category = "주방
                     <div className="flex items-center gap-4 border-t border-white/5 pt-10 opacity-40">
                         <div className="relative w-[110px] h-[30px]">
                             <Image 
-                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png" 
+                                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png" 
                                 alt="KCC HomeCC Logo" 
                                 fill 
                                 className="object-contain"

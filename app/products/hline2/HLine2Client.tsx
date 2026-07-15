@@ -1271,7 +1271,7 @@ const HLine2Client: React.FC<HLine2ClientProps> = ({ partnerId, category = "ьЃМы
                                     <span className="text-xl sm:text-4xl font-extralight opacity-30 italic text-[rgb(30,30,30)] mx-1">x</span>
                                     <div className="relative h-8 sm:h-12 w-24 sm:w-40">
                                         <Image
-                                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                                            src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
                                             alt="KCC Logo"
                                             fill
                                             className="object-contain"

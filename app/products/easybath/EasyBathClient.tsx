@@ -284,9 +284,7 @@ export default function EasyBathClient({ partnerId, category = "욕실" }: EasyB
                     <div className="flex items-center">
                         <div className="relative w-[130px] h-[34px]">
                             <Image 
-                                src={scrolled 
-                                    ? "https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png" 
-                                    : "https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png"} 
+                                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png" 
                                 alt="KCC HomeCC Logo" 
                                 fill 
                                 className="object-contain transition-opacity duration-300"
@@ -921,7 +919,7 @@ export default function EasyBathClient({ partnerId, category = "욕실" }: EasyB
                     <div className="flex items-center gap-4 border-t border-white/5 pt-10 opacity-50">
                         <div className="relative w-[110px] h-[30px]">
                             <Image 
-                                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/e840c9a46f66a.png" 
+                                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png" 
                                 alt="KCC HomeCC Logo" 
                                 fill 
                                 className="object-contain"

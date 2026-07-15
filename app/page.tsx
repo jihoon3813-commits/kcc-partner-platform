@@ -181,7 +181,7 @@ export default function LandingPage() {
           <Link href="/" className="hidden md:flex items-center gap-2">
             <div className="h-6 w-24 md:h-8 md:w-32 relative">
               <Image
-                src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
                 alt="KCC HomeCC Logo"
                 fill
                 className="object-contain"

@@ -44,7 +44,7 @@ const NoticeContent = ({ dong, date, dur, phone }: { dong: string, date: string,
 
                     <div className="notice-footer">
                         <img
-                            src="https://cdn.imweb.me/upload/S20250904697320f4fd9ed/5b115594e9a66.png"
+                            src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
                             alt="KCC HomeCC"
                             className="notice-footer-logo"
                         />
