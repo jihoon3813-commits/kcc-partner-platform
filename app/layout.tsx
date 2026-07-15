@@ -5,26 +5,26 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "목돈 부담 ZERO! KCC 홈씨씨 윈도우 구독 서비스",
-  description: "최장 60개월 분납으로 부담은 낮추고 품격은 높이세요. 업계 최장 13년 품질보증이 당신의 일상을 든든하게 지켜드립니다.",
+  title: "KCC홈씨씨 창호렌탈 | 한 번에 내지 말고 나누어 가볍게! KCC 본사 직영 시공으로 완성하는 스마트 렌탈",
+  description: "목돈 걱정 없이 이자 부담 없는 스마트 장기 분납 렌탈로 KCC 홈씨씨 창호를 시공해 보세요. 본사 직영 시공과 13년 본사 보증 시스템까지 완벽히 제공합니다.",
   openGraph: {
-    title: "목돈 부담 ZERO! KCC 홈씨씨 윈도우 구독 서비스",
-    description: "최장 60개월 분납으로 부담은 낮추고 품격은 높이세요. 업계 최장 13년 품질보증이 당신의 일상을 든든하게 지켜드립니다.",
+    title: "KCC홈씨씨 창호렌탈 | 한 번에 내지 말고 나누어 가볍게! KCC 본사 직영 시공으로 완성하는 스마트 렌탈",
+    description: "목돈 걱정 없이 이자 부담 없는 스마트 장기 분납 렌탈로 KCC 홈씨씨 창호를 시공해 보세요. 본사 직영 시공과 13년 본사 보증 시스템까지 완벽히 제공합니다.",
     images: [
       {
-        url: "https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7718dba031946.png",
+        url: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784098064/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_47_32_ygyuyt.png",
         width: 1200,
         height: 630,
-        alt: "KCC 홈씨씨 윈도우 구독 서비스",
+        alt: "KCC 홈씨씨 윈도우 렌탈 서비스",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "목돈 부담 ZERO! KCC 홈씨씨 윈도우 구독 서비스",
-    description: "최장 60개월 분납으로 부담은 낮추고 품격은 높이세요. 업계 최장 13년 품질보증이 당신의 일상을 든든하게 지켜드립니다.",
-    images: ["https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7718dba031946.png"],
+    title: "KCC홈씨씨 창호렌탈 | 한 번에 내지 말고 나누어 가볍게! KCC 본사 직영 시공으로 완성하는 스마트 렌탈",
+    description: "목돈 걱정 없이 이자 부담 없는 스마트 장기 분납 렌탈로 KCC 홈씨씨 창호를 시공해 보세요. 본사 직영 시공과 13년 본사 보증 시스템까지 완벽히 제공합니다.",
+    images: ["https://res.cloudinary.com/dfkntvpmv/image/upload/v1784098064/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_47_32_ygyuyt.png"],
   },
   icons: {
     icon: "https://cdn.imweb.me/upload/S20250904697320f4fd9ed/7a0d833f1ef3b.png",

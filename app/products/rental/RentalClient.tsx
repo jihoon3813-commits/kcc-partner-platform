@@ -519,8 +519,8 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               </span>
             </h1>
             <p className="text-sm md:text-base text-[#222222]/90 leading-relaxed font-medium">
-              본사 직영 시공과 13년 품질보증까지 완벽하게.<br />
-              이제 이자 부담 없는 장기 분납 렌탈로 스마트하게 우리 집 온도를 올리세요.
+              한 번에 내지 말고 나누어 가볍게!<br />
+              KCC 본사 직영 시공으로 완성하는 스마트 렌탈을 지금 경험해 보세요.
             </p>
             <div className="flex flex-wrap gap-2.5 py-2">
               {["최대 60개월 분납", "13년 본사 보증", "하루 완공 시스템"].map((badge, idx) => (
