@@ -340,7 +340,6 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
                 unoptimized
               />
             </div>
-            <span className="bg-[#916843]/10 text-[#916843] font-bold text-[10px] md:text-xs px-2 py-0.5 rounded">창호 렌탈</span>
           </div>
 
           {/* PC 메뉴 */}
