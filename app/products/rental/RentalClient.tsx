@@ -90,6 +90,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [consultType, setConsultType] = useState<'quick' | 'accurate'>('quick');
+  const [showSidebarBanner, setShowSidebarBanner] = useState(true);
   const [address, setAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
   const [pyeong, setPyeong] = useState('');
@@ -291,6 +292,96 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
     }
   };
 
+  // 사이드 배너 빠른 상담 신청 처리
+  const handleSidebarSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAgreed) return alert('개인정보 수집 및 이용에 동의해주세요.');
+    if (!name.trim()) return alert('이름을 입력해주세요.');
+    if (!contact.trim()) return alert('연락처를 입력해주세요.');
+    if (!selectedSido || !selectedGungu) return alert('지역을 선택해주세요.');
+
+    setIsSubmitting(true);
+    try {
+      const progressDetail = "PC 사이드 퀵 배너 신청";
+
+      let partnerBenefit = "";
+      if (partner && partner.special_benefits) {
+        try {
+          const benefits = JSON.parse(partner.special_benefits);
+          partnerBenefit = benefits['P_006'] || benefits['P006'] || benefits['rental'] || "";
+        } catch (e) {
+          console.error("Benefit parse error", e);
+        }
+      }
+
+      await createCustomerMutation({
+        name,
+        contact,
+        address: `${selectedSido} ${selectedGungu}`,
+        channel: partner ? partner.name : '본사(직접)',
+        label: '일반',
+        status: '접수',
+        progress_detail: progressDetail,
+        partner_benefit: partnerBenefit,
+        category: category,
+        created_at: new Date().toISOString().split('T')[0]
+      });
+
+      alert('상담 신청이 정상적으로 접수되었습니다. 담당 전문가가 곧 연락드리겠습니다.');
+      setName(''); setContact(''); setSelectedSido(''); setSelectedGungu(''); setIsAgreed(false);
+    } catch (error: unknown) {
+      console.error('Sidebar Consultation Submit Error:', error);
+      alert('상담 신청 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 하단 퀵바 빠른 상담 신청 처리
+  const handleQuickBarSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAgreed) return alert('개인정보 수집 및 이용에 동의해주세요.');
+    if (!name.trim()) return alert('이름을 입력해주세요.');
+    if (!contact.trim()) return alert('연락처를 입력해주세요.');
+    if (!selectedSido) return alert('지역을 선택해주세요.');
+
+    setIsSubmitting(true);
+    try {
+      const progressDetail = "하단 퀵바 빠른 견적 신청";
+
+      let partnerBenefit = "";
+      if (partner && partner.special_benefits) {
+        try {
+          const benefits = JSON.parse(partner.special_benefits);
+          partnerBenefit = benefits['P_006'] || benefits['P006'] || benefits['rental'] || "";
+        } catch (e) {
+          console.error("Benefit parse error", e);
+        }
+      }
+
+      await createCustomerMutation({
+        name,
+        contact,
+        address: `${selectedSido} (상세주소 미입력)`,
+        channel: partner ? partner.name : '본사(직접)',
+        label: '일반',
+        status: '접수',
+        progress_detail: progressDetail,
+        partner_benefit: partnerBenefit,
+        category: category,
+        created_at: new Date().toISOString().split('T')[0]
+      });
+
+      alert('상담 신청이 정상적으로 접수되었습니다. 담당 전문가가 곧 연락드리겠습니다.');
+      setName(''); setContact(''); setSelectedSido(''); setSelectedGungu(''); setIsAgreed(false);
+    } catch (error: unknown) {
+      console.error('QuickBar Consultation Submit Error:', error);
+      alert('상담 신청 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // 11섹션 Before/After Case 탭별 설명 및 이미지 매핑
   const beforeAfterCases = {
     living: {
@@ -302,20 +393,20 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
     bedroom: {
       tag: "서울 성북구 24평형 아파트",
       desc: "도로변 유입 차량 소음(62dB)으로 수면 방해 → 고차음 성능 KCC 특화 단창 교체 후 도서관 수준(28dB)의 정숙하고 아늑한 숙면실 구현.",
-      beforeImg: "",
-      afterImg: ""
+      beforeImg: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784095001/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_02_46_28_1_iivuoa.png",
+      afterImg: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784095002/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_02_46_30_2_ijvabd.png"
     },
     veranda: {
       tag: "인천 부평구 40평형 아파트",
       desc: "고질적인 환기 부족 및 유리 단열 미비로 인한 결로/곰팡이 폭발 → 하부 배수 구배를 올린 고성능 외창 설치 및 실리콘 곰팡이 방지 틈새 코팅 마감.",
-      beforeImg: "",
-      afterImg: ""
+      beforeImg: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784095001/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_02_55_05_1_luo1fy.png",
+      afterImg: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784095001/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_02_55_06_2_h9qlgi.png"
     },
     extended: {
       tag: "경기 일산 48평형 아파트",
       desc: "거실 발코니 확장 공사 시 저품질 이중창 조립 시공으로 단열 상실 → 초고단열 1등급 확장 전용 KCC 프라임 242 프레임 보강 교체 완료.",
-      beforeImg: "",
-      afterImg: ""
+      beforeImg: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784095377/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_02_26_1_vcxyz9.png",
+      afterImg: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784095856/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_10_48_qjhrfh.png"
     }
   };
 
@@ -355,7 +446,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <a href="tel:1588-0000" className="flex items-center gap-1.5 border border-[#322214] text-[#322214] font-bold text-sm px-4 py-2 rounded-full hover:bg-[#322214] hover:text-white transition-all">
+            <a href="tel:1588-0883" className="flex items-center gap-1.5 border border-[#322214] text-[#322214] font-bold text-sm px-4 py-2 rounded-full hover:bg-[#322214] hover:text-white transition-all">
               <Clock className="w-4 h-4" />
               전화 상담
             </a>
@@ -393,7 +484,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               </nav>
             </div>
             <div className="flex flex-col gap-3">
-              <a href="tel:1588-0000" className="flex items-center justify-center gap-2 h-14 border border-[#322214] rounded-xl font-bold text-[#322214]">전화 상담하기</a>
+              <a href="tel:1588-0883" className="flex items-center justify-center gap-2 h-14 border border-[#322214] rounded-xl font-bold text-[#322214]">전화 상담하기</a>
               <button onClick={() => { setMobileMenuOpen(false); setShowConsultModal(true); }} className="h-14 bg-[#D97706] rounded-xl font-bold text-white shadow-md">무료 실측 신청</button>
             </div>
           </div>
@@ -410,7 +501,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
       >
         <div className="max-w-[1200px] mx-auto px-5 md:px-0 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center w-full z-10 relative">
           {/* 좌측 콘텐츠 영역 (기존 md:col-span-5에서 md:col-span-6으로 늘려 시각적으로 더 여유 있게 배치) */}
-          <div className="md:col-span-6 text-left flex flex-col items-start space-y-4 md:space-y-6">
+          <div className="md:col-span-6 text-left flex flex-col items-start space-y-4 md:space-y-6 -mt-24 md:mt-0">
             <span className="inline-block bg-[#916843]/10 text-[#916843] font-extrabold text-xs md:text-sm px-3.5 py-1.5 rounded-full font-outfit tracking-wider uppercase">
               KCC Homecc Window Rental
             </span>
@@ -489,10 +580,10 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
           {/* 가격 카드 리스트 (모바일 가로 스크롤 지원) */}
           <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pt-4 px-4 md:px-2 pb-6 md:pb-3 snap-x snap-mandatory scrollbar-none">
             {[
-              { type: "TYPE 1 (24평형 내외)", sub: "방 3개 + 거실 + 발코니 기준", price: "114,000", orig: "154,000", desc: "발코니 이중창 및 단창 포함", featurd: true, imgUrl: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80" },
-              { type: "TYPE 2 (32평형 내외)", sub: "방 3개 + 거실 + 전후면 발코니", price: "158,000", orig: "198,000", desc: "광폭 발코니창 특화 패키지", featurd: false, imgUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80" },
-              { type: "TYPE 3 (40평형 내외)", sub: "방 4개 + 거실 + 광폭 발코니", price: "205,000", orig: "245,000", desc: "거실 대형 와이드창 기본 적용", featurd: false, imgUrl: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&w=600&q=80" },
-              { type: "TYPE 4 (48평형 이상)", sub: "대형 평형 전체 창호 교체 패키지", price: "250,000", orig: "290,000", desc: "프리미엄 라인업 풀 패키지", featurd: false, imgUrl: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1783922255/%EA%B3%A0%EA%B8%89_%EC%8B%9C%EC%8A%A4%ED%85%9C_%EC%B0%BD%EB%AC%B8%EC%9D%98_%EB%84%93%EC%9D%80_%EA%B1%B0%EC%8B%A4_c1o6bx.png" }
+              { type: "TYPE 1 (24평형 내외)", sub: "방 3개 + 거실 + 발코니 기준", price: "114,000", orig: "154,000", desc: "발코니 이중창 및 단창 포함", featurd: true, imgUrl: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784096635/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_23_32_1_wxhy3r.png" },
+              { type: "TYPE 2 (32평형 내외)", sub: "방 3개 + 거실 + 전후면 발코니", price: "158,000", orig: "198,000", desc: "광폭 발코니창 특화 패키지", featurd: false, imgUrl: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784096634/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_23_33_2_mzgmuo.png" },
+              { type: "TYPE 3 (40평형 내외)", sub: "방 4개 + 거실 + 광폭 발코니", price: "205,000", orig: "245,000", desc: "거실 대형 와이드창 기본 적용", featurd: false, imgUrl: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784096633/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_23_34_3_jkvpzq.png" },
+              { type: "TYPE 4 (48평형 이상)", sub: "대형 평형 전체 창호 교체 패키지", price: "250,000", orig: "290,000", desc: "프리미엄 라인업 풀 패키지", featurd: false, imgUrl: "https://res.cloudinary.com/dfkntvpmv/image/upload/v1784096632/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_23_34_4_himpel.png" }
             ].map((card, idx) => (
               <div 
                 key={idx} 
@@ -574,23 +665,23 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
           <div className="text-center space-y-3 mb-12 md:mb-16">
             <span className="text-xs md:text-sm font-bold text-[#916843] tracking-widest font-outfit uppercase">Comparison Table</span>
             <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight leading-[1.4] font-title">
-              일반 창호 일시불 교체 vs <strong className="font-black font-title text-white" style={{ background: 'linear-gradient(to top, rgba(217, 119, 6, 0.5) 40%, transparent 40%)' }}>창호 렌탈 비교</strong>
+              일반 창호<br className="block md:hidden" /> 일시불 교체 vs <strong className="font-black font-title text-white" style={{ background: 'linear-gradient(to top, rgba(217, 119, 6, 0.5) 40%, transparent 40%)' }}>창호 렌탈 비교</strong>
             </h2>
             <p className="text-sm md:text-base text-stone-300 tracking-tight">목돈 마련의 장벽을 없애고, 무상 A/S 기간과 본사 케어 품질을 압도적으로 늘렸습니다.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-11 gap-6 md:gap-4 items-center">
             {/* 일반 교체 */}
-            <div className="md:col-span-5 bg-white/70 backdrop-blur-md border border-gray-200/30 rounded-[24px] p-8 md:p-10 text-left shadow-md">
-              <h3 className="text-lg md:text-xl font-bold text-[#322214] mb-8 text-center pb-4 border-b border-gray-200 font-title">일반 창호 일시불 교체</h3>
-              <div className="space-y-6">
+            <div className="md:col-span-5 bg-white/70 backdrop-blur-md border border-gray-200/30 rounded-[24px] p-5 md:p-10 text-left shadow-md">
+              <h3 className="text-lg md:text-xl font-bold text-[#322214] mb-4 md:mb-8 text-center pb-3 md:pb-4 border-b border-gray-200 font-title">일반 창호 일시불 교체</h3>
+              <div className="space-y-3.5 md:space-y-6">
                 {[
                   { title: "초기 공사 비용", desc: "1,000만원 대 내외 일시 지출 (목돈 부담)" },
                   { title: "본사 무상 A/S 보증", desc: "일반 대리점 사설 보증 1~2년 (이후 유상)" },
                   { title: "원데이 완성도", desc: "사설 팀 일정 지연, 철거/조립 별도 공정 발생" },
                   { title: "정품 자재 신뢰도", desc: "사설 조립 및 비브랜드 프레임 부자재 혼용" }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex flex-col gap-1.5 border-b border-gray-100 pb-4">
+                  <div key={idx} className="flex flex-col gap-1.5 border-b border-gray-100 pb-2.5 md:pb-4">
                     <span className="text-xs text-[#916843] font-extrabold">{item.title}</span>
                     <span className="text-sm font-bold text-[#322214]">{item.desc}</span>
                   </div>
@@ -606,16 +697,16 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
             </div>
 
             {/* 홈씨씨 렌탈 */}
-            <div className="md:col-span-5 bg-[#322214]/60 backdrop-blur-md text-white border border-[#916843]/20 rounded-[24px] p-8 md:p-10 text-left shadow-2xl">
-              <h3 className="text-lg md:text-xl font-bold text-white mb-8 text-center pb-4 border-b border-white/10">홈씨씨 창호 렌탈서비스</h3>
-              <div className="space-y-6">
+            <div className="md:col-span-5 bg-[#322214]/60 backdrop-blur-md text-white border border-[#916843]/20 rounded-[24px] p-5 md:p-10 text-left shadow-2xl">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-8 text-center pb-3 md:pb-4 border-b border-white/10">홈씨씨 창호 렌탈서비스</h3>
+              <div className="space-y-3.5 md:space-y-6">
                 {[
                   { title: "초기 공사 비용", desc: "초기 계약금 0원, 월 11만원대 장기 분납" },
                   { title: "본사 무상 A/S 보증", desc: "본사가 보증서 발행, 업계 최장 13년 무상" },
                   { title: "원데이 완성도", desc: "철거에서 청소까지 단 하루 완성 시공 보장" },
                   { title: "정품 자재 신뢰도", desc: "100% KCC 홈씨씨 본사 제작 정품만 조립" }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex flex-col gap-1.5 border-b border-white/10 pb-4">
+                  <div key={idx} className="flex flex-col gap-1.5 border-b border-white/10 pb-2.5 md:pb-4">
                     <span className="text-xs text-white/50 font-bold">{item.title}</span>
                     <span className="text-sm font-extrabold text-white">{item.desc}</span>
                   </div>
@@ -637,11 +728,13 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
         <div className="max-w-[1200px] mx-auto px-5 md:px-0">
           <div className="text-center space-y-3 mb-12">
             <span className="text-xs md:text-sm font-bold text-[#916843] tracking-widest font-outfit uppercase">Pain Points</span>
-            <h2 className="text-2xl md:text-4xl font-black text-[#322214] tracking-tight leading-[1.4] font-title">매년 반복되는 <strong className="font-black font-title" style={{ background: 'linear-gradient(to top, rgba(255, 230, 0, 0.4) 40%, transparent 40%)' }}>노후 창호의 불만</strong>, 겪고 계신가요?</h2>
+            <h2 className="text-2xl md:text-4xl font-black text-[#322214] tracking-tight leading-[1.4] font-title">
+              매년 반복되는 <strong className="font-black font-title" style={{ background: 'linear-gradient(to top, rgba(255, 230, 0, 0.4) 40%, transparent 40%)' }}>노후 창호의 불만</strong>,<br className="block md:hidden" /> 겪고 계신가요?
+            </h2>
             <p className="text-sm md:text-base text-[#666666] tracking-tight">오래된 알루미늄 샷시와 유격은 가구 경제와 거주 만족도를 악화시킵니다.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-12">
             {[
               { 
                 title: "1. 새어 나가는 난방비", 
@@ -674,9 +767,9 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
                     loading="lazy"
                   />
                 </div>
-                <div className="p-5 md:p-6 text-left flex-1 flex flex-col justify-between">
-                  <h3 className="text-base font-extrabold text-[#322214] mb-2">{problem.title}</h3>
-                  <p className="text-xs md:text-sm text-[#666666] leading-relaxed">{problem.desc}</p>
+                <div className="p-3.5 md:p-6 text-left flex-1 flex flex-col justify-between">
+                  <h3 className="text-sm md:text-base font-extrabold text-[#322214] mb-1.5 md:mb-2">{problem.title}</h3>
+                  <p className="text-[11px] md:text-sm text-[#666666] leading-relaxed">{problem.desc}</p>
                 </div>
               </div>
             ))}
@@ -767,7 +860,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
             <p className="text-sm md:text-base text-[#666666]">정품 자재부터 보증, 하루 시공까지 원스톱으로 관리합니다.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
             {[
               { 
                 num: "01", 
@@ -808,7 +901,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
             ].map((b, idx) => (
               <div key={idx} className="bg-[#F7F5F0] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:bg-white hover:border-[#916843]/50 border border-transparent transition-all flex flex-col group cursor-pointer">
                 {/* 혜택 전용 이미지 상단 배치 - 찌그러짐(꾸겨짐) 방지를 위해 명시적 세로 높이 고정 및 shrink-0 강제 */}
-                <div className="w-full h-[200px] md:h-[240px] shrink-0 overflow-hidden bg-gray-100 relative">
+                <div className="w-full aspect-[4/3] md:h-[240px] md:aspect-none shrink-0 overflow-hidden bg-gray-100 relative">
                   <img 
                     src={b.imgUrl} 
                     alt={b.title} 
@@ -817,15 +910,15 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
                     loading="lazy"
                   />
                   {/* 숫자 뱃지 */}
-                  <div className="absolute top-4 left-4 bg-[#322214] text-[#F7F5F0] text-xs font-extrabold font-montserrat px-3 py-1 rounded-full shadow-sm">
+                  <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-[#322214] text-[#F7F5F0] text-[10px] md:text-xs font-extrabold font-montserrat px-2.5 py-0.5 md:px-3 md:py-1 rounded-full shadow-sm">
                     {b.num}
                   </div>
                 </div>
                 {/* 혜택 정보 텍스트 영역 */}
-                <div className="p-6 text-left flex-1 flex flex-col justify-between">
+                <div className="p-3.5 md:p-6 text-left flex-1 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-base md:text-lg font-black text-[#322214] mb-2">{b.title}</h4>
-                    <p className="text-xs md:text-sm text-[#666666] leading-relaxed">{b.desc}</p>
+                    <h4 className="text-sm md:text-lg font-black text-[#322214] mb-1.5 md:mb-2">{b.title}</h4>
+                    <p className="text-[11px] md:text-sm text-[#666666] leading-relaxed">{b.desc}</p>
                   </div>
                 </div>
               </div>
@@ -909,15 +1002,17 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
         <div className="max-w-[1200px] mx-auto px-5 md:px-0">
           <div className="text-center space-y-3 mb-12">
             <span className="text-xs md:text-sm font-bold text-[#916843] tracking-widest font-outfit uppercase">Glass Technology</span>
-            <h2 className="text-2xl md:text-4xl font-black text-[#322214] tracking-tight leading-[1.4] font-title">유리의 두께와 등급이 핵심, <strong className="font-black font-title" style={{ background: 'linear-gradient(to top, rgba(255, 230, 0, 0.4) 40%, transparent 40%)' }}>더블 로이유리</strong></h2>
+            <h2 className="text-2xl md:text-4xl font-black text-[#322214] tracking-tight leading-[1.4] font-title">
+              유리의 두께와 등급이 핵심,<br className="block md:hidden" /> <strong className="font-black font-title" style={{ background: 'linear-gradient(to top, rgba(255, 230, 0, 0.4) 40%, transparent 40%)' }}>더블 로이유리</strong>
+            </h2>
             <p className="text-sm md:text-base text-[#666666] tracking-tight">두 번(더블)의 은 코팅막 적용으로 적외선 열선을 차단하고 내부 열은 잡아줍니다.</p>
           </div>
 
           {/* 단면 일러스트 비교 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-[#F7F5F0] rounded-2xl p-6 border border-gray-200 text-left">
-              <span className="bg-gray-400 text-white text-[10px] font-bold px-2.5 py-1 rounded mb-4 inline-block">일반 복층 유리</span>
-              <div className="w-full aspect-[4/3] bg-white rounded-xl overflow-hidden mb-4 relative">
+            <div className="bg-[#F7F5F0] rounded-2xl p-4 md:p-6 border border-gray-200 text-left">
+              <span className="bg-gray-400 text-white text-[10px] font-bold px-2.5 py-1 rounded mb-3 md:mb-4 inline-block">일반 복층 유리</span>
+              <div className="w-full aspect-[4/3] bg-white rounded-xl overflow-hidden mb-3 md:mb-4 relative">
                 <img 
                   src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927309/e9a7f2c1-7c6d-4e77-a8c9-81dcbe1e21d0.png" 
                   alt="일반 유리 단면 구조 및 열 관통 일러스트" 
@@ -930,9 +1025,9 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               <p className="text-xs md:text-sm text-[#666666] leading-relaxed">태양 직사광선이 은 차단 필터 없이 그대로 투과되어 에어컨을 세게 켜도 실내가 계속 덥고 온도 손실이 발생합니다.</p>
             </div>
 
-            <div className="bg-[#F4F7FB] rounded-2xl p-6 border border-[#916843]/20 text-left">
-              <span className="bg-[#916843] text-white text-[10px] font-bold px-2.5 py-1 rounded mb-4 inline-block">KCC 더블 로이유리</span>
-              <div className="w-full aspect-[4/3] bg-white rounded-xl overflow-hidden mb-4 relative">
+            <div className="bg-[#F4F7FB] rounded-2xl p-4 md:p-6 border border-[#916843]/20 text-left">
+              <span className="bg-[#916843] text-white text-[10px] font-bold px-2.5 py-1 rounded mb-3 md:mb-4 inline-block">KCC 더블 로이유리</span>
+              <div className="w-full aspect-[4/3] bg-white rounded-xl overflow-hidden mb-3 md:mb-4 relative">
                 <img 
                   src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1783927316/96c60a15-73df-4d11-8c5e-c600dbb991e3.png" 
                   alt="KCC 더블 로이 은 코팅 단면 차단 일러스트" 
@@ -1053,8 +1148,8 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
       {/* ──────────────────────────────────────────────────────── */}
       {/* 10섹션. 13년 품질 보증 */}
       {/* ──────────────────────────────────────────────────────── */}
-      <section id="warranty" className="relative min-h-[500px] md:min-h-[600px] flex items-center">
-        {/* 거실 대형 배경 이미지 영역 - 백그라운드 이미지 적용 및 찌그러짐(구겨짐) 방지 */}
+      <section id="warranty" className="relative min-h-[500px] md:min-h-[600px] flex items-center py-16 md:py-24">
+        {/* 거실 대형 배경 이미지 영역 - 백그라운드 이미지 적용 및 찌러짐(구겨짐) 방지 */}
         <div className="absolute inset-0 z-0">
           <img 
             src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1783928136/%ED%94%84%EB%A6%AC%EB%AF%B8%EC%97%84_%EC%B0%BD%EB%AC%B8_%ED%92%88%EC%A7%88_%EB%B3%B4%EC%A6%9D_%EB%B0%B0%EA%B2%BD_md60cv.png" 
@@ -1088,9 +1183,18 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               </p>
               
               <ul className="text-xs md:text-sm text-white/80 space-y-3 pt-2">
-                <li className="flex gap-2"><span className="text-[#D97706] font-bold">•</span><strong>프로파일 (샷시 플라스틱 틀):</strong> 자연 변형, 갈라짐 현상 발생 시 13년 보증</li>
-                <li className="flex gap-2"><span className="text-[#D97706] font-bold">•</span><strong>복층 유리 (더블 로이유리):</strong> 내부 가스 누설로 인한 습기 맺힘 13년 보증</li>
-                <li className="flex gap-2"><span className="text-[#D97706] font-bold">•</span><strong>구동 하드웨어 (손잡이 기어):</strong> 락킹 및 크리센트 구동 장치 마모 13년 보증</li>
+                <li className="flex gap-2">
+                  <span className="text-[#D97706] font-bold shrink-0">•</span>
+                  <span><strong>프로파일 (샷시 플라스틱 틀):</strong> 자연 변형, 갈라짐 현상 발생 시 13년 보증</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-[#D97706] font-bold shrink-0">•</span>
+                  <span><strong>복층 유리 (더블 로이유리):</strong> 내부 가스 누설로 인한 습기 맺힘 13년 보증</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-[#D97706] font-bold shrink-0">•</span>
+                  <span><strong>구동 하드웨어 (손잡이 기어):</strong> 락킹 및 크리센트 구동 장치 마모 13년 보증</span>
+                </li>
               </ul>
               
               <p className="text-[10px] text-white/45">
@@ -1165,20 +1269,23 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
                 className="absolute inset-y-0 left-0 h-full overflow-hidden border-r-2 border-white z-10" 
                 style={{ width: `${sliderPosition}%` }}
               >
-                {/* 내부의 이미지 플레이스홀더 역시 너비가 슬라이더 크기(768px)로 고정되어 clipping 되어야 함 */}
-                <div className="absolute inset-y-0 left-0 w-[768px] md:w-[768px] h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                {/* 겉 드래그 영역(aspect-[4/3] 컨테이너)의 전체 고정 너비를 유지하여, 슬라이더가 드래그되어 clip될 때 이미지 자체가 찌그러지거나 왼쪽으로 이동하지 않도록 방지합니다.
+                    슬라이더 전체 너비가 가변적이므로, 모바일 기기별 100% 영역을 완벽하게 맞추기 위해 100vw - 40px(좌우 px-5 패딩) 구조에 max-width를 3xl(768px)로 제한합니다.
+                    부모 컨테이너가 max-w-3xl mx-auto px-5 로 감싸여 있으므로, 슬라이더 너비는 정확히 100vw - 40px 이며 md 이상에서는 768px 입니다.
+                    따라서 아래와 같이 w-[calc(100vw-40px)] md:w-[768px] 로 설정하면 기기별 가로 너비와 오차 없이 1:1 대응하여 이미지가 겹쳐집니다. */}
+                <div className="absolute inset-y-0 left-0 w-[calc(100vw-40px)] md:w-[768px] h-full aspect-[4/3] max-w-[768px] md:max-w-none">
                   {beforeAfterCases[activeTab].afterImg ? (
                     <img 
                       src={beforeAfterCases[activeTab].afterImg} 
                       alt="시공 후 모습" 
-                      className="force-cover absolute inset-y-0 left-0 h-full"
-                      style={{ width: '768px', maxWidth: '768px', minWidth: '768px', objectFit: 'cover' }}
+                      className="force-cover absolute inset-0 w-full h-full"
+                      style={{ objectFit: 'cover' }}
                     />
                   ) : (
-                    <>
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex flex-col items-center justify-center">
                       <span className="text-xs font-bold text-gray-600 z-10">AFTER 완공된 KCC 하이샷시 유리창 이미지</span>
                       <span className="absolute bottom-3 right-3 text-[8px] font-mono text-gray-400 bg-white/70 px-1 rounded z-10">PC: 1600×1200px / Mobile: 1080×1080px</span>
-                    </>
+                    </div>
                   )}
                   <span className="absolute bottom-3 left-3 bg-[#916843] text-white font-bold text-[10px] px-2.5 py-1 rounded z-10">AFTER</span>
                 </div>
@@ -1325,9 +1432,9 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
             <div className="bg-[#F7F5F0] rounded-2xl p-6 border mt-8 md:mt-0 text-left">
               <h5 className="font-extrabold text-[#322214] text-sm mb-1.5">상담이 추가로 필요하신가요?</h5>
               <p className="text-xs text-[#666666] mb-4">본사 해피콜 직영 대표번호로 전화 주시면 친절하게 설명 드리겠습니다.</p>
-              <a href="tel:1588-0000" className="flex items-center justify-center gap-1.5 w-full h-11 bg-[#322214] text-white font-bold text-xs rounded-xl shadow-md">
+              <a href="tel:1588-0883" className="flex items-center justify-center gap-1.5 w-full h-11 bg-[#322214] text-white font-bold text-xs rounded-xl shadow-md">
                 <Clock className="w-3.5 h-3.5" />
-                대표 전화: 1588-0000
+                대표 전화: 1588-0883
               </a>
             </div>
           </div>
@@ -1486,7 +1593,8 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               className="w-full h-14 md:h-[60px] bg-[#D97706] hover:bg-[#E06C0F] disabled:bg-gray-400 text-white font-bold text-base rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 mt-4"
             >
               {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-              무료 실측 신청하고 월 납입금 확인하기
+              <span className="md:hidden">무료 상담 신청하기</span>
+              <span className="hidden md:inline">무료 실측 신청하고 월 납입금 확인하기</span>
             </button>
           </form>
         </div>
@@ -1529,13 +1637,13 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
               />
             </div>
           </div>
-          <span className="text-sm font-medium text-white/70">본사 상담 대표 센터: <strong>1588-0000</strong> (평일 09:00 ~ 18:00)</span>
+          <span className="text-sm font-medium text-white/70">상담 대표 센터: <strong>1588-0883</strong> (평일 09:00 ~ 18:00)</span>
         </div>
         <hr className="border-white/5" />
         <div className="flex flex-col gap-3">
           <p className="leading-relaxed">
-            (주)KCC 홈씨씨 창호 | 대표이사: 홍길동 | 서울특별시 서초구 사평대로 344<br />
-            사업자등록번호: 000-00-00000 | 통신판매업신고번호: 제 2026-서울서초-0000호 | 개인정보관리자: 김철수 (privacy@kcc.co.kr)
+            주식회사 티유디지털(KCC글라스 판매점) | 대표 : 김정열 | 주소 : 서울시 금천구 가산디지털1로 83, 802호<br />
+            사업자등록번호 : 220-87-15092 | 고객센터 : 1588-0883 | 개인정보 관리자 : 김은경 (kek3171@nate.com)
           </p>
           <p className="text-[10px] text-white/20">
             &copy; 2026 KCC Homecc Window. All Rights Reserved. 본 화면상의 예시 이미지 규격 및 견적 조건 등은 기획 디자인용 플레이스홀더 데이터입니다.
@@ -1548,7 +1656,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
     {/* 모바일 하단 고정 바 */}
     {/* ──────────────────────────────────────────────────────── */}
     <div className="fixed bottom-0 left-0 w-full h-[64px] bg-white border-t border-gray-150 flex md:hidden z-[90] shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
-      <a href="tel:1588-0000" className="w-[35%] h-full bg-[#F7F5F0] text-[#322214] font-bold text-xs flex flex-col items-center justify-center gap-1">
+      <a href="tel:1588-0883" className="w-[35%] h-full bg-[#F7F5F0] text-[#322214] font-bold text-xs flex flex-col items-center justify-center gap-1">
         <Clock className="w-4 h-4" />
         전화 상담
       </a>
@@ -1583,13 +1691,16 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
     {/* ──────────────────────────────────────────────────────── */}
     {/* 기존 상담 신청 모달 (기능 유지) */}
     {/* ──────────────────────────────────────────────────────── */}
+    {/* ──────────────────────────────────────────────────────── */}
+    {/* 기존 상담 신청 모달 (기능 유지) */}
+    {/* ──────────────────────────────────────────────────────── */}
     {showConsultModal && (
       <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setShowConsultModal(false)}></div>
-        <div className="bg-white rounded-[24px] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-300">
+        <div className="bg-white rounded-[24px] w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[95vh] md:max-h-[90vh] animate-in fade-in zoom-in duration-300">
           
           {/* Modal Header */}
-          <div className="p-6 md:p-8 border-b border-gray-100 bg-[#F7F5F0] flex justify-between items-center shrink-0 text-left">
+          <div className="p-4 md:p-8 border-b border-gray-100 bg-[#F7F5F0] flex justify-between items-center shrink-0 text-left">
             <div>
               <h3 className="text-lg md:text-xl font-black text-[#322214]">KCC홈씨씨 창호 무료 실측 상담</h3>
               <p className="text-xs font-bold text-[#666666] mt-1">상담을 예약하시면 전문가가 1:1 방문하여 창문을 측정합니다.</p>
@@ -1598,50 +1709,50 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
           </div>
 
           {/* Modal Body */}
-          <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 text-left">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6 text-left">
             <div className="flex p-1 bg-gray-100 rounded-xl">
               <button 
                 type="button" 
                 onClick={() => setConsultType('quick')} 
-                className={`flex-grow py-3 text-center text-xs font-black rounded-lg transition-colors ${consultType === 'quick' ? 'bg-[#322214] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                className={`flex-grow py-2.5 md:py-3 text-center text-xs font-black rounded-lg transition-colors ${consultType === 'quick' ? 'bg-[#322214] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
               >
                 간편 지역 상담
               </button>
               <button 
                 type="button" 
                 onClick={() => setConsultType('accurate')} 
-                className={`flex-grow py-3 text-center text-xs font-black rounded-lg transition-colors ${consultType === 'accurate' ? 'bg-[#322214] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                className={`flex-grow py-2.5 md:py-3 text-center text-xs font-black rounded-lg transition-colors ${consultType === 'accurate' ? 'bg-[#322214] text-white shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
               >
                 상세 주소 실측 신청
               </button>
             </div>
 
-            <form id="consult-modal-form" onSubmit={handleConsultSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
+            <form id="consult-modal-form" onSubmit={handleConsultSubmit} className="space-y-4 md:space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-gray-700">이름</label>
-                  <input type="text" placeholder="예: 홍길동" className="h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-2 focus:ring-[#916843]/15 text-sm font-semibold text-[#222222]" required value={name} onChange={(e) => setName(e.target.value)} />
+                  <input type="text" placeholder="예: 홍길동" className="h-10 md:h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-2 focus:ring-[#916843]/15 text-sm font-semibold text-[#222222]" required value={name} onChange={(e) => setName(e.target.value)} />
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-gray-700">연락처</label>
-                  <input type="tel" placeholder="010-1234-5678" className="h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-2 focus:ring-[#916843]/15 text-sm font-semibold text-[#222222]" required value={contact} onChange={handleAutoHyphen} maxLength={13} />
+                  <input type="tel" placeholder="010-1234-5678" className="h-10 md:h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-2 focus:ring-[#916843]/15 text-sm font-semibold text-[#222222]" required value={contact} onChange={handleAutoHyphen} maxLength={13} />
                 </div>
               </div>
 
               {consultType === 'quick' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-700">시도 선택</label>
-                    <select className="h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] text-sm font-semibold text-[#222222] cursor-pointer" required value={selectedSido} onChange={handleSidoChange}>
+                    <select className="h-10 md:h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] text-sm font-semibold text-[#222222] cursor-pointer" required value={selectedSido} onChange={handleSidoChange}>
                       <option value="">시/도 선택</option>
                       {Object.keys(koreaDistrictData).map((sido) => (
                         <option key={sido} value={sido}>{sido}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-700">구군 선택</label>
-                    <select className="h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] text-sm font-semibold text-[#222222] cursor-pointer" required value={selectedGungu} onChange={(e) => setSelectedGungu(e.target.value)} disabled={!selectedSido}>
+                    <select className="h-10 md:h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] text-sm font-semibold text-[#222222] cursor-pointer" required value={selectedGungu} onChange={(e) => setSelectedGungu(e.target.value)} disabled={!selectedSido}>
                       <option value="">구/군 선택</option>
                       {selectedSido && koreaDistrictData[selectedSido].map((gungu) => (
                         <option key={gungu} value={gungu}>{gungu}</option>
@@ -1651,24 +1762,24 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-700">설치 주소</label>
                     <div className="flex gap-2">
-                      <input type="text" placeholder="주소 찾기를 통해 검색해 주세요." className="flex-grow h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none text-sm font-semibold text-[#222222]" readOnly required value={address} />
+                      <input type="text" placeholder="주소 찾기를 통해 검색해 주세요." className="flex-grow h-10 md:h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none text-sm font-semibold text-[#222222]" readOnly required value={address} />
                       <button type="button" onClick={() => setShowAddressModal(true)} className="px-5 bg-[#322214] text-white font-bold text-xs rounded-lg hover:bg-[#916843] transition-colors shrink-0">주소 찾기</button>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-gray-700">상세 주소</label>
-                    <input type="text" placeholder="동·호수 등 상세 주소 입력" className="h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-2 focus:ring-[#916843]/15 text-sm font-semibold text-[#222222]" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} />
+                    <input type="text" placeholder="동·호수 등 상세 주소 입력" className="h-10 md:h-12 px-4 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-2 focus:ring-[#916843]/15 text-sm font-semibold text-[#222222]" value={detailAddress} onChange={(e) => setDetailAddress(e.target.value)} />
                   </div>
                 </div>
               )}
 
               {/* 추가 옵션 */}
-              <div className="bg-[#F7F5F0] rounded-xl p-5 border border-gray-200/50 space-y-4">
+              <div className="bg-[#F7F5F0] rounded-xl p-3.5 md:p-5 border border-gray-200/50 space-y-3 md:space-y-4">
                 <h4 className="text-xs font-bold text-[#322214] border-b border-gray-200 pb-2">추가 정보 입력 (선택)</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] text-gray-400 font-bold">평형</label>
                     <select className="h-10 px-3 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-[#222222] cursor-pointer" value={pyeong} onChange={(e) => setPyeong(e.target.value)}>
@@ -1699,7 +1810,7 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] text-gray-400 font-bold">희망 실측일</label>
                     <input type="date" className="h-10 px-3 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-gray-500 outline-none" value={schedule} onChange={(e) => setSchedule(e.target.value)} />
@@ -1724,9 +1835,9 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
           </div>
 
           {/* Modal Footer */}
-          <div className="p-6 md:p-8 border-t border-gray-100 bg-[#F7F5F0] flex gap-3 shrink-0">
-            <button type="button" onClick={() => setShowConsultModal(false)} className="flex-1 h-12 border border-gray-200 bg-white rounded-xl text-xs md:text-sm font-bold text-[#666666] hover:bg-gray-50 transition-colors">취소</button>
-            <button type="submit" form="consult-modal-form" disabled={isSubmitting} className="flex-[2] h-12 bg-[#322214] text-white font-bold text-xs md:text-sm rounded-xl hover:bg-[#916843] transition-colors flex items-center justify-center gap-1.5 shadow-md disabled:bg-gray-400">
+          <div className="p-4 md:p-8 border-t border-gray-100 bg-[#F7F5F0] flex gap-3 shrink-0">
+            <button type="button" onClick={() => setShowConsultModal(false)} className="flex-1 h-11 md:h-12 border border-gray-200 bg-white rounded-xl text-xs md:text-sm font-bold text-[#666666] hover:bg-gray-50 transition-colors">취소</button>
+            <button type="submit" form="consult-modal-form" disabled={isSubmitting} className="flex-[2] h-11 md:h-12 bg-[#322214] text-white font-bold text-xs md:text-sm rounded-xl hover:bg-[#916843] transition-colors flex items-center justify-center gap-1.5 shadow-md disabled:bg-gray-400">
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               무료 실측 상담 신청 완료
             </button>
@@ -1750,6 +1861,238 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
         </div>
       </div>
     )}
+
+    {/* ──────────────────────────────────────────────────────── */}
+    {/* PC 사이드 빠른 상담 신청 배너 */}
+    {/* ──────────────────────────────────────────────────────── */}
+    <style dangerouslySetInnerHTML={{ __html: `
+      @keyframes float-banner {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+      @keyframes bob-consultant {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+      }
+      .animate-float-banner {
+        animation: float-banner 4s ease-in-out infinite;
+      }
+      .animate-bob-consultant {
+        animation: bob-consultant 3s ease-in-out infinite;
+      }
+    `}} />
+    <div className="hidden lg:block">
+      {showSidebarBanner ? (
+        <div className="fixed right-6 top-[8%] w-[330px] bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.18)] overflow-hidden z-[100] flex flex-col transition-all duration-300 animate-in fade-in slide-in-from-right-4 duration-300 animate-float-banner">
+          {/* Header */}
+          <div className="bg-[#322214] text-white px-4 py-3 flex justify-between items-center">
+            <span className="font-extrabold text-xs tracking-tight">KCC홈씨씨 창호 렌탈 상담 신청</span>
+            <button 
+              onClick={() => setShowSidebarBanner(false)} 
+              className="p-1 hover:bg-white/10 rounded transition-colors text-white/70 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          
+          {/* Banner Image (좌우여백 및 라운드 코너 적용) */}
+          <div className="px-4 pt-4 bg-white">
+            <div className="w-full relative aspect-[3/4] bg-gray-50 overflow-hidden rounded-xl border border-gray-150">
+              <img 
+                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784097163/ChatGPT_Image_2026%EB%85%84_7%EC%9B%94_15%EC%9D%BC_%EC%98%A4%ED%9B%84_03_32_35_haraud.png" 
+                alt="KCC창호 렌탈 가을맞이 특별상담"
+                className="force-cover absolute inset-0 w-full h-full"
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
+          </div>
+
+          {/* Form Content */}
+          <form onSubmit={handleSidebarSubmit} className="p-4 space-y-3.5 text-left">
+            <div className="flex items-center gap-3">
+              <label className="w-12 text-xs font-bold text-gray-700 shrink-0">이름</label>
+              <input 
+                type="text" 
+                placeholder="이름을 입력하세요" 
+                className="flex-grow h-9 px-3 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-1 focus:ring-[#916843]/15 text-xs font-semibold text-[#222222]" 
+                required 
+                value={name} 
+                onChange={(e) => setName(e.target.value)} 
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="w-12 text-xs font-bold text-gray-700 shrink-0">연락처</label>
+              <input 
+                type="tel" 
+                placeholder="010-1234-5678" 
+                className="flex-grow h-9 px-3 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] focus:ring-1 focus:ring-[#916843]/15 text-xs font-semibold text-[#222222]" 
+                required 
+                value={contact} 
+                onChange={handleAutoHyphen} 
+                maxLength={13} 
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="w-12 text-xs font-bold text-gray-700 shrink-0">지역</label>
+              <div className="flex-grow grid grid-cols-2 gap-2">
+                <select 
+                  className="h-9 px-2 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] text-xs font-semibold text-[#222222] cursor-pointer" 
+                  required 
+                  value={selectedSido} 
+                  onChange={handleSidoChange}
+                >
+                  <option value="">시/도 선택</option>
+                  {Object.keys(koreaDistrictData).map((sido) => (
+                    <option key={sido} value={sido}>{sido}</option>
+                  ))}
+                </select>
+                <select 
+                  className="h-9 px-2 rounded-lg bg-[#F7F5F0] border border-gray-200 outline-none focus:border-[#916843] text-xs font-semibold text-[#222222] cursor-pointer" 
+                  required 
+                  value={selectedGungu} 
+                  onChange={(e) => setSelectedGungu(e.target.value)} 
+                  disabled={!selectedSido}
+                >
+                  <option value="">구/군 선택</option>
+                  {selectedSido && koreaDistrictData[selectedSido].map((gungu) => (
+                    <option key={gungu} value={gungu}>{gungu}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-1.5 border-t border-gray-100 flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="rounded border-gray-300 text-[#916843] focus:ring-0 cursor-pointer w-3.5 h-3.5" 
+                  required 
+                  checked={isAgreed} 
+                  onChange={(e) => setIsAgreed(e.target.checked)} 
+                />
+                <span className="text-[10px] text-[#666666] font-medium">개인정보 수집/이용 동의</span>
+              </label>
+              <span className="text-[10px] text-gray-400 underline cursor-pointer hover:text-gray-600">보기</span>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full h-10 bg-[#322214] hover:bg-[#916843] disabled:bg-gray-400 text-white font-bold text-xs rounded-full shadow-md transition-all flex items-center justify-center gap-1.5 mt-2"
+            >
+              {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              무료 상담 신청하기
+            </button>
+          </form>
+        </div>
+      ) : (
+        <button 
+          onClick={() => setShowSidebarBanner(true)} 
+          className="fixed right-0 top-1/3 z-40 bg-[#322214] text-white py-4 px-3 rounded-l-xl cursor-pointer shadow-lg flex flex-col items-center gap-2 font-bold text-[11px] hover:bg-[#916843] transition-colors border-y border-l border-[#916843]/30 tracking-wider"
+          style={{ writingMode: 'vertical-rl' }}
+        >
+          <span>💬 빠른 상담 신청</span>
+        </button>
+      )}
+    </div>
+
+    {/* ──────────────────────────────────────────────────────── */}
+    {/* PC 하단 고정 퀵바 상담 배너 */}
+    {/* ──────────────────────────────────────────────────────── */}
+    <div className="hidden md:block fixed bottom-0 left-0 w-full h-[72px] bg-[#FFE600] z-[80] shadow-[0_-8px_24px_rgba(0,0,0,0.12)]">
+      <div className="max-w-[1200px] mx-auto h-full px-5 flex items-center justify-between relative">
+        {/* 프로트루딩(바 위로 올라오는) 인물 이미지 (CSS 크롭 적용) */}
+        <div className="absolute bottom-0 left-2 w-[115px] h-[115px] z-20 pointer-events-none overflow-hidden">
+          <img 
+            src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784097144/edited-photo_-_2026-07-09T155622.205_1_wrinwv.png" 
+            alt="전문 상담 마스터" 
+            className="absolute left-0 bottom-0 h-[115px] max-w-none object-cover animate-bob-consultant"
+            style={{ objectPosition: 'left bottom' }}
+          />
+        </div>
+
+        {/* 텍스트 영역 (인물 이미지 영역 확보를 위해 왼쪽에 margin-left) */}
+        <div className="flex items-center gap-3 pl-[110px] shrink-0 text-[#222222]">
+          <span className="font-extrabold text-base tracking-tight text-[#322214]">빠른 견적 문의</span>
+          <span className="font-black text-xl text-[#322214] font-montserrat">1588-0883</span>
+        </div>
+
+        {/* 폼 입력 영역 */}
+        <form onSubmit={handleQuickBarSubmit} className="flex items-center gap-3 flex-grow justify-end max-w-[800px]">
+          {/* 희망 지역 (시도) */}
+          <select 
+            className="h-10 px-3 rounded-lg bg-white border border-gray-300 text-xs font-bold text-[#222222] cursor-pointer outline-none focus:border-[#322214]" 
+            required 
+            value={selectedSido} 
+            onChange={handleSidoChange}
+          >
+            <option value="">시/도 선택</option>
+            {Object.keys(koreaDistrictData).map((sido) => (
+              <option key={sido} value={sido}>{sido}</option>
+            ))}
+          </select>
+
+          {/* 구군 선택 */}
+          <select 
+            className="h-10 px-3 rounded-lg bg-white border border-gray-300 text-xs font-bold text-[#222222] cursor-pointer outline-none focus:border-[#322214]" 
+            required 
+            value={selectedGungu} 
+            onChange={(e) => setSelectedGungu(e.target.value)} 
+            disabled={!selectedSido}
+          >
+            <option value="">구/군 선택</option>
+            {selectedSido && koreaDistrictData[selectedSido].map((gungu) => (
+              <option key={gungu} value={gungu}>{gungu}</option>
+            ))}
+          </select>
+
+          {/* 이름 */}
+          <input 
+            type="text" 
+            placeholder="이름" 
+            className="w-[110px] h-10 px-3 rounded-lg bg-white border border-gray-300 text-xs font-bold text-[#222222] placeholder-gray-400 outline-none focus:border-[#322214]" 
+            required 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+          />
+
+          {/* 연락처 */}
+          <input 
+            type="tel" 
+            placeholder="010-1234-5678" 
+            className="w-[155px] h-10 px-3 rounded-lg bg-white border border-gray-300 text-xs font-bold text-[#222222] placeholder-gray-400 outline-none focus:border-[#322214]" 
+            required 
+            value={contact} 
+            onChange={handleAutoHyphen} 
+            maxLength={13} 
+          />
+
+          {/* 약관 동의 체크박스 */}
+          <label className="flex items-center gap-1.5 cursor-pointer shrink-0 text-[#222222]">
+            <input 
+              type="checkbox" 
+              className="rounded border-gray-300 text-[#322214] focus:ring-0 cursor-pointer w-3.5 h-3.5" 
+              required 
+              checked={isAgreed} 
+              onChange={(e) => setIsAgreed(e.target.checked)} 
+            />
+            <span className="text-[10px] font-bold">개인정보 수집/이용 동의</span>
+          </label>
+
+          {/* 제출 버튼 */}
+          <button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="h-10 px-6 bg-[#322214] hover:bg-[#4d3621] disabled:bg-gray-400 text-white font-extrabold text-xs rounded-lg shadow-md transition-all flex items-center justify-center gap-1.5 shrink-0"
+          >
+            {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            빠른 견적 문의
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 );
 }
