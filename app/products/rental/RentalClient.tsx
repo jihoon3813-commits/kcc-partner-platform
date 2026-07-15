@@ -331,7 +331,15 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
       }`}>
         <div className="max-w-[1200px] h-full mx-auto px-5 md:px-0 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-lg md:text-xl text-[#322214] tracking-tight">KCC Homecc</span>
+            <div className="relative h-6 w-24 md:h-8 md:w-32">
+              <Image
+                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
+                alt="KCC HomeCC Logo"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
             <span className="bg-[#916843]/10 text-[#916843] font-bold text-[10px] md:text-xs px-2 py-0.5 rounded">창호 렌탈</span>
           </div>
 
@@ -1512,7 +1520,15 @@ export default function RentalClient({ partnerId, category = "창호" }: RentalC
       <div className="max-w-[1200px] mx-auto px-5 md:px-0 flex flex-col gap-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-lg text-white/80 tracking-tight">KCC Homecc</span>
+            <div className="relative h-6 w-24 md:h-8 md:w-32 brightness-0 invert opacity-80">
+              <Image
+                src="https://res.cloudinary.com/dfkntvpmv/image/upload/v1784093217/01_full_color_homecc_BI_phjl98.png"
+                alt="KCC HomeCC Logo"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
             <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/60">본사 제휴</span>
           </div>
           <span className="text-sm font-medium text-white/70">본사 상담 대표 센터: <strong>1588-0000</strong> (평일 09:00 ~ 18:00)</span>
